@@ -7,14 +7,10 @@ import { db, auth } from '../modules/firebase.js';
 const { $, $$, showToast, copyToClipboard } = window.utils;
 
 // ================== MODULE-SPECIFIC STATE ==================
-// This is the 'appState' from our old file, but now it's
-// private to the basketball module.
-//
-// ================== MODULE-SPECIFIC STATE ==================
 const state = {
     view: 'landing',
-    isHost: false,
-    isFreeHost: false, // NEW: To track "free host" mode
+    isHost: false, // This will be set on init
+    isFreeHost: false,
     user: null, 
     gameCode: null,
     game: null,
@@ -29,10 +25,7 @@ const state = {
     clockEditing: false,
     firestoreListener: null
 };
-//
-// ================== HTML BUILDER ==================
-// This function returns the *entire* HTML for the basketball app.
-// main.js will inject this into the page.
+
 // ================== HTML BUILDER ==================
 function buildHtml() {
     return `
@@ -41,7 +34,7 @@ function buildHtml() {
             <header class="landing-header">
                 <div class="basketball-icon">🏀</div>
                 <h1 class="main-title">Basketball Scoreboard</h1>
-                <p class="hero-subtitle">Sign in to host or enter a code to watch.</p>
+                <p class="hero-subtitle">Host a new game or enter a code to watch.</p>
             </header>
 
             <div class="landing-cards">
@@ -60,21 +53,8 @@ function buildHtml() {
                     <div class="card__body">
                         <div class="card-icon">🎯</div>
                         <h3>Host Game</h3>
-                        
-                        <div id="auth-container">
-                            <div class="auth-choice-buttons">
-                                <button id="freeHostBtn" class="btn btn--primary">Free Host</button>
-                                <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary); text-align: center; margin: 0;">(Game data will not be saved)</p>
+                        <div id="host-container">
                             </div>
-
-                            <hr style="margin: var(--space-16) 0; border-color: var(--color-border);">
-
-                            <div class="auth-choice-buttons">
-                                <button id="showLoginBtn" class="btn btn--secondary">Sign In / Sign Up</button>
-                                <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary); text-align: center; margin: 0;">(Save game data to your account)</p>
-                            </div>
-                        </div>
-                        
                     </div>
                 </div>
             </div>
@@ -533,7 +513,6 @@ function buildHtml() {
 }
 
 // ================== ALL BASKETBALL FUNCTIONS ==================
-// All your functions from app.js are now here, and private.
 
 function formatTime(minutes, seconds) {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
@@ -831,7 +810,8 @@ function showEditShotClockModal() {
 
 function createGameSkeleton(code, config = {}) {
     // This is where we add the hostId for security!
-    const hostId = state.user ? state.user.uid : null;
+    // If it's a free host, hostId will be null.
+    const hostId = (state.user && !state.isFreeHost) ? state.user.uid : null;
     
     return {
         hostId: hostId, // NEW: For security rules
@@ -877,7 +857,7 @@ function createGameSkeleton(code, config = {}) {
 }
 
 async function saveGameState() {
-    // NEW: If in "free host" mode, do not save to Firebase.
+    // If in "free host" mode, do not save to Firebase.
     if (state.isFreeHost) return; 
 
     if (state.game && state.gameCode && db && state.isHost) {
@@ -964,152 +944,9 @@ function updateTopScorerDisplay() {
     }
 }
 
-// ================== AUTH FUNCTIONS (NEW) ==================
-//new add start 
-function handleFreeHost() {
-    console.log('✓ handleFreeHost called');
-    state.isHost = true;
-    state.isFreeHost = true; // Set the free host flag
-    state.gameCode = "LOCAL"; // Set a non-Firebase game code
-    
-    showToast('Starting Free Host session', 'success', 1500);
-    showConfigurationView();
-    
-    // Also update the control panel actions for a local game
-    const controlActions = $('control-actions');
-    if (controlActions) {
-        controlActions.innerHTML = `
-            <button id="exportGame" class="btn btn--outline">Export</button>
-            <a href="scoreboard.html?sport=basketball" class="btn btn--secondary">New Game</a>
-        `;
-        $('exportGame').addEventListener('click', exportGameData);
-    }
-}
-
-function showLoginUI() {
-    const authContainer = $('auth-container');
-    if (!authContainer) return;
-
-    authContainer.innerHTML = `
-        <p>Sign in or create an account to save game data.</p>
-        <div class="form-group">
-            <label for="hostEmail">Email</label>
-            <input id="hostEmail" type="email" class="form-control" placeholder="host@email.com">
-        </div>
-        <div class="form-group">
-            <label for="hostPassword">Password</label>
-            <input id="hostPassword" type="password" class="form-control" placeholder="Min. 6 characters">
-        </div>
-        <div class="auth-buttons">
-            <button id="loginBtn" class="btn btn--primary">Login</button>
-            <button id="signupBtn" class="btn btn--secondary">Sign Up</button>
-        </div>
-        <button id="backToHostChoice" class="btn btn--outline" style="margin-top: 16px; width: 100%;">← Back</button>
-    `;
-    
-    // Attach new listeners
-    $('loginBtn').addEventListener('click', handleLogin);
-    $('signupBtn').addEventListener('click', handleSignUp);
-    $('backToHostChoice').addEventListener('click', () => {
-        // This resets the box back to "Level 1"
-        updateAuthUI(null); 
-    });
-}
-//new add end 
-function handleSignUp() {
-    const email = $('hostEmail').value;
-    const password = $('hostPassword').value;
-    if (password.length < 6) {
-        showToast('Password must be at least 6 characters', 'error', 3000);
-        return;
-    }
-    auth.createUserWithEmailAndPassword(email, password)
-        .then(userCredential => {
-            showToast('Account created successfully!', 'success', 2000);
-            state.user = userCredential.user;
-            updateAuthUI(state.user);
-        })
-        .catch(error => {
-            console.error('Sign up error:', error);
-            showToast(error.message, 'error', 4000);
-        });
-}
-
-function handleLogin() {
-    const email = $('hostEmail').value;
-    const password = $('hostPassword').value;
-    auth.signInWithEmailAndPassword(email, password)
-        .then(userCredential => {
-            showToast('Logged in successfully!', 'success', 2000);
-            state.user = userCredential.user;
-            updateAuthUI(state.user);
-        })
-        .catch(error => {
-            console.error('Login error:', error);
-            showToast(error.message, 'error', 4000);
-        });
-}
-
-function handleSignOut() {
-    auth.signOut().then(() => {
-        showToast('Signed out', 'info', 2000);
-        state.user = null;
-        updateAuthUI(null);
-        showView('landing');
-    }).catch(error => {
-        console.error('Sign out error:', error);
-        showToast(error.message, 'error', 4000);
-    });
-}
-
-function updateAuthUI(user) {
-    const authContainer = $('auth-container');
-    if (!authContainer) return;
-
-    if (user) {
-        // STATE 1: User is LOGGED IN
-        state.isHost = true;
-        state.isFreeHost = false; // Logged-in users are not free hosts
-        authContainer.innerHTML = `
-            <p>Welcome, ${user.email}!</p>
-            <button id="createGameBtn" class="btn btn--primary btn--full-width">Create New Game</button>
-            <button id="signOutBtnLanding" class="btn btn--secondary btn--full-width" style="margin-top: 8px;">Sign Out</button>
-        `;
-        // Re-attach listener for the new "Create Game" button
-        $('createGameBtn').addEventListener('click', handleCreateGame);
-        $('signOutBtnLanding').addEventListener('click', handleSignOut);
-        
-        // Update control panel actions for a logged-in host
-        const controlActions = $('control-actions');
-        if (controlActions) {
-            controlActions.innerHTML = `
-                <button id="signOutBtn" class="btn btn--secondary">Sign Out</button>
-                <button id="exportGame" class="btn btn--outline">Export</button>
-            `;
-            $('signOutBtn').addEventListener('click', handleSignOut);
-            $('exportGame').addEventListener('click', exportGameData);
-        }
-
-    } else {
-        // STATE 2: User is LOGGED OUT (Show Level 1)
-        state.isHost = false;
-        state.isFreeHost = false;
-        authContainer.innerHTML = `
-            <div class="auth-choice-buttons">
-                <button id="freeHostBtn" class="btn btn--primary">Free Host</button>
-                <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary); text-align: center; margin: 0;">(Game data will not be saved)</p>
-            </div>
-            <hr style="margin: var(--space-16) 0; border-color: var(--color-border);">
-            <div class="auth-choice-buttons">
-                <button id="showLoginBtn" class="btn btn--secondary">Sign In / Sign Up</button>
-                <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary); text-align: center; margin: 0;">(Save game data to your account)</p>
-            </div>
-        `;
-        // Re-attach listeners for Level 1
-        $('freeHostBtn').addEventListener('click', handleFreeHost);
-        $('showLoginBtn').addEventListener('click', showLoginUI);
-    }
-}
+// ================== AUTH FUNCTIONS (REMOVED) ==================
+// All auth functions (handleSignUp, handleLogin, etc.)
+// have been moved to home.js! This file is now clean.
 
 // ================== EVENT HANDLERS ==================
 
@@ -1117,14 +954,10 @@ function handleCreateGame(event) {
     console.log('✓ handleCreateGame called');
     event.preventDefault();
     
-    if (!state.user) {
-        showToast('You must be logged in to host', 'error', 3000);
-        return;
-    }
+    // We are already a host (either free or logged in)
+    // if we can see the "Create Game" button.
     
-    state.gameCode = generateGameCode();
-    state.isHost = true;
-    state.isFreeHost = false; // Make sure to set this!
+    state.gameCode = state.isFreeHost ? "LOCAL" : generateGameCode();
     
     console.log('✓ Game code generated:', state.gameCode);
     showToast('Game created successfully!', 'success', 1500);
@@ -1183,18 +1016,23 @@ async function joinSpectatorMode(code) {
     state.gameCode = code;
     state.game = savedGame;
     state.gameType = savedGame.gameType || 'friendly';
-    state.isHost = (state.user && state.user.uid === savedGame.hostId); // Check if we are the host
+    // Check if we are the host
+    state.isHost = (state.user && state.user.uid === savedGame.hostId); 
+    state.isFreeHost = false; // Cannot watch a "free" game
     
     showSpectatorView();
 }
-
-// ... All other functions from your app.js ...
-// (Omitting for brevity, but they all go here, using 'state' instead of 'appState')
 
 function showConfigurationView() {
     console.log('✓ Showing configuration view');
     showView('config');
     $('configGameCode').textContent = state.gameCode;
+    
+    // In free mode, hide the "copy code" button
+    if (state.isFreeHost) {
+        $('configGameCode').parentElement.style.display = 'none';
+    }
+    
     setupConfigurationHandlers();
     updateColorPreviews();
 }
@@ -1226,7 +1064,7 @@ function setupConfigurationHandlers() {
         const config = gatherConfigurationData();
         if (validateConfiguration(config)) {
             state.game = createGameSkeleton(state.gameCode, config);
-            saveGameState(); // Initial save
+            saveGameState(); // Initial save (will be skipped if free host)
             
             if (state.gameType === 'friendly') {
                 initializeFriendlyGame();
@@ -1285,6 +1123,12 @@ function showTeamSetupView() {
     console.log('Showing team setup view');
     showView('setup');
     $('setupGameCode').textContent = state.gameCode;
+    
+    // In free mode, hide the "copy code" button
+    if (state.isFreeHost) {
+        $('setupGameCode').parentElement.style.display = 'none';
+    }
+
     updateTeamSetupTitles();
     setupTeamSetupHandlers();
     updateRosterDisplays();
@@ -1340,7 +1184,7 @@ function addPlayer(team) {
 }
 
 function validatePlayerInput(team, number, name) {
-    if (!number || number < 0 || number > 99 || isNaN(number)) {
+    if (isNaN(number) || number < 0 || number > 99) {
         showToast('Jersey #: 0-99', 'error', 2000);
         return false;
     }
@@ -1438,8 +1282,29 @@ function showControlView() {
     console.log('Showing control view');
     showView('control');
     
+    // Set the control buttons based on host type *before* setting handlers
+    const controlActions = $('control-actions');
+    if (controlActions) {
+        if (state.isFreeHost) {
+            controlActions.innerHTML = `
+                <button id="exportGame" class="btn btn--outline">Export</button>
+                <a href="sport-select.html" class="btn btn--secondary">New Sport</a>
+            `;
+        } else if (state.isHost) {
+            controlActions.innerHTML = `
+                <button id="signOutBtn" class="btn btn--secondary">Sign Out</button>
+                <button id="exportGame" class="btn btn--outline">Export</button>
+            `;
+        }
+    }
+
     $('controlGameCode').textContent = state.gameCode;
     $('gameNameDisplay').textContent = state.game.settings.gameName;
+
+    // In free mode, hide the "copy code" button
+    if (state.isFreeHost) {
+        $('controlGameCode').parentElement.style.display = 'none';
+    }
     
     const shotClockSection = $('shotClockSection');
     const viewerShotClock = $('viewerShotClock');
@@ -1463,12 +1328,15 @@ function showControlView() {
         }
     }
     
+    // Now, set up handlers for the buttons we just created
     setupControlHandlers();
+    
     updateControlDisplay();
     updateMasterStartButton();
     setupAutoSave();
 
-    if (db && state.gameCode) {
+    // Don't listen for updates in "Free Host" mode
+    if (db && state.gameCode && !state.isFreeHost) {
         if (state.firestoreListener) state.firestoreListener();
 
         state.firestoreListener = db.collection('games').doc(state.gameCode)
@@ -1659,35 +1527,40 @@ function updateComprehensiveStatsTable() {
 
 function setupControlHandlers() {
     console.log('Setting up control handlers');
-    $('copyControlCode').onclick = (e) => { e.preventDefault(); copyToClipboard(state.gameCode); };
-    $('signOutBtn').onclick = (e) => { e.preventDefault(); handleSignOut(); };
-    $('startGameBtn').onclick = (e) => { e.preventDefault(); toggleMasterGame(); };
-    $('resetAllBtn').onclick = (e) => { e.preventDefault(); resetAllClocks(); };
-    $('editGameClock').onclick = (e) => { e.preventDefault(); showEditClockModal(); };
-    $('gameClockDisplay').onclick = (e) => { e.preventDefault(); showEditClockModal(); };
-    $('shotClockDisplay').onclick = (e) => { e.preventDefault(); showEditShotClockModal(); };
-    $('editShotClock').onclick = (e) => { e.preventDefault(); showEditShotClockModal(); };
-    $('nextPeriod').onclick = (e) => { e.preventDefault(); nextPeriodFunc(); };
-    $('resetShotClock14').onclick = (e) => { e.preventDefault(); resetShotClockTo14(); };
-    $('resetShotClock24').onclick = (e) => { e.preventDefault(); resetShotClockTo24(); };
-    $('startShotClock').onclick = (e) => { e.preventDefault(); startShotClockOnly(); };
     
+    // Shared controls
+    if ($('copyControlCode')) $('copyControlCode').onclick = (e) => { e.preventDefault(); copyToClipboard(state.gameCode); };
+    if ($('startGameBtn')) $('startGameBtn').onclick = (e) => { e.preventDefault(); toggleMasterGame(); };
+    if ($('resetAllBtn')) $('resetAllBtn').onclick = (e) => { e.preventDefault(); resetAllClocks(); };
+    if ($('editGameClock')) $('editGameClock').onclick = (e) => { e.preventDefault(); showEditClockModal(); };
+    if ($('gameClockDisplay')) $('gameClockDisplay').onclick = (e) => { e.preventDefault(); showEditClockModal(); };
+    if ($('shotClockDisplay')) $('shotClockDisplay').onclick = (e) => { e.preventDefault(); showEditShotClockModal(); };
+    if ($('editShotClock')) $('editShotClock').onclick = (e) => { e.preventDefault(); showEditShotClockModal(); };
+    if ($('nextPeriod')) $('nextPeriod').onclick = (e) => { e.preventDefault(); nextPeriodFunc(); };
+    if ($('resetShotClock14')) $('resetShotClock14').onclick = (e) => { e.preventDefault(); resetShotClockTo14(); };
+    if ($('resetShotClock24')) $('resetShotClock24').onclick = (e) => { e.preventDefault(); resetShotClockTo24(); };
+    if ($('startShotClock')) $('startShotClock').onclick = (e) => { e.preventDefault(); startShotClockOnly(); };
+    if ($('possessionTeamA')) $('possessionTeamA').onclick = (e) => { e.preventDefault(); setPossession('teamA'); };
+    if ($('possessionTeamB')) $('possessionTeamB').onclick = (e) => { e.preventDefault(); setPossession('teamB'); };
+    if ($('exportGame')) $('exportGame').onclick = (e) => { e.preventDefault(); exportGameData(); };
+
+    // Host-specific controls
+    if ($('signOutBtn')) $('signOutBtn').onclick = (e) => { e.preventDefault(); handleSignOut(); };
+
+    // Score buttons
     $$('.score-btn').forEach(btn => {
         btn.onclick = (e) => {
             e.preventDefault();
             updateScore(e.target.dataset.team, parseInt(e.target.dataset.points));
         };
     });
+    // Counter buttons
     $$('[data-action]').forEach(btn => {
         btn.onclick = (e) => {
             e.preventDefault();
             handleCounterAction(e.target.dataset.action, e.target.dataset.team);
         };
     });
-    
-    $('possessionTeamA').onclick = (e) => { e.preventDefault(); setPossession('teamA'); };
-    $('possessionTeamB').onclick = (e) => { e.preventDefault(); setPossession('teamB'); };
-    $('exportGame').onclick = (e) => { e.preventDefault(); exportGameData(); };
 }
 
 function nextPeriodFunc() {
@@ -1858,7 +1731,8 @@ function showSpectatorView() {
     showView('viewer');
     if(state.game) updateSpectatorView();
 
-    if (db && state.gameCode) {
+    // Don't listen for updates in "Free Host" mode
+    if (db && state.gameCode && !state.isFreeHost) {
         if (state.firestoreListener) state.firestoreListener();
         state.firestoreListener = db.collection('games').doc(state.gameCode)
           .onSnapshot((doc) => {
@@ -1905,7 +1779,8 @@ function updateSpectatorView() {
 
 function setupAutoSave() {
     if (state.timers.autoSave) clearInterval(state.timers.autoSave);
-    if (state.isHost) {
+    // Don't auto-save in "Free Host" mode
+    if (state.isHost && !state.isFreeHost) {
         state.timers.autoSave = setInterval(saveGameState, 30000);
     }
 }
@@ -1915,13 +1790,28 @@ function setupAutoSave() {
 function init() {
     console.log('Basketball module initializing...');
     
-    // Check auth state
-    auth.onAuthStateChanged(user => {
-        state.user = user;
-        updateAuthUI(user);
-    });
+    // Check auth state *from this page*
+    // This runs AFTER the global login on index.html
+    state.user = auth.currentUser;
+    state.isHost = localStorage.getItem('userIsHost') === 'true';
+    state.isFreeHost = localStorage.getItem('userMode') === 'free';
+    
+    // Update the host UI based on the status
+    const hostContainer = $('host-container');
+    if (state.isHost || state.isFreeHost) {
+        hostContainer.innerHTML = `
+            <p>You are a host. Create a new game to get started.</p>
+            <button id="createGameBtn" class="btn btn--primary btn--full-width">Create New Game</button>
+        `;
+        $('createGameBtn').addEventListener('click', handleCreateGame);
+    } else {
+        // This shouldn't be reachable if home.js works, but it's a good fallback.
+        hostContainer.innerHTML = `
+            <p>Please <a href="index.html">go back to the home page</a> to sign in or start a free session.</p>
+        `;
+    }
 
-    // Add all event listeners
+    // Add landing page event listeners
     $('watchGameBtn').addEventListener('click', handleWatchGame);
     $('watchCodeInput').addEventListener('input', handleWatchCodeInput);
     
@@ -1935,8 +1825,6 @@ function init() {
 }
 
 // ================== EXPORT ==================
-// This is the object that main.js will receive.
-// It exposes the sport's name, the HTML builder, and the init function.
 export default {
     sportName: "Basketball",
     buildHtml,

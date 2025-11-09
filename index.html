@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOX : By BMSCE</title>
+    <title>BOX : By BMSCE - Welcome</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,69 +11,38 @@
         <div class="container">
 
             <header class="homepage-header">
-                <div class="basketball-icon">🏆</div>
                 <h1 class="main-title">BOX : By BMSCE</h1>
-                <p class="hero-subtitle">Your all-in-one sports scoring solution.</p>
+                <p class="hero-subtitle">From tip-off to match point. All in one place.</p>
             </header>
 
-            <div class="sport-selection">
-                <h2>Select a Sport</h2>
-                <div class="sport-selection-grid">
+            <div class="landing-cards" style="max-width: 800px; align-items: stretch;">
 
-                    <a href="scoreboard.html?sport=basketball" class="sport-card-link">
-                        <div class="card sport-card">
-                            <div class="card__body">
-                                <div class="card-icon">🏀</div>
-                                <h3>Basketball</h3>
-                                <p>Live scoreboard, stats, and shot clock management.</p>
-                            </div>
+                <div class="card landing-card">
+                    <div class="card__body">
+                        <div class="card-icon">🚀</div>
+                        <h3>Host as Guest</h3>
+                        <p>Start a game immediately. Game data will **not** be saved or synced.</p>
+                        <div class="auth-choice-buttons" style="margin-top: 16px;">
+                            <button id="freeHostBtn" class="btn btn--secondary btn--full-width">Start Free Session</button>
                         </div>
-                    </a>
+                    </div>
+                </div>
 
-                    <a href="scoreboard.html?sport=kabaddi" class="sport-card-link">
-                        <div class="card sport-card">
-                            <div class="card__body">
-                                <div class="card-icon">🏃</div>
-                                <h3>Kabaddi</h3>
-                                <p>Raid timer, score, and all-out tracking.</p>
+                <div class="card landing-card">
+                    <div class="card__body" id="auth-card-body">
+                        
+                        <div id="auth-view-container">
                             </div>
-                        </div>
-                    </a>
-                    
-                    <a href="scoreboard.html?sport=volleyball" class="sport-card-link">
-                        <div class="card sport-card">
-                            <div class="card__body">
-                                <div class="card-icon">🏐</div>
-                                <h3>Volleyball</h3>
-                                <p>Point, set, and timeout tracking.</p>
-                            </div>
-                        </div>
-                    </a>
 
-                    <a href="scoreboard.html?sport=badminton" class="sport-card-link">
-                        <div class="card sport-card">
-                            <div class="card__body">
-                                <div class="card-icon">🏸</div>
-                                <h3>Badminton</h3>
-                                <p>Point, game, and match tracking.</p>
-                            </div>
-                        </div>
-                    </a>
-                    
-                    <a href="scoreboard.html?sport=general" class="sport-card-link">
-                        <div class="card sport-card">
-                            <div class="card__body">
-                                <div class="card-icon">🎯</div>
-                                <h3>General Points</h3>
-                                <p>A simple +1 / -1 point system for any event.</p>
-                            </div>
-                        </div>
-                    </a>
-
+                    </div>
                 </div>
             </div>
 
         </div>
     </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+    
+    <script src="home.js" type="module"></script>
 </body>
 </html>

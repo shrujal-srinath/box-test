@@ -4,21 +4,24 @@ import "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js";
 import "https://www.gstatic.com/firebasejs/9.6.1/firebase-app-check-compat.js";
 import "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js";
 
-// Your Firebase configuration
+// YOUR NEW, CORRECT CONFIG
 const firebaseConfig = {
-  apiKey: "AIzaSyACfaiaL8JWyKCQzdZbfakm-2nHU0",
+  apiKey: "AIzaSyCOxfphialDsr8jrwU7Cad2bfakM_2n1H0",
   authDomain: "bmsce-box.firebaseapp.com",
   projectId: "bmsce-box",
-  storageBucket: "bmsce-box.appspot.com",
-  messagingSenderId: "385203527779",
-  appId: "1:385203527779:web:96f052742085c4f53337e",
-  measurementId: "G-FDCJSH8QDY"
+  storageBucket: "bmsce-box.firebasestorage.app",
+  messagingSenderId: "705333337179",
+  appId: "1:705333337179:web:9018e93764205c6f33337e",
+  measurementId: "G-P6VC5RQRDY"
 };
+
+// This is your correct debug token for 127.0.0.1
+self.FIREBASE_APPCHECK_DEBUG_TOKEN = "5790a0e7-e070-43b9-a418-44d1819c3132"; 
 
 // Initialize Firebase
 let db;
-let appCheck;
 let auth;
+let GoogleProvider; // For Google Sign-In
 
 try {
   firebase.initializeApp(firebaseConfig);
@@ -26,18 +29,12 @@ try {
   // Initialize services
   db = firebase.firestore();
   auth = firebase.auth();
-  appCheck = firebase.appCheck();
-
-  // Activate App Check for development
-  // This token is for your 127.0.0.1 machine
-  self.FIREBASE_APPCHECK_DEBUG_TOKEN = "5790a0e7-e070-43b9-a418-44d1819c3132"; 
-
-  appCheck.activate(
-    'SHRUJAL000', // Your reCAPTCHA v3 Site Key
-    true
-  );
+  
+  // Initialize the Google provider
+  GoogleProvider = new firebase.auth.GoogleAuthProvider();
 
   console.log("Firebase services initialized successfully from module.");
+  console.log("App Check is in DEBUG MODE.");
 
 } catch (e) {
   console.error("Firebase initialization failed:", e);
@@ -45,4 +42,4 @@ try {
 }
 
 // Export the services so other files can import them
-export { db, auth };
+export { db, auth, GoogleProvider };

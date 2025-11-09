@@ -2227,3 +2227,113 @@ select.form-control {
     gap: var(--space-8);
     margin-top: var(--space-16);
 }
+
+/* ================== NEW AUTH STYLES ================== */
+.auth-buttons {
+    display: flex;
+    gap: var(--space-8);
+}
+
+.auth-buttons .btn {
+    flex: 1;
+}
+
+.auth-choice-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+}
+
+.btn--link {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    padding: var(--space-8) 0;
+    margin-top: var(--space-8);
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+}
+.btn--link:hover {
+    text-decoration: underline;
+}
+
+.btn--google {
+    background: var(--color-white);
+    color: #444;
+    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-12);
+}
+.btn--google:hover {
+    background: var(--color-gray-200);
+}
+.btn--google svg {
+    display: block;
+}
+
+/* Dark mode specific Google Button */
+[data-color-scheme="dark"] .btn--google {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-border-secondary);
+}
+[data-color-scheme="dark"] .btn--google:hover {
+    background: var(--color-background);
+}
+
+.form-separator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    margin: var(--space-20) 0;
+}
+.form-separator::before,
+.form-separator::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--color-border);
+}
+.form-separator:not(:empty)::before {
+    margin-right: var(--space-8);
+}
+.form-separator:not(:empty)::after {
+    margin-left: var(--space-8);
+}
+
+/* ================== SYMMETRY & FORGOT PASSWORD STYLES ================== */
+
+/* This forces both cards in the .landing-cards container to be the same height */
+.landing-cards .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.landing-cards .card .card__body {
+    flex-grow: 1; /* Makes the card body fill the space */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Pushes buttons to the bottom */
+}
+
+/* This styles the new "Forgot Password?" link */
+.btn--forgot {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    padding: var(--space-4) 0;
+    margin-top: var(--space-8);
+    width: 100%;
+    text-align: right;
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+}
+.btn--forgot:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
