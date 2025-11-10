@@ -42,4 +42,5 @@ try {
 }
 
 // Export the services so other files can import them
-export { db, auth, GoogleProvider };
+// UPDATED: Added 'firebase' to the export
+export { db, auth, GoogleProvider, firebase };

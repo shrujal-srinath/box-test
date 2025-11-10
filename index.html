@@ -13,18 +13,19 @@
             <div class="container" style="max-width: 800px;">
                 
                 <header class="homepage-header" style="padding: 0 0 32px 0;">
-                    <h1 class="main-title" style="font-size: 3rem; margin-bottom: 8px;">BOX BY BMSCE</h1>
-                    <p class="hero-subtitle" style="font-size: 1.5rem; margin: 0;">LIVE COLLEGE SCORING APP</p>
+                    <h1 class="main-title cool-title">BOX BY BMSCE</h1>
+                    <p class="hero-subtitle cool-subtitle">LIVE COLLEGE SCORING APP</p>
                 </header>
 
                 <div class="auth-grid-container">
                     
                     <div class="card landing-card auth-grid-watch">
                         <div class="card__body">
-                            <h3 style="margin-bottom: 12px;">WATCH LIVE GAME</h3>
-                            <div class="form-group">
-                                <label for="globalWatchCode" class="form-label">( ENTER GAME CODE )</label>
-                                <input id="globalWatchCode" class="form-control" placeholder="6-digit code" maxlength="6">
+                            <div class="auth-hub-icon">👁️</div>
+                            <h3 style="margin-bottom: 12px;">Watch Live Game</h3>
+                            <p class="auth-hub-subtitle">Enter a 6-digit code to spectate.</p>
+                            <div class="form-group" style="margin-top: 24px;">
+                                <input id="globalWatchCode" class="form-control" placeholder="Enter 6-digit game code" maxlength="6" style="text-align: center; font-size: 1.2rem; letter-spacing: 2px;">
                             </div>
                             <div id="globalCodeValidationMessage" class="validation-message hidden"></div>
                             <button id="globalWatchBtn" class="btn btn--primary btn--full-width" disabled>Watch</button>
@@ -33,40 +34,71 @@
 
                     <div class="card landing-card auth-grid-host">
                         <div class="card__body">
-                            <h3 style="margin-bottom: 12px;">HOST GAME</h3>
-                            <p class="form-label" style="text-align: center; margin-bottom: 16px;">( GOOGLE ACCOUNT )</p>
+                            <div class="auth-hub-icon">🎯</div>
+                            <h3 style="margin-bottom: 12px;">Host Game</h3>
+                            <p class="auth-hub-subtitle" style="text-align: center; margin-bottom: 16px;">Sign in to save your game data.</p>
                             
-                            <div id="login-form-container">
+                            <div class="auth-tabs">
+                                <button id="tab-signin" class="auth-tab-btn active">Sign In</button>
+                                <button id="tab-signup" class="auth-tab-btn">Sign Up</button>
+                            </div>
+
+                            <div id="signin-form" class="auth-form-content">
+                                <button id="googleSignInBtn" class="btn btn--google btn--full-width" style="margin-top: 16px;">
+                                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" viewBox="0 0 48 48"><g><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></g></svg>
+                                    <span>Sign in with Google</span>
+                                </button>
+                                <div class="form-separator"><span>or</span></div>
                                 <div class="form-group">
                                     <label for="globalEmail">Email</label>
                                     <input id="globalEmail" type="email" class="form-control" placeholder="host@email.com">
                                 </div>
                                 <div class="form-group">
                                     <label for="globalPassword">Password</label>
-                                    <input id="globalPassword" type="password" class="form-control" placeholder="Min. 6 characters">
+                                    <input id="globalPassword" type="password" class="form-control" placeholder="Password">
                                 </div>
-                                <div class="auth-buttons" style="display: flex; gap: 8px; margin-top: 24px;">
-                                    <button id="globalLoginBtn" class="btn btn--primary" style="flex: 1;">SIGN IN</button>
-                                    <button id="globalSignupBtn" class="btn btn--secondary" style="flex: 1;">SIGN UP</button>
-                                </div>
+                                <button id="globalLoginBtn" class="btn btn--primary btn--full-width" style="margin-top: 8px;">Sign In</button>
                             </div>
+
+                            <div id="signup-form" class="auth-form-content hidden">
+                                <button id="googleSignUpBtn" class="btn btn--google btn--full-width" style="margin-top: 16px;">
+                                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" viewBox="0 0 48 48"><g><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></g></svg>
+                                    <span>Sign up with Google</span>
+                                </button>
+                                <div class="form-separator"><span>or</span></div>
+                                <div class="form-group">
+                                    <label for="globalSignupEmail">Email</label>
+                                    <input id="globalSignupEmail" type="email" class="form-control" placeholder="host@email.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="globalSignupPassword">Password</label>
+                                    <input id="globalSignupPassword" type="password" class="form-control" placeholder="Min. 6 characters">
+                                </div>
+                                <button id="globalSignupBtn" class="btn btn--secondary btn--full-width" style="margin-top: 8px;">Create Account</button>
+                            </div>
+
                         </div>
                     </div>
 
                     <div class="card landing-card auth-grid-free">
                         <div class="card__body">
-                            <h3 style="margin-bottom: 12px;">FREE HOST</h3>
-                            <p class="form-label" style="text-align: center; margin-bottom: 16px;">( GAME WONT BE SAVED )</p>
-                            <button id="globalFreeHostBtn" class="btn btn--secondary btn--full-width">Host as Guest</button>
+                            <div class="auth-hub-icon">👤</div>
+                            <h3 style="margin-bottom: 12px;">Free Host</h3>
+                            <p class="auth-hub-subtitle" style="text-align: center; margin-bottom: 16px;">No account needed.</p>
+                            <button id="globalFreeHostBtn" class="btn btn--secondary btn--full-width">Host as Guest (No Save)</button>
                         </div>
                     </div>
 
                 </div>
 
                 <div class="card landing-card" style="margin-top: 24px;">
-                    <div class="card__body" style="text-align: center;">
-                        <button class="btn btn--outline" style="width: 100%; max-width: 400px;" disabled>
-                            RESULTS OF PREV GAMES (Coming Soon)
+                    <div class="card__body" style="text-align: center; padding: 24px;">
+                        <h4 style="margin-bottom: 12px; font-size: 1.5rem;">🔴 Live Games</h4>
+                        <p style="color: var(--color-text-secondary); margin: 0 auto 16px auto; max-width: 450px;">
+                            This feature is coming soon! It will show all public games currently in progress.
+                        </p>
+                        <button class="btn btn--outline" style="width: 100%; max-width: 400px; cursor: not-allowed;" disabled>
+                            Feature In Development
                         </button>
                     </div>
                 </div>

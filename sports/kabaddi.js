@@ -325,7 +325,7 @@ function generateGameCode() {
 function showView(viewName) {
     console.log(`Switching to view: ${viewName}`);
     // Now includes 'landing'
-    const views = ['landing', 'config', 'setup', 'control', 'viewer'];
+    const views = ['config', 'setup', 'control', 'viewer'];
     
     views.forEach(view => {
         const element = $(`${view}-view`);
@@ -340,7 +340,7 @@ function showView(viewName) {
     
     state.view = viewName;
 
-    if (viewName === 'landing' || viewName === 'config') {
+    if (viewName === 'config') {
         if (state.firestoreListener) {
             state.firestoreListener(); 
             state.firestoreListener = null;
@@ -631,6 +631,33 @@ async function saveGameState() {
     }
 }
 
+// --- NEW FUNCTION ---
+/**
+ * Updates the host's user profile with the new game code.
+ * @param {string} gameCode - The 6-digit game code.
+ */
+async function updateUserProfileWithGame(gameCode) {
+    if (!state.user || !db) return;
+    
+    const userRef = db.collection('users').doc(state.user.uid);
+    
+    try {
+        // Use the global 'firebase' object to get FieldValue
+        await userRef.update({
+            hostedGames: firebase.firestore.FieldValue.arrayUnion(gameCode)
+        });
+        console.log('User profile updated with new game.');
+    } catch (error) {
+        if (error.code === 'not-found') {
+            // This shouldn't happen if auth.js logic is correct, but good to have a fallback.
+            console.warn('User profile not found, could not update hosted games.');
+        } else {
+            console.error('Error updating user profile:', error);
+        }
+    }
+}
+// --- END NEW FUNCTION ---
+
 async function loadGameState(code) {
     if (!db) {
         showToast('Database not connected', 'error', 3000);
@@ -652,125 +679,11 @@ async function loadGameState(code) {
 
 // --- View Handlers ---
 
-async function handleWatchGame() {
-    console.log('✓ handleWatchGame called');
-    const code = $('watchCodeInput').value.trim();
-    
-    await joinSpectatorMode(code);
-}
-
-async function handleHostGame() {
-    console.log('✓ handleHostGame called');
-    state.isHost = true;
-    let code = $('hostCodeInput').value.trim();
-
-    // Generate default code if empty
-    if (code === "") {
-        code = generateGameCode();
-        showToast(`Generated random code: ${code}`, 'info', 2000);
-    }
-
-    if (code.length !== 6 || !/^\d+$/.test(code)) {
-        showToast('Please enter a valid 6-digit code', 'error', 3000);
-        return;
-    }
-
-    await checkCodeAndProceed(code);
-}
-
-async function checkCodeAndProceed(code) {
-    const validationMsg = $('hostCodeValidation');
-    validationMsg.textContent = 'Checking code...';
-    validationMsg.className = 'validation-message info';
-    validationMsg.classList.remove('hidden');
-
-    const existingGame = await loadGameState(code);
-
-    if (state.user) {
-        // --- Logged-in Host ---
-        if (existingGame) {
-            if (existingGame.hostId === state.user.uid) {
-                // It's THEIR game, let them resume
-                validationMsg.textContent = 'Resuming your existing game...';
-                validationMsg.className = 'validation-message success';
-                showToast('Resuming your existing game...', 'success', 2000);
-                
-                state.game = existingGame;
-                state.gameCode = code;
-                state.gameType = existingGame.gameType;
-
-                // Go straight to controls
-                showControlView();
-
-            } else {
-                // Code is used by SOMEONE ELSE
-                validationMsg.textContent = 'This code is already in use. Try another.';
-                validationMsg.className = 'validation-message error';
-                showToast('Code already in use. Try another.', 'error', 3000);
-                return;
-            }
-        } else {
-            // Logged in host + new code = OK
-            validationMsg.classList.add('hidden');
-            state.gameCode = code;
-            showConfigurationView();
-        }
-    } else {
-        // --- Free Host ---
-        if (existingGame) {
-            // Free hosts can't resume or overwrite
-            validationMsg.textContent = 'This code is already in use. Try another.';
-            validationMsg.className = 'validation-message error';
-            showToast('Code already in use. Try another.', 'error', 3000);
-            return;
-        } else {
-            // Free host + new code = OK
-            validationMsg.classList.add('hidden');
-            state.gameCode = code;
-            showConfigurationView();
-        }
-    }
-}
-
-
-async function handleWatchCodeInput() {
-    const value = $('watchCodeInput').value.replace(/\D/g, '').slice(0, 6);
-    $('watchCodeInput').value = value;
-    $('watchGameBtn').disabled = value.length !== 6;
-    
-    if (value.length === 6) {
-        await validateWatchCode(value);
-    } else {
-        $('watchCodeValidation').classList.add('hidden');
-    }
-}
-
-async function validateWatchCode(code) {
-    const message = $('watchCodeValidation');
-    if (!message) return;
-    message.textContent = 'Checking code...';
-    message.className = 'validation-message info';
-    message.classList.remove('hidden');
-    
-    const gameExists = await loadGameState(code);
-    
-    if (gameExists) {
-        message.textContent = 'Game found!';
-        message.className = 'validation-message success';
-    } else {
-        message.textContent = 'Game not found';
-        message.className = 'validation-message error';
-    }
-}
-
 async function joinSpectatorMode(code) {
     console.log('Joining spectator mode for code:', code);
     const savedGame = await loadGameState(code);
     if (!savedGame) {
         showToast('Game not found', 'error', 2000);
-        $('watchCodeValidation').textContent = 'Game not found';
-        $('watchCodeValidation').className = 'validation-message error';
-        $('watchCodeValidation').classList.remove('hidden');
         return;
     }
     
@@ -784,6 +697,10 @@ async function joinSpectatorMode(code) {
 
 function showConfigurationView() {
     console.log('✓ Showing configuration view');
+    
+    // Generate a game code
+    state.gameCode = generateGameCode();
+    
     showView('config');
     $('configGameCode').textContent = state.gameCode;
     setupConfigurationHandlers();
@@ -797,8 +714,6 @@ function setupConfigurationHandlers() {
     $$('input[name="gameType"]').forEach(radio => {
         radio.onchange = (e) => { state.gameType = e.target.value; };
     });
-
-    $('backToLanding').onclick = (e) => { e.preventDefault(); showView('landing'); };
     
     $('proceedToSetup').onclick = (e) => {
         e.preventDefault();
@@ -806,6 +721,12 @@ function setupConfigurationHandlers() {
         
         state.game = createGameSkeleton(state.gameCode, config);
         saveGameState(); // Initial save
+        
+        // --- NEW LOGIC: Update user profile if logged in ---
+        if (state.user) {
+            updateUserProfileWithGame(state.gameCode);
+        }
+        // --- END NEW LOGIC ---
         
         if (state.gameType === 'easy') {
             showControlView();
@@ -1155,9 +1076,8 @@ function init(utils, user, urlParams) {
     } else if (hostMode) {
         // This is a host
         state.isHost = true;
-        // init landing page
-        showView('landing');
-        setupLandingPageHandlers();
+        // init config page
+        showConfigurationView();
     } else {
         // How did they get here? Send 'em home.
         window.location.href = 'index.html';
@@ -1166,16 +1086,6 @@ function init(utils, user, urlParams) {
     console.log('✓ Kabaddi module ready!');
 }
 
-function setupLandingPageHandlers() {
-    // Setup Landing Page Listeners
-    $('watchGameBtn').addEventListener('click', handleWatchGame);
-    $('watchCodeInput').addEventListener('input', handleWatchCodeInput);
-    $('hostGameBtn').addEventListener('click', handleHostGame);
-    $('hostCodeInput').addEventListener('input', (e) => {
-        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-        e.target.value = value;
-    });
-}
 
 // ================== EXPORT ==================
 export default {

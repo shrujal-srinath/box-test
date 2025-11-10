@@ -877,6 +877,33 @@ async function saveGameState() {
     }
 }
 
+// --- NEW FUNCTION ---
+/**
+ * Updates the host's user profile with the new game code.
+ * @param {string} gameCode - The 6-digit game code.
+ */
+async function updateUserProfileWithGame(gameCode) {
+    if (!state.user || !db) return;
+    
+    const userRef = db.collection('users').doc(state.user.uid);
+    
+    try {
+        // Use the global 'firebase' object to get FieldValue
+        await userRef.update({
+            hostedGames: firebase.firestore.FieldValue.arrayUnion(gameCode)
+        });
+        console.log('User profile updated with new game.');
+    } catch (error) {
+        if (error.code === 'not-found') {
+            // This shouldn't happen if auth.js logic is correct, but good to have a fallback.
+            console.warn('User profile not found, could not update hosted games.');
+        } else {
+            console.error('Error updating user profile:', error);
+        }
+    }
+}
+// --- END NEW FUNCTION ---
+
 async function loadGameState(code) {
     if (!db) {
         showToast('Database not connected', 'error', 3000);
@@ -949,8 +976,6 @@ function updateTopScorerDisplay() {
             : 'No scorer yet';
     }
 }
-
-// ================== AUTH FUNCTIONS (REMOVED) ==================
 
 // ================== EVENT HANDLERS ==================
 
@@ -1071,9 +1096,12 @@ async function joinSpectatorMode(code) {
     const savedGame = await loadGameState(code);
     if (!savedGame) {
         showToast('Game not found', 'error', 2000);
-        $('watchCodeValidation').textContent = 'Game not found';
-        $('watchCodeValidation').className = 'validation-message error';
-        $('watchCodeValidation').classList.remove('hidden');
+        // If the validation message element exists (it might not if skipping landing), update it
+        if($('watchCodeValidation')) {
+            $('watchCodeValidation').textContent = 'Game not found';
+            $('watchCodeValidation').className = 'validation-message error';
+            $('watchCodeValidation').classList.remove('hidden');
+        }
         return;
     }
     
@@ -1124,6 +1152,12 @@ function setupConfigurationHandlers() {
             // Game code is already set, now we create the game object
             state.game = createGameSkeleton(state.gameCode, config);
             saveGameState(); // Initial save
+            
+            // --- NEW LOGIC: Update user profile if logged in ---
+            if (state.user) {
+                updateUserProfileWithGame(state.gameCode);
+            }
+            // --- END NEW LOGIC ---
             
             if (state.gameType === 'friendly') {
                 initializeFriendlyGame();
@@ -1833,30 +1867,59 @@ function setupAutoSave() {
 /**
  * @param {object} utils - The global utilities from main.js
  * @param {firebase.User | null} user - The authenticated user (or null)
+ * @param {URLSearchParams} urlParams - The URL parameters
  */
-function init(utils, user) {
+function init(utils, user, urlParams) {
     console.log('Basketball module initializing...');
     
+    // 1. Set up all utilities
     $ = utils.$;
     $$ = utils.$$;
     showToast = utils.showToast;
     copyToClipboard = utils.copyToClipboard;
+    state.user = user; // Set user state
 
-    state.user = user; // Set user state (null if not logged in)
-    
-    // Add event listeners
-    $('watchGameBtn').addEventListener('click', handleWatchGame);
-    $('watchCodeInput').addEventListener('input', handleWatchCodeInput);
-    $('hostGameBtn').addEventListener('click', handleHostGame);
-    $('hostCodeInput').addEventListener('input', (e) => {
-        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-        e.target.value = value;
-    });
-    
+    // 2. Add global event listeners
     document.addEventListener('keydown', handle24sResetKey);
 
-    // Show the initial view
-    showView('landing');
+    // 3. --- THIS IS THE NEW LOGIC ---
+    // Read the mode from the URL
+    const watchCode = urlParams.get('watch');
+    const hostMode = urlParams.get('host'); // 'true' (logged in) or 'free'
+
+    if (watchCode) {
+        // This is a spectator, join the game immediately
+        state.isHost = false;
+        joinSpectatorMode(watchCode); // This will showView('viewer')
+    } else if (hostMode) {
+        // This is a host
+        state.isHost = true;
+        
+        // We still need the landing page listeners for free-host/code-check
+        $('watchGameBtn').addEventListener('click', handleWatchGame);
+        $('watchCodeInput').addEventListener('input', handleWatchCodeInput);
+        $('hostGameBtn').addEventListener('click', handleHostGame);
+        $('hostCodeInput').addEventListener('input', (e) => {
+            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+            e.target.value = value;
+        });
+
+        // Show the landing view FOR THE HOST to create a game
+        showView('landing');
+    } else {
+        // Fallback in case they land here directly
+        // But the `landing-view` is the default, so we're good.
+        showView('landing');
+        
+        // Add listeners for the fallback case
+        $('watchGameBtn').addEventListener('click', handleWatchGame);
+        $('watchCodeInput').addEventListener('input', handleWatchCodeInput);
+        $('hostGameBtn').addEventListener('click', handleHostGame);
+        $('hostCodeInput').addEventListener('input', (e) => {
+            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+            e.target.value = value;
+        });
+    }
     
     console.log('✓ Basketball module ready!');
 }

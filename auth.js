@@ -1,10 +1,9 @@
-// This file controls the new index.html page (the 3-box layout)
+// This file controls the new index.html page
 
 // Import the firebase services
-import { db, auth } from './modules/firebase.js';
+import { db, auth, GoogleProvider } from './modules/firebase.js';
 
 /* ================== UTILITIES ================== */
-// We need a few utils here since main.js isn't loaded
 function $(id) {
     return document.getElementById(id);
 }
@@ -50,8 +49,8 @@ async function loadGameState(code) {
 /* ================== AUTH HANDLERS ================== */
 
 function handleSignUp() {
-    const email = $('globalEmail').value;
-    const password = $('globalPassword').value;
+    const email = $('globalSignupEmail').value;
+    const password = $('globalSignupPassword').value;
     if (password.length < 6) {
         showToast('Password must be at least 6 characters', 'error', 3000);
         return;
@@ -59,7 +58,7 @@ function handleSignUp() {
     auth.createUserWithEmailAndPassword(email, password)
         .then(userCredential => {
             showToast('Account created successfully!', 'success', 2000);
-            // Auth state change will handle redirect
+            // Auth state change will handle profile creation and redirect
         })
         .catch(error => {
             console.error('Sign up error:', error);
@@ -73,13 +72,35 @@ function handleLogin() {
     auth.signInWithEmailAndPassword(email, password)
         .then(userCredential => {
             showToast('Logged in successfully!', 'success', 2000);
-            // Auth state change will handle redirect
+            // Auth state change will handle profile check and redirect
         })
         .catch(error => {
             console.error('Login error:', error);
-            showToast(error.message, 'error', 4000);
+            if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                showToast('Invalid email or password.', 'error', 4000);
+            } else {
+                showToast(error.message, 'error', 4000);
+            }
         });
 }
+
+function handleGoogleSignIn() {
+    if (!GoogleProvider) {
+        showToast('Google Sign-In is not available', 'error');
+        return;
+    }
+    auth.signInWithPopup(GoogleProvider)
+        .then((result) => {
+            showToast(`Welcome, ${result.user.displayName}!`, 'success', 2000);
+            // Auth state change will handle profile check and redirect
+        }).catch((error) => {
+            console.error('Google Sign-In Error:', error);
+            if (error.code !== 'auth/popup-closed-by-user') {
+                showToast(error.message, 'error', 4000);
+            }
+        });
+}
+
 
 function handleFreeHost() {
     // Redirect to sport selection as a guest
@@ -104,15 +125,86 @@ async function handleGlobalWatch() {
     }
 }
 
+/* ================== TAB CONTROLS ================== */
+
+function setupTabs() {
+    const tabSignin = $('tab-signin');
+    const tabSignup = $('tab-signup');
+    const formSignin = $('signin-form');
+    const formSignup = $('signup-form');
+
+    if (tabSignin) { // Check if tabs exist on this page
+        tabSignin.addEventListener('click', () => {
+            tabSignin.classList.add('active');
+            tabSignup.classList.remove('active');
+            formSignin.classList.remove('hidden');
+            formSignup.classList.add('hidden');
+        });
+
+        tabSignup.addEventListener('click', () => {
+            tabSignup.classList.add('active');
+            tabSignin.classList.remove('active');
+            formSignup.classList.remove('hidden');
+            formSignin.classList.add('hidden');
+        });
+    }
+}
+
+/* ================== NEW PROFILE LOGIC ================== */
+
+/**
+ * Checks for a user profile in Firestore.
+ * If it doesn't exist, it creates one.
+ * @param {firebase.User} user - The authenticated user object.
+ */
+async function checkAndCreateUserProfile(user) {
+    if (!user || !db) return;
+
+    const userRef = db.collection('users').doc(user.uid);
+    
+    try {
+        const doc = await userRef.get();
+        
+        if (!doc.exists) {
+            // Profile doesn't exist, create it
+            console.log('Creating new user profile for:', user.uid);
+            const newUserProfile = {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName || user.email.split('@')[0],
+                createdAt: new Date(),
+                hostedGames: [] // Initialize as an empty array
+            };
+            await userRef.set(newUserProfile);
+            showToast('Welcome! Your host profile has been created.', 'success', 3000);
+        } else {
+            // Profile exists, just log it
+            console.log('User profile already exists for:', user.uid);
+        }
+    } catch (error) {
+        console.error('Error checking/creating user profile:', error);
+        showToast('Could not sync user profile.', 'error', 3000);
+    }
+}
+
+
 /* ================== INITIALIZATION ================== */
 
 // Listen for auth state changes
 auth.onAuthStateChanged(user => {
     if (user) {
         // User is logged in
-        console.log('User is logged in, redirecting to sport selection.');
-        // Redirect to sport selection as a logged-in host
-        window.location.href = 'sports.html?mode=host';
+        console.log('User is logged in. Checking profile...');
+        
+        // --- NEW LOGIC ---
+        // Check for profile *before* redirecting
+        checkAndCreateUserProfile(user).then(() => {
+            // Profile check/creation is done, now redirect.
+            console.log('Redirecting to sport selection.');
+            window.location.href = 'sports.html?mode=host';
+        });
+        // --- END NEW LOGIC ---
+
     } else {
         // User is logged out
         console.log('User is logged out, showing login page.');
@@ -120,15 +212,27 @@ auth.onAuthStateChanged(user => {
 });
 
 // Attach all listeners
-$('globalLoginBtn').addEventListener('click', handleLogin);
-$('globalSignupBtn').addEventListener('click', handleSignUp);
-$('globalFreeHostBtn').addEventListener('click', handleFreeHost);
-$('globalWatchBtn').addEventListener('click', handleGlobalWatch);
+document.addEventListener('DOMContentLoaded', () => {
+    // Auth listeners
+    if ($('globalLoginBtn')) $('globalLoginBtn').addEventListener('click', handleLogin);
+    if ($('globalSignupBtn')) $('globalSignupBtn').addEventListener('click', handleSignUp);
+    if ($('globalFreeHostBtn')) $('globalFreeHostBtn').addEventListener('click', handleFreeHost);
+    if ($('globalWatchBtn')) $('globalWatchBtn').addEventListener('click', handleGlobalWatch);
+    
+    // NEW Google Sign-In Listeners
+    if ($('googleSignInBtn')) $('googleSignInBtn').addEventListener('click', handleGoogleSignIn);
+    if ($('googleSignUpBtn')) $('googleSignUpBtn').addEventListener('click', handleGoogleSignIn); // Both buttons do the same thing
 
-// Watch code input validation
-$('globalWatchCode').addEventListener('input', (e) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-    e.target.value = value;
-    $('globalWatchBtn').disabled = value.length !== 6;
-    $('globalCodeValidationMessage').classList.add('hidden');
+    // NEW Tab Controls
+    setupTabs();
+
+    // Watch code input validation
+    if ($('globalWatchCode')) {
+        $('globalWatchCode').addEventListener('input', (e) => {
+            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+            e.target.value = value;
+            $('globalWatchBtn').disabled = value.length !== 6;
+            $('globalCodeValidationMessage').classList.add('hidden');
+        });
+    }
 });
