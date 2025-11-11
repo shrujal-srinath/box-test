@@ -3,96 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOX : Select Sport</title>
+    <title>BOX : Home</title>
+    
+    <script src="theme-loader.js"></script>
+    
     <link rel="stylesheet" href="style.css">
-</head>
+    </head>
 <body>
-    <div class="app-container homepage-container">
-        <div class="container">
 
-            <header class="homepage-header">
-                <div class="basketball-icon">🏆</div>
-                <h1 class="main-title">Select a Sport</h1>
-                <p class="hero-subtitle" id="welcome-message">Loading...</p>
-            </header>
+    <header class="app-header">
+        <div class="header-content">
+            <button id="hamburger-btn" class="header-btn">☰</button>
+            <div class="header-title" id="header-title">BOX Dashboard</div>
 
-            <div class="sport-selection">
-                <div class="sport-selection-grid" id="sport-grid">
-                    <a href="#" data-sport="basketball" class="sport-card-link">
-                        <div class="card sport-card">
-                            <div class="card__body">
-                                <div class="card-icon">🏀</div>
-                                <h3>Basketball</h3>
-                                <p>Live scoreboard, stats, and shot clock management.</p>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a href="#" data-sport="kabaddi" class="sport-card-link">
-                        <div class="card sport-card">
-                            <div class="card__body">
-                                <div class="card-icon">🏃‍♂️</div>
-                                <h3>Kabaddi</h3>
-                                <p>Raid timer, score, and all-out tracking.</p>
-                            </div>
-                        </div>
-                    </a>
-                    
-                    <a href="#" data-sport="volleyball" class="sport-card-link">
-                        <div class="card sport-card">
-                            <div class="card__body">
-                                <div class="card-icon">🏐</div>
-                                <h3>Volleyball</h3>
-                                <p>Point, set, and timeout tracking.</p>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a href="#" data-sport="badminton" class="sport-card-link">
-                        <div class="card sport-card">
-                            <div class="card__body">
-                                <div class="card-icon">🏸</div>
-                                <h3>Badminton</h3>
-                                <p>Point, game, and match tracking.</p>
-                            </div>
-                        </div>
-                    </a>
-                    
-                    <a href="#" data-sport="general" class="sport-card-link">
-                        <div class="card sport-card">
-                            <div class="card__body">
-                                <div class="card-icon">⭐</div>
-                                <h3>General Points</h3>
-                                <p>A simple +1 / -1 point system for any event.</p>
-                            </div>
-                        </div>
-                    </a>
-
-                </div>
+            <div class="header-right">
+                <button id="account-btn" class="header-btn hidden">👤</button>
+                <button id="signin-btn" class="btn btn--primary hidden">Sign In</button>
             </div>
+        </div>
+    </header>
+
+    <div id="hamburger-menu" class="dropdown-menu dropdown-menu-left hidden">
+        <a href="#select-sport-section" class="menu-item">Host New Game</a>
+        <a href="#previous-games-section" class="menu-item" id="nav-previous-games">Your Previous Games</a>
+        <a href="#" class="menu-item disabled" title="Coming Soon">Live Games</a>
+        <div class="menu-divider"></div>
+        <button id="contact-us-btn" class="menu-item">Contact Us</button>
+    </div>
+
+    <div id="account-menu" class="dropdown-menu dropdown-menu-right hidden">
+        <div class="menu-user-info">
+            <div id="menu-user-name">Loading...</div>
+            <div id="menu-user-email">...</div>
+        </div>
+        <div class="menu-divider"></div>
+        <button id="edit-profile-btn" class="menu-item">Edit Profile</button>
+        <div class="menu-item theme-toggle-item">
+            <span>Dark Mode</span>
+            <label class="theme-switch">
+                <input type="checkbox" id="theme-toggle-checkbox">
+                <span class="theme-slider"></span>
+            </label>
+        </div>
+        <button id="sign-out-btn" class="menu-item">Sign Out</button>
+    </div>
+
+    <div class="app-container" style="padding-top: 80px;"> <div class="container">
+
+            <section id="select-sport-section">
+                <header class="homepage-header">
+                    <div class="basketball-icon">🏆</div>
+                    <h1 class="main-title cool-title">Select a Sport</h1>
+                    <p class="hero-subtitle" id="welcome-message">Loading...</p>
+                </header>
+
+                <div class="sport-selection">
+                    <div class="sport-selection-grid" id="sport-grid">
+                        
+                        <a href="#" data-sport="basketball" class="sport-card-link">
+                            <div class="card sport-card landing-card">
+                                <div class="card__body">
+                                    <div class="card-icon">🏀</div>
+                                    <h3>Basketball</h3>
+                                    <p>Live scoreboard, stats, and shot clock management.</p>
+                                </div>
+                            </div>
+                        </a>
+
+                        <a href="#" data-sport="kabaddi" class="sport-card-link disabled" onclick="return false;">
+                            <div class="card sport-card landing-card disabled">
+                                <div class="card__body">
+                                    <div class="card-icon">🏃‍♂️</div>
+                                    <h3>Kabaddi</h3>
+                                    <p>Coming Soon</p>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="#" data-sport="volleyball" class="sport-card-link disabled" onclick="return false;">
+                            <div class="card sport-card landing-card disabled">
+                                <div class="card__body">
+                                    <div class="card-icon">🏐</div>
+                                    <h3>Volleyball</h3>
+                                    <p>Coming Soon</p>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" data-sport="badminton" class="sport-card-link disabled" onclick="return false;">
+                            <div class="card sport-card landing-card disabled">
+                                <div class="card__body">
+                                    <div class="card-icon">🏸</div>
+                                    <h3>Badminton</h3>
+                                    <p>Coming Soon</p>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" data-sport="general" class="sport-card-link disabled" onclick="return false;">
+                            <div class="card sport-card landing-card disabled">
+                                <div class="card__body">
+                                    <div class="card-icon">⭐</div>
+                                    <h3>General Points</h3>
+                                    <p>Coming Soon</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="previous-games-section" class="hidden" style="margin-top: 48px;">
+                <header class="homepage-header">
+                    <h1 class="main-title cool-title">Your Hosted Games</h1>
+                </header>
+                <div id="previous-games-container" class="previous-games-grid">
+                    <div class="loading-spinner" id="games-loader"></div>
+                </div>
+            </section>
 
         </div>
     </div>
 
-    <script>
-        // This script updates the links based on the user's mode
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const mode = urlParams.get('mode'); // 'watch', 'host', or 'free'
-            const code = urlParams.get('code'); // e.g., '123456'
-            const welcomeMsg = document.getElementById('welcome-message');
+    <div id="edit-profile-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Edit Profile</h3>
+            <div class="form-group">
+                <label for="profileNameInput">Display Name</label>
+                <input id="profileNameInput" type="text" class="form-control" placeholder="Your Name">
+            </div>
+            <div class="modal-actions">
+                <button id="cancel-profile-edit" class="btn btn--outline">Cancel</button>
+                <button id="save-profile-btn" class="btn btn--primary">Save</button>
+            </div>
+        </div>
+    </div>
 
-            let baseUrl = 'scoreboard.html';
-            
+    <div id="contact-us-modal" class="modal hidden">
+        <div class="modal-content" style="text-align: center;">
+            <h3>Contact Us</h3>
+            <p style="color: var(--color-text-secondary); margin: 16px 0;">
+                For support, feedback, or inquiries, please reach out to our team.
+            </p>
+            <a href="mailto:contact@box-bmsce.com" class="btn btn--primary">contact@box-bmsce.com</a>
+            <div class="modal-actions" style="justify-content: center; margin-top: 24px;">
+                <button id="close-contact-modal" class="btn btn--outline">Close</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        import { auth, db } from './modules/firebase.js';
+
+        // --- GLOBAL STATE ---
+        let currentUser = null;
+        let baseUrl = 'scoreboard.html';
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+        const code = urlParams.get('code');
+
+        // --- DOM ELEMENTS ---
+        const welcomeMsg = document.getElementById('welcome-message');
+        const headerTitle = document.getElementById('header-title');
+        
+        // Buttons
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const accountBtn = document.getElementById('account-btn');
+        const signInBtn = document.getElementById('signin-btn');
+        const signOutBtn = document.getElementById('sign-out-btn');
+        const editProfileBtn = document.getElementById('edit-profile-btn');
+        const contactUsBtn = document.getElementById('contact-us-btn');
+        
+        // Menus
+        const hamburgerMenu = document.getElementById('hamburger-menu');
+        const accountMenu = document.getElementById('account-menu');
+        
+        // Modals
+        const profileModal = document.getElementById('edit-profile-modal');
+        const contactModal = document.getElementById('contact-us-modal');
+        
+        // Game Sections
+        const prevGamesSection = document.getElementById('previous-games-section');
+        const prevGamesContainer = document.getElementById('previous-games-container');
+        const navPrevGames = document.getElementById('nav-previous-games');
+        const gamesLoader = document.getElementById('games-loader');
+        
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle-checkbox');
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // applySavedTheme() is NO LONGER needed here, theme-loader.js does it
+            setToggleState(); // <-- New function to set the toggle's position
+            configurePageForMode();
+            setupMenuListeners();
+            setupModalListeners();
+            setupThemeToggle();
+        });
+
+        // --- PAGE CONFIGURATION ---
+        function configurePageForMode() {
             if (mode === 'watch' && code) {
+                // SPECTATOR MODE
+                headerTitle.textContent = `Spectator Mode (Game: ${code})`;
                 welcomeMsg.textContent = `You are watching game ${code}. Select the sport.`;
                 baseUrl = `scoreboard.html?watch=${code}`;
+                hamburgerBtn.classList.add('hidden');
+                navPrevGames.classList.add('hidden');
             } else if (mode === 'host') {
-                welcomeMsg.textContent = 'You are logged in. Select a sport to host.';
-                baseUrl = 'scoreboard.html?host=true'; // Pass host status
+                // LOGGED-IN HOST MODE
+                headerTitle.textContent = 'Your Dashboard';
+                welcomeMsg.textContent = 'Loading profile...';
+                accountBtn.classList.remove('hidden');
+                prevGamesSection.classList.remove('hidden');
+
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        currentUser = user;
+                        const displayName = user.displayName || user.email.split('@')[0];
+                        welcomeMsg.textContent = `Welcome, ${displayName}. Select a sport to host.`;
+                        // Populate account menu
+                        document.getElementById('menu-user-name').textContent = displayName;
+                        document.getElementById('menu-user-email').textContent = user.email;
+                        // Load previous games
+                        loadPreviousGames(user.uid);
+                    } else {
+                        // User signed out, send to index
+                        window.location.href = 'index.html';
+                    }
+                });
+                
+                baseUrl = 'scoreboard.html?host=true';
             } else if (mode === 'free') {
+                // GUEST HOST MODE
+                headerTitle.textContent = 'Guest Dashboard';
                 welcomeMsg.textContent = 'You are hosting as a guest. Select a sport.';
-                baseUrl = 'scoreboard.html?host=free'; // Pass free host status
+                signInBtn.classList.remove('hidden');
+                signInBtn.href = 'index.html';
+                navPrevGames.classList.add('hidden');
+                gamesLoader.classList.add('hidden'); // Hide loader for guests
+                
+                baseUrl = 'scoreboard.html?host=free';
             } else {
                 // No mode, send back to index
                 window.location.href = 'index.html';
@@ -101,10 +251,188 @@
 
             // Update all sport links
             document.querySelectorAll('.sport-card-link').forEach(link => {
+                if (link.classList.contains('disabled')) {
+                    link.href = "#";
+                    return;
+                }
                 const sport = link.dataset.sport;
                 link.href = `${baseUrl}&sport=${sport}`;
             });
-        });
+        }
+
+        // --- MENU LOGIC ---
+        function setupMenuListeners() {
+            hamburgerBtn.addEventListener('click', () => {
+                hamburgerMenu.classList.toggle('hidden');
+                accountMenu.classList.add('hidden'); // Close other menu
+            });
+
+            accountBtn.addEventListener('click', () => {
+                accountMenu.classList.toggle('hidden');
+                hamburgerMenu.classList.add('hidden'); // Close other menu
+            });
+
+            if (signOutBtn) {
+                signOutBtn.addEventListener('click', () => {
+                    auth.signOut().then(() => {
+                        window.location.href = 'index.html';
+                    });
+                });
+            }
+            
+            // Close menus if clicking outside
+            window.addEventListener('click', (e) => {
+                if (!hamburgerBtn.contains(e.target) && !hamburgerMenu.contains(e.target)) {
+                    hamburgerMenu.classList.add('hidden');
+                }
+                if (!accountBtn.contains(e.target) && !accountMenu.contains(e.target)) {
+                    accountMenu.classList.add('hidden');
+                }
+            });
+        }
+        
+        // --- MODAL LOGIC ---
+        function setupModalListeners() {
+            // Edit Profile
+            editProfileBtn.addEventListener('click', () => {
+                profileModal.classList.remove('hidden');
+                accountMenu.classList.add('hidden');
+                document.getElementById('profileNameInput').value = currentUser.displayName || '';
+            });
+            document.getElementById('cancel-profile-edit').addEventListener('click', () => {
+                profileModal.classList.add('hidden');
+            });
+            document.getElementById('save-profile-btn').addEventListener('click', saveProfile);
+            
+            // Contact Us
+            contactUsBtn.addEventListener('click', () => {
+                contactModal.classList.remove('hidden');
+                hamburgerMenu.classList.add('hidden');
+            });
+            document.getElementById('close-contact-modal').addEventListener('click', () => {
+                contactModal.classList.add('hidden');
+            });
+        }
+        
+        async function saveProfile() {
+            const newName = document.getElementById('profileNameInput').value.trim();
+            if (!newName || !currentUser) return;
+            
+            try {
+                // 1. Update Firebase Auth profile
+                await currentUser.updateProfile({ displayName: newName });
+                
+                // 2. Update Firestore profile
+                const userRef = db.collection('users').doc(currentUser.uid);
+                await userRef.update({ displayName: newName });
+                
+                // 3. Update UI
+                welcomeMsg.textContent = `Welcome, ${newName}. Select a sport to host.`;
+                document.getElementById('menu-user-name').textContent = newName;
+                profileModal.classList.add('hidden');
+                
+            } catch (error) {
+                console.error("Error saving profile:", error);
+            }
+        }
+
+        // --- PREVIOUS GAMES LOGIC ---
+        async function loadPreviousGames(uid) {
+            if (!db) return;
+            
+            const userRef = db.collection('users').doc(uid);
+            const doc = await userRef.get();
+            
+            if (!doc.exists) {
+                gamesLoader.classList.add('hidden');
+                prevGamesContainer.innerHTML = "<p>Could not find user profile.</p>";
+                return;
+            }
+            
+            const gameCodes = doc.data().hostedGames || [];
+            
+            if (gameCodes.length === 0) {
+                gamesLoader.classList.add('hidden');
+                prevGamesContainer.innerHTML = "<p style='color: var(--color-text-secondary); text-align: center;'>You haven't hosted any games yet. Start one above!</p>";
+                return;
+            }
+            
+            const recentGameCodes = gameCodes.reverse().slice(0, 10); // Load recent 10
+            let gamesHtml = '';
+            
+            const gamePromises = recentGameCodes.map(code => db.collection('games').doc(code).get());
+            const gameDocs = await Promise.all(gamePromises);
+            
+            for (const gameDoc of gameDocs) {
+                if (gameDoc.exists) {
+                    gamesHtml += createGameCard(gameDoc.data());
+                }
+            }
+            
+            gamesLoader.classList.add('hidden');
+            prevGamesContainer.innerHTML = gamesHtml;
+            
+            // Export logic is removed from here
+        }
+        
+        function createGameCard(game) {
+            const isFinal = game.status === 'final';
+            const sport = game.sport || 'basketball'; // Default to basketball
+            
+            // If final, link to spectator view. If not, link to host view.
+            const gameUrl = isFinal
+                ? `scoreboard.html?watch=${game.code}&sport=${sport}`
+                : `scoreboard.html?host=true&sport=${sport}`;
+            
+            const buttonText = isFinal ? 'View Stats' : 'Resume Game';
+            const buttonClass = isFinal ? 'btn--secondary' : 'btn--primary'; // Grey for stats, blue for resume
+            
+            let icon = '⭐';
+            if (sport === 'basketball') icon = '🏀';
+            if (sport === 'kabaddi') icon = '🏃‍♂️';
+            
+            // Card is now just a single link, no separate export button
+            return `
+                <a href="${gameUrl}" class="sport-card-link">
+                    <div class="card sport-card landing-card">
+                        <div class="card__body">
+                            <div class="card-icon">${icon}</div>
+                            <h3>${game.settings.gameName || 'Untitled Game'}</h3>
+                            <p>${game.teamA.name} vs ${game.teamB.name}</p>
+                            <p style="font-size: 1.2rem; font-weight: 600; margin-top: 8px;">
+                                ${game.teamA.score} - ${game.teamB.score}
+                            </p>
+                            <button class="btn ${buttonClass} btn--sm" style="margin-top: 16px;">${buttonText}</button>
+                        </div>
+                    </div>
+                </a>
+            `;
+        }
+        
+        // --- THEME TOGGLE LOGIC ---
+        
+        function setToggleState() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                themeToggle.checked = false;
+            } else {
+                // Default to dark (checked)
+                themeToggle.checked = true;
+            }
+        }
+        
+        function setupThemeToggle() {
+            themeToggle.addEventListener('change', () => {
+                if (themeToggle.checked) {
+                    document.documentElement.setAttribute('data-color-scheme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-color-scheme', 'light');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        }
+
     </script>
 </body>
 </html>

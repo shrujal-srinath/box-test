@@ -1,7 +1,7 @@
 // This file exports ONE object: the 'basketball' module.
 
 // Import the firebase services we need
-import { db } from '../modules/firebase.js';
+import { db, firebase } from '../modules/firebase.js';
 
 // Get access to the global utilities from main.js
 let $;
@@ -49,7 +49,7 @@ function buildHtml() {
                             <input id="watchCodeInput" class="form-control" placeholder="e.g., 123456" maxlength="6">
                         </div>
                         <div id="watchCodeValidation" class="validation-message hidden"></div>
-                        <button id="watchGameBtn" class_name="btn btn--primary btn--full-width" disabled>Watch Game</button>
+                        <button id="watchGameBtn" class="btn btn--primary btn--full-width" disabled>Watch Game</button>
                     </div>
                 </div>
 
@@ -57,13 +57,13 @@ function buildHtml() {
                     <div class="card__body">
                         <div class="card-icon">🎯</div>
                         <h3>Host Game</h3>
-                        <p>Enter a 6-digit code for your game.</p>
+                        <p>Enter a code to resume, or leave blank for new.</p>
                         <div class="form-group" style="margin-top: 16px;">
-                            <label for="hostCodeInput" class="form-label">New Game Code</label>
+                            <label for="hostCodeInput" class="form-label">Game Code (Optional)</label>
                             <input id="hostCodeInput" class="form-control" placeholder="Leave empty for random code" maxlength="6">
                         </div>
                         <div id="hostCodeValidation" class="validation-message hidden"></div>
-                        <button id="hostGameBtn" class="btn btn--primary btn--full-width">Host New Game</button>
+                        <button id="hostGameBtn" class="btn btn--primary btn--full-width">Host/Resume Game</button>
                     </div>
                 </div>
             </div>
@@ -153,7 +153,7 @@ function buildHtml() {
                             <div class="form-group">
                                 <label class="form-label" for="teamAColor">Team A Color</label>
                                 <div class="color-picker-group">
-                                    <input id="teamAColor" class="form-control color-input" type="color" value="#FF6B35">
+                                    <input id="teamAColor" class="form-control color-input" type="color" value="#EA4335">
                                     <div class="color-preview" id="teamAColorPreview"></div>
                                 </div>
                             </div>
@@ -166,7 +166,7 @@ function buildHtml() {
                             <div class="form-group">
                                 <label class="form-label" for="teamBColor">Team B Color</label>
                                 <div class="color-picker-group">
-                                    <input id="teamBColor" class="form-control color-input" type="color" value="#1B263B">
+                                    <input id="teamBColor" class="form-control color-input" type="color" value="#4285F4">
                                     <div class="color-preview" id="teamBColorPreview"></div>
                                 </div>
                             </div>
@@ -202,10 +202,10 @@ function buildHtml() {
                         <div class="player-form">
                             <div class="form-row">
                                 <div class="form-group">
-                                    <input id="teamAPlayerNumber" class="form-control" type="number" min="0" max="99" placeholder="Jersey #">
+                                    <input id="teamAPlayerName" class="form-control" placeholder="Player Name" maxlength="30">
                                 </div>
                                 <div class="form-group">
-                                    <input id="teamAPlayerName" class="form-control" placeholder="Player Name" maxlength="30">
+                                    <input id="teamAPlayerNumber" class="form-control" type="number" min="0" max="99" placeholder="Jersey #">
                                 </div>
                                 <div class="form-group">
                                     <select id="teamAPlayerPosition" class="form-control">
@@ -234,10 +234,10 @@ function buildHtml() {
                         <div class="player-form">
                             <div class="form-row">
                                 <div class="form-group">
-                                    <input id="teamBPlayerNumber" class="form-control" type="number" min="0" max="99" placeholder="Jersey #">
+                                    <input id="teamBPlayerName" class="form-control" placeholder="Player Name" maxlength="30">
                                 </div>
                                 <div class="form-group">
-                                    <input id="teamBPlayerName" class="form-control" placeholder="Player Name" maxlength="30">
+                                    <input id="teamBPlayerNumber" class="form-control" type="number" min="0" max="99" placeholder="Jersey #">
                                 </div>
                                 <div class="form-group">
                                     <select id="teamBPlayerPosition" class="form-control">
@@ -281,6 +281,11 @@ function buildHtml() {
                         <button id="copyControlCode" class="btn btn--outline btn--sm">Copy</button>
                     </div>
                 </div>
+                <div class="control-actions">
+                    <button id="shareGameBtn" class="btn btn--outline">Share</button>
+                    <button id="exportGame" class="btn btn--outline">Export</button>
+                    <button id="finalizeGameBtn" class="btn btn--danger">End Game</button>
+                </div>
             </header>
             <div class="control-grid">
                 <div class="scoreboard-section">
@@ -292,10 +297,10 @@ function buildHtml() {
                                     <div class="score-display" id="teamAScore">0</div>
                                     <div class="top-scorer" id="teamATopScorer">No scorer yet</div>
                                     <div class="score-controls">
-                                        <button class="btn btn--sm score-btn" data-team="teamA" data-points="1">+1</button>
-                                        <button class="btn btn--sm score-btn" data-team="teamA" data-points="2">+2</button>
-                                        <button class="btn btn--sm score-btn" data-team="teamA" data-points="3">+3</button>
-                                        <button class="btn btn--sm score-btn" data-team="teamA" data-points="-1">-1</button>
+                                        <button class="btn btn--sm score-btn btn--score-1" data-team="teamA" data-points="1">+1</button>
+                                        <button class="btn btn--sm score-btn btn--score-2" data-team="teamA" data-points="2">+2</button>
+                                        <button class="btn btn--sm score-btn btn--score-3" data-team="teamA" data-points="3">+3</button>
+                                        <button class="btn btn--sm score-btn btn--score-minus" data-team="teamA" data-points="-1">-1</button>
                                     </div>
                                 </div>
                                 <div class="clock-section">
@@ -325,10 +330,10 @@ function buildHtml() {
                                     <div class="score-display" id="teamBScore">0</div>
                                     <div class="top-scorer" id="teamBTopScorer">No scorer yet</div>
                                     <div class="score-controls">
-                                        <button class="btn btn--sm score-btn" data-team="teamB" data-points="1">+1</button>
-                                        <button class="btn btn--sm score-btn" data-team="teamB" data-points="2">+2</button>
-                                        <button class="btn btn--sm score-btn" data-team="teamB" data-points="3">+3</button>
-                                        <button class="btn btn--sm score-btn" data-team="teamB" data-points="-1">-1</button>
+                                        <button class="btn btn--sm score-btn btn--score-1" data-team="teamB" data-points="1">+1</button>
+                                        <button class="btn btn--sm score-btn btn--score-2" data-team="teamB" data-points="2">+2</button>
+                                        <button class="btn btn--sm score-btn btn--score-3" data-team="teamB" data-points="3">+3</button>
+                                        <button class="btn btn--sm score-btn btn--score-minus" data-team="teamB" data-points="-1">-1</button>
                                     </div>
                                 </div>
                             </div>
@@ -402,7 +407,6 @@ function buildHtml() {
                                         <option value="teamA">Team A</option>
                                         <option value="teamB">Team B</option>
                                     </select>
-                                    <button id="exportGame" class="btn btn--outline btn--sm">Export</button>
                                 </div>
                             </div>
                             <div class="player-scoring-grid" id="playerScoringGrid"></div>
@@ -486,6 +490,31 @@ function buildHtml() {
             </div>
         </div>
     </section>
+    
+    <div id="guestHostModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Guest Host Mode</h3>
+            <p style="color: var(--color-text-secondary); margin: 16px 0;">
+                You are hosting as a guest. This game will be **publicly viewable** by anyone with the code, but it **will not be saved to a profile**.
+            </p>
+            <div class="modal-actions">
+                <button id="confirmGuestHost" class="btn btn--primary">I Understand, Continue</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="finalizeGameModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Finalize Game</h3>
+            <p style="color: var(--color-text-secondary); margin: 16px 0;">
+                Are you sure you want to end this game? This action cannot be undone.
+            </p>
+            <div class="modal-actions">
+                <button id="cancelFinalize" class="btn btn--outline">Cancel</button>
+                <button id="confirmFinalize" class="btn btn--danger">End Game</button>
+            </div>
+        </div>
+    </div>
 
     <div id="editClockModal" class="modal hidden">
         <div class="modal-content">
@@ -816,13 +845,70 @@ function showEditShotClockModal() {
     };
 }
 
+function showFinalizeGameModal() {
+    if (!state.isHost) return;
+    const modal = $('finalizeGameModal');
+    modal.classList.remove('hidden');
+    
+    $('cancelFinalize').onclick = () => {
+        modal.classList.add('hidden');
+    };
+    $('confirmFinalize').onclick = () => {
+        finalizeGame();
+        modal.classList.add('hidden');
+    };
+}
+
+function showGuestHostModal() {
+    // Only show this once per session
+    if (!sessionStorage.getItem('guestWarningShown')) {
+        const modal = $('guestHostModal');
+        modal.classList.remove('hidden');
+        $('confirmGuestHost').onclick = () => {
+            modal.classList.add('hidden');
+            sessionStorage.setItem('guestWarningShown', 'true');
+        };
+    }
+}
+
+
+async function finalizeGame() {
+    if (!state.game || !state.isHost) return;
+    
+    // Stop all clocks
+    state.game.gameState.gameRunning = false;
+    state.game.gameState.shotClockRunning = false;
+    stopMasterTimer();
+    
+    // Set status to final
+    state.game.status = 'final';
+    
+    // Save one last time
+    await saveGameState();
+    
+    showToast('Game finalized! Returning to home.', 'success', 3000);
+    
+    // Redirect to dashboard
+    setTimeout(() => {
+        // Only redirect logged-in users. Guests go back to their landing page.
+        if (state.user) {
+            window.location.href = 'sports.html?mode=host';
+        } else {
+            showView('landing');
+        }
+    }, 2000);
+}
+
+
 function createGameSkeleton(code, config = {}) {
     const hostId = state.user ? state.user.uid : null;
     
     return {
-        hostId: hostId,
+        hostId: hostId, // This will be null for guests
         code: code,
         gameType: state.gameType,
+        sport: 'basketball', // <-- CRITICAL FIELD
+        status: 'live', // <-- NEW: Game status
         settings: {
             gameName: config.gameName || 'Basketball Game',
             periodDuration: config.periodDuration || 12,
@@ -831,7 +917,7 @@ function createGameSkeleton(code, config = {}) {
         },
         teamA: {
             name: config.teamAName || 'Team A',
-            color: config.teamAColor || '#FF6B35',
+            color: config.teamAColor || '#EA4335', // New Default
             score: 0,
             timeouts: config.timeoutsPerTeam || 7,
             fouls: 0,
@@ -840,7 +926,7 @@ function createGameSkeleton(code, config = {}) {
         },
         teamB: {
             name: config.teamBName || 'Team B',
-            color: config.teamBColor || '#1B263B',
+            color: config.teamBColor || '#4285F4', // New Default
             score: 0,
             timeouts: config.timeoutsPerTeam || 7,
             fouls: 0,
@@ -863,8 +949,9 @@ function createGameSkeleton(code, config = {}) {
 }
 
 async function saveGameState() {
-    // Only save if logged in
-    if (!state.user || !state.isHost) return; 
+    // --- UPDATED LOGIC ---
+    // Now saves as long as you are the host (logged in or not)
+    if (!state.isHost) return; 
 
     if (state.game && state.gameCode && db) {
         try {
@@ -872,37 +959,36 @@ async function saveGameState() {
             await db.collection('games').doc(state.gameCode).set(state.game);
         } catch (e) {
             console.warn('Failed to save game to Firebase:', e);
-            showToast('Sync failed. Check permissions.', 'error', 2000);
+            // Don't show toast to guests, they don't have permissions
+            if (state.user) {
+                showToast('Sync failed. Check permissions.', 'error', 2000);
+            }
         }
     }
 }
 
-// --- NEW FUNCTION ---
 /**
  * Updates the host's user profile with the new game code.
- * @param {string} gameCode - The 6-digit game code.
  */
 async function updateUserProfileWithGame(gameCode) {
-    if (!state.user || !db) return;
+    // This function will only run if state.user exists
+    if (!state.user || !db || !firebase) return; 
     
     const userRef = db.collection('users').doc(state.user.uid);
     
     try {
-        // Use the global 'firebase' object to get FieldValue
         await userRef.update({
-            hostedGames: firebase.firestore.FieldValue.arrayUnion(gameCode)
+            hostedGames: firebase.firestore.FieldValue.arrayUnion(gameCode) 
         });
         console.log('User profile updated with new game.');
     } catch (error) {
         if (error.code === 'not-found') {
-            // This shouldn't happen if auth.js logic is correct, but good to have a fallback.
             console.warn('User profile not found, could not update hosted games.');
         } else {
             console.error('Error updating user profile:', error);
         }
     }
 }
-// --- END NEW FUNCTION ---
 
 async function loadGameState(code) {
     if (!db) {
@@ -982,6 +1068,10 @@ function updateTopScorerDisplay() {
 async function handleWatchGame() {
     console.log('✓ handleWatchGame called');
     const code = $('watchCodeInput').value.trim();
+    if (code.length !== 6) {
+        showToast('Enter a valid 6-digit code', 'error', 2000);
+        return;
+    }
     await joinSpectatorMode(code);
 }
 
@@ -1025,6 +1115,12 @@ async function checkCodeAndProceed(code) {
                 state.gameCode = code;
                 state.gameType = existingGame.gameType;
 
+                if (state.game.status === 'final') {
+                    showToast('This game is finalized. Viewing stats.', 'info', 2000);
+                    joinSpectatorMode(code); // Open in spectator mode
+                    return;
+                }
+                
                 if (state.gameType === 'friendly') {
                     showControlView();
                 } else {
@@ -1032,7 +1128,6 @@ async function checkCodeAndProceed(code) {
                 }
 
             } else {
-                // Code is used by SOMEONE ELSE
                 validationMsg.textContent = 'This code is already in use. Try another.';
                 validationMsg.className = 'validation-message error';
                 showToast('Code already in use. Try another.', 'error', 3000);
@@ -1047,7 +1142,7 @@ async function checkCodeAndProceed(code) {
     } else {
         // --- Free Host ---
         if (existingGame) {
-            // Free hosts can't resume or overwrite
+            // Free hosts can't resume (no way to verify ownership)
             validationMsg.textContent = 'This code is already in use. Try another.';
             validationMsg.className = 'validation-message error';
             showToast('Code already in use. Try another.', 'error', 3000);
@@ -1096,7 +1191,6 @@ async function joinSpectatorMode(code) {
     const savedGame = await loadGameState(code);
     if (!savedGame) {
         showToast('Game not found', 'error', 2000);
-        // If the validation message element exists (it might not if skipping landing), update it
         if($('watchCodeValidation')) {
             $('watchCodeValidation').textContent = 'Game not found';
             $('watchCodeValidation').className = 'validation-message error';
@@ -1108,7 +1202,7 @@ async function joinSpectatorMode(code) {
     state.gameCode = code;
     state.game = savedGame;
     state.gameType = savedGame.gameType || 'friendly';
-    state.isHost = false; // Spectators are never hosts
+    state.isHost = false; 
     
     showSpectatorView();
 }
@@ -1116,6 +1210,11 @@ async function joinSpectatorMode(code) {
 function showConfigurationView() {
     console.log('✓ Showing configuration view');
     showView('config');
+    
+    if (!state.gameCode) {
+        state.gameCode = generateGameCode();
+    }
+    
     $('configGameCode').textContent = state.gameCode;
     setupConfigurationHandlers();
     updateColorPreviews();
@@ -1142,22 +1241,29 @@ function setupConfigurationHandlers() {
     $('teamAColor').onchange = updateColorPreviews;
     $('teamBColor').onchange = updateColorPreviews;
 
-    $('backToLanding').onclick = (e) => { e.preventDefault(); showView('landing'); };
+    const backBtn = $('backToLanding');
+    if (backBtn) {
+        backBtn.onclick = (e) => {
+            e.preventDefault();
+            // This button now always goes back to the landing view
+            showView('landing'); 
+        };
+    }
     
     $('proceedToSetup').onclick = (e) => {
         e.preventDefault();
         const config = gatherConfigurationData();
 
         if (validateConfiguration(config)) {
-            // Game code is already set, now we create the game object
             state.game = createGameSkeleton(state.gameCode, config);
             saveGameState(); // Initial save
             
-            // --- NEW LOGIC: Update user profile if logged in ---
             if (state.user) {
                 updateUserProfileWithGame(state.gameCode);
+            } else {
+                // Show guest disclaimer
+                showGuestHostModal();
             }
-            // --- END NEW LOGIC ---
             
             if (state.gameType === 'friendly') {
                 initializeFriendlyGame();
@@ -1179,15 +1285,14 @@ function gatherConfigurationData() {
     }
     
     return {
-        // gameCode is already in state.gameCode
         gameName: $('gameNameInput').value.trim() || 'Basketball Game',
         periodDuration: parseInt($('periodDurationSelect').value || '12'),
         shotClockDuration: shotClockDuration,
         timeoutsPerTeam: 7, 
         teamAName: $('teamAName').value.trim() || 'Team A',
         teamBName: $('teamBName').value.trim() || 'Team B',
-        teamAColor: $('teamAColor').value || '#FF6B35',
-        teamBColor: $('teamBColor').value || '#1B263B'
+        teamAColor: $('teamAColor').value || '#EA4335', // New Default
+        teamBColor: $('teamBColor').value || '#4285F4'  // New Default
     };
 }
 
@@ -1223,10 +1328,11 @@ function showTeamSetupView() {
 }
 
 function updateTeamSetupTitles() {
-    $('teamASetupTitle').textContent = state.game.teamA.name;
+    // Set text color to the team's color
     $('teamASetupTitle').style.color = state.game.teamA.color;
-    $('teamBSetupTitle').textContent = state.game.teamB.name;
+    $('teamASetupTitle').textContent = state.game.teamA.name;
     $('teamBSetupTitle').style.color = state.game.teamB.color;
+    $('teamBSetupTitle').textContent = state.game.teamB.name;
 }
 
 function setupTeamSetupHandlers() {
@@ -1252,12 +1358,14 @@ function setupTeamSetupHandlers() {
 }
 
 function addPlayer(team) {
-    const numberInput = $(`${team}PlayerNumber`);
+    // Order changed
     const nameInput = $(`${team}PlayerName`);
+    const numberInput = $(`${team}PlayerNumber`);
     const positionSelect = $(`${team}PlayerPosition`);
     
-    const number = parseInt(numberInput.value);
+    // Order changed
     const name = nameInput.value.trim();
+    const number = parseInt(numberInput.value);
     const position = positionSelect.value || '';
     
     if (!validatePlayerInput(team, number, name)) return;
@@ -1367,6 +1475,13 @@ function initializePlayerStats() {
 
 function showControlView() {
     console.log('Showing control view');
+    
+    if (state.game && state.game.status === 'final') {
+        showToast('This game is finalized. Viewing stats.', 'info', 2000);
+        joinSpectatorMode(state.gameCode); // Open in spectator mode
+        return;
+    }
+    
     showView('control');
     
     $('controlGameCode').textContent = state.gameCode;
@@ -1400,20 +1515,29 @@ function showControlView() {
     updateMasterStartButton();
     setupAutoSave();
 
-    if (db && state.user && state.isHost) {
+    // Hide finalize/export for guests, but show share
+    if (!state.user) {
+        $('finalizeGameBtn').classList.add('hidden');
+        $('exportGame').classList.add('hidden');
+    }
+
+    if (db && state.isHost) { // Listen for both guests and logged-in hosts
         if (state.firestoreListener) state.firestoreListener();
 
         state.firestoreListener = db.collection('games').doc(state.gameCode)
           .onSnapshot((doc) => {
               console.log('ControlView received snapshot');
               if (doc.exists) {
-                  state.game = doc.data();
-                  updateControlDisplay();
-                  if (state.game.gameType === 'full') {
-                      setupPlayerScoringGrid();
-                      updateComprehensiveStatsTable();
+                  const newGame = doc.data();
+                  if (!state.game || newGame.lastUpdate > state.game.lastUpdate) {
+                      state.game = newGame;
+                      updateControlDisplay();
+                      if (state.game.gameType === 'full') {
+                          setupPlayerScoringGrid();
+                          updateComprehensiveStatsTable();
+                      }
                   }
-
+                  
                   const newState = state.game.gameState;
                   if ((newState.gameRunning || newState.shotClockRunning) && !state.timers.masterTimer) {
                       startMasterTimer();
@@ -1458,17 +1582,27 @@ function setupPlayerScoringGrid() {
                 ${totalRebounds} REB • ${stats.assists} AST • ${stats.steals} STL • ${stats.blocks} BLK • ${stats.turnovers} TO
             </div>
             <div class="player-scoring-buttons">
-                <button class="btn btn--sm btn--score-1" data-team="${selectedTeam}" data-player="${player.number}" data-stat="freeThrows" data-points="1">+1</button>
-                <button class="btn btn--sm btn--score-2" data-team="${selectedTeam}" data-player="${player.number}" data-stat="fieldGoals" data-points="2">+2</button>
-                <button class="btn btn--sm btn--score-3" data-team="${selectedTeam}" data-player="${player.number}" data-stat="threePointers" data-points="3">+3</button>
+                <button class="btn btn--sm btn--score-pts" data-team="${selectedTeam}" data-player="${player.number}" data-stat="freeThrows" data-points="1">+1</button>
+                <button class="btn btn--sm btn--score-pts" data-team="${selectedTeam}" data-player="${player.number}" data-stat="fieldGoals" data-points="2">+2</button>
+                <button class="btn btn--sm btn--score-pts" data-team="${selectedTeam}" data-player="${player.number}" data-stat="threePointers" data-points="3">+3</button>
+                <button class="btn btn--sm btn--score-reb" data-team="${selectedTeam}" data-player="${player.number}" data-stat="defensiveRebounds">+REB</button>
+                <button class="btn btn--sm btn--score-to" data-team="${selectedTeam}" data-player="${player.number}" data-stat="turnovers">+TO</button>
             </div>
         `;
         grid.appendChild(card);
     });
     
+    // Add listeners for ALL buttons in the grid
     $$('#playerScoringGrid .player-scoring-buttons .btn').forEach(btn => {
         btn.onclick = () => {
-            addPlayerScore(btn.dataset.team, btn.dataset.player, btn.dataset.stat, parseInt(btn.dataset.points));
+            const points = parseInt(btn.dataset.points) || 0;
+            if (points > 0) {
+                // It's a score button
+                addPlayerScore(btn.dataset.team, btn.dataset.player, btn.dataset.stat, points);
+            } else {
+                // It's a stat-only button (REB or TO)
+                addPlayerStat(btn.dataset.team, btn.dataset.player, btn.dataset.stat);
+            }
         };
     });
 }
@@ -1551,7 +1685,7 @@ function addPlayerStat(team, playerNumber, statType) {
     saveGameState();
     
     const statNames = {
-        'offensiveRebounds': 'Offensive Rebound', 'defensiveRebounds': 'Defensive Rebound', 
+        'offensiveRebounds': 'Off. Rebound', 'defensiveRebounds': 'Def. Rebound', 
         'assists': 'Assist', 'steals': 'Steal', 'blocks': 'Block',
         'turnovers': 'Turnover', 'fouls': 'Personal Foul'
     };
@@ -1607,6 +1741,18 @@ function setupControlHandlers() {
     $('resetShotClock24').onclick = (e) => { e.preventDefault(); resetShotClockTo24(); };
     $('startShotClock').onclick = (e) => { e.preventDefault(); startShotClockOnly(); };
     
+    $('finalizeGameBtn').onclick = (e) => { e.preventDefault(); showFinalizeGameModal(); };
+    $('exportGame').onclick = (e) => { e.preventDefault(); exportGameData(); };
+    
+    // Share Button Listener
+    $('shareGameBtn').onclick = (e) => {
+        e.preventDefault();
+        // Construct the full URL for watching
+        const shareUrl = `${window.location.origin}${window.location.pathname.replace('scoreboard.html', 'sports.html')}?mode=watch&code=${state.gameCode}&sport=basketball`;
+        copyToClipboard(shareUrl);
+        showToast('Spectator link copied to clipboard!', 'success', 2500);
+    };
+    
     $$('.score-btn').forEach(btn => {
         btn.onclick = (e) => {
             e.preventDefault();
@@ -1627,7 +1773,6 @@ function setupControlHandlers() {
     
     $('possessionTeamA').onclick = (e) => { e.preventDefault(); if (!state.isHost) return; setPossession('teamA'); };
     $('possessionTeamB').onclick = (e) => { e.preventDefault(); if (!state.isHost) return; setPossession('teamB'); };
-    $('exportGame').onclick = (e) => { e.preventDefault(); exportGameData(); };
 }
 
 function nextPeriodFunc() {
@@ -1728,20 +1873,74 @@ function updatePossessionDisplay() {
     }
 }
 
+// --- NEW STYLISH EXPORT FUNCTIONS ---
+
+// Define Styles
+const STYLES = {
+    title: {
+        font: { bold: true, sz: 24, color: { rgb: "FFFFFFFF" } },
+        fill: { fgColor: { rgb: "357568" } }, // Teal
+        alignment: { horizontal: "center", vertical: "center" }
+    },
+    subtitle: {
+        font: { bold: true, sz: 14 },
+        alignment: { horizontal: "center", vertical: "center" }
+    },
+    teamHeader: {
+        font: { bold: true, sz: 16, color: { rgb: "FFFFFFFF" } },
+        fill: { fgColor: { rgb: "5F6368" } } // Dark Grey
+    },
+    statHeader: {
+        font: { bold: true, sz: 10, color: { rgb: "000000" } },
+        fill: { fgColor: { rgb: "D9D9D9" } }, // Light Grey
+        alignment: { horizontal: "center" },
+        border: {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } },
+            left: { style: "thin", color: { rgb: "000000" } },
+            right: { style: "thin", color: { rgb: "000000" } }
+        }
+    },
+    cell: {
+        font: { sz: 10 },
+        border: {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } },
+            left: { style: "thin", color: { rgb: "000000" } },
+            right: { style: "thin", color: { rgb: "000000" } }
+        }
+    },
+    cellCenter: {
+        font: { sz: 10 },
+        alignment: { horizontal: "center" },
+        border: {
+            top: { style: "thin", color: { rgb: "000000" } },
+            bottom: { style: "thin", color: { rgb: "000000" } },
+            left: { style: "thin", color: { rgb: "000000" } },
+            right: { style: "thin", color: { rgb: "000000" } }
+        }
+    }
+};
+
 function exportGameData() {
     if (!state.game || typeof XLSX === 'undefined') {
         showToast('Export not available', 'error', 2000);
         return;
     }
+    
     try {
-        const wb = XLSX.utils.book_new();
-        const data = (state.game.gameType === 'full') 
-            ? createComprehensiveBoxScoreData() 
-            : createBasicGameData();
-        const ws = XLSX.utils.aoa_to_sheet(data);
-        XLSX.utils.book_append_sheet(wb, ws, 'Game Summary');
-        const fileName = `${state.game.settings.gameName.replace(/\s+/g, '_')}_Game.xlsx`;
-        XLSX.writeFile(wb, fileName);
+        const wb = (state.game.gameType === 'full') 
+            ? createComprehensiveBoxScoreData(state.game) 
+            : createFriendlyGameExport(state.game); // Use new friendly export
+            
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: "application/octet-stream" });
+        
+        const fileName = `${state.game.settings.gameName.replace(/\s+/g, '_')}_Box_Score.xlsx`;
+        
+        // Use FileSaver.js (which is included in xlsx-js-style)
+        saveAs(blob, fileName);
+        
         showToast('Data exported successfully!', 'success', 2000);
     } catch (error) {
         console.error('Export error:', error);
@@ -1749,55 +1948,129 @@ function exportGameData() {
     }
 }
 
-function createBasicGameData() {
-    const g = state.game;
-    return [
-        [g.settings.gameName],
-        [`${g.teamA.name} vs ${g.teamB.name}`],
-        ['Basketball Game Summary'],
-        [''],
-        ['Final Score'],
-        [g.teamA.name, g.teamA.score],
-        [g.teamB.name, g.teamB.score],
-        [''],
-        ['Game Stats'],
-        ['Period', g.gameState.period],
-        ['Game Time', formatTime(g.gameState.gameTime.minutes, g.gameState.gameTime.seconds)],
-        (g.settings.shotClockDuration > 0 ? ['Shot Clock', g.gameState.shotClock] : [])
-    ];
+// New Styled Export for Friendly Games
+function createFriendlyGameExport(g) {
+    const wb = XLSX.utils.book_new();
+    const ws = {};
+
+    const colWidths = [{ wch: 30 }, { wch: 20 }];
+    
+    // Title
+    ws['A1'] = { v: g.settings.gameName, s: STYLES.title };
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
+    
+    // Subtitle
+    ws['A2'] = { v: `${g.teamA.name} vs ${g.teamB.name}`, s: STYLES.subtitle };
+    ws['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: 1 } });
+    
+    // Headers
+    ws['A4'] = { v: "Team", s: STYLES.teamHeader };
+    ws['B4'] = { v: "Final Score", s: STYLES.teamHeader };
+    
+    // Team A
+    ws['A5'] = { v: g.teamA.name, s: STYLES.cell };
+    ws['B5'] = { v: g.teamA.score, s: STYLES.cellCenter };
+    
+    // Team B
+    ws['A6'] = { v: g.teamB.name, s: STYLES.cell };
+    ws['B6'] = { v: g.teamB.score, s: STYLES.cellCenter };
+    
+    ws['!ref'] = `A1:B6`;
+    ws['!cols'] = colWidths;
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'Game Summary');
+    return wb;
 }
 
-function createComprehensiveBoxScoreData() {
-    const g = state.game;
-    const data = [
-        [g.settings.gameName],
-        [`${g.teamA.name} vs ${g.teamB.name}`],
-        ['Comprehensive Basketball Statistics'],
-        [''],
-        [g.teamA.name],
-        ['#', 'Player', 'PTS', 'FT', '2PT', '3PT', 'ORB', 'DRB', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF', 'MIN']
+
+function createComprehensiveBoxScoreData(g) {
+    const wb = XLSX.utils.book_new();
+    const ws = {};
+    
+    const statHeaders = ['#', 'Player', 'PTS', 'FT', '2PT', '3PT', 'ORB', 'DRB', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF', 'MIN'];
+    const colWidths = [
+        { wch: 5 },  // #
+        { wch: 25 }, // Player
+        { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, // PTS, FT, 2PT, 3PT
+        { wch: 5 }, { wch: 5 }, { wch: 5 }, // ORB, DRB, REB
+        { wch: 5 }, { wch: 5 }, { wch: 5 }, // AST, STL, BLK
+        { wch: 5 }, { wch: 5 }, { wch: 5 }  // TO, PF, MIN
     ];
-    g.teamA.roster.forEach(p => data.push(playerStatsToArray(p, g.teamA.stats[p.number])));
-    data.push(['']);
-    data.push([g.teamB.name]);
-    data.push(['#', 'Player', 'PTS', 'FT', '2PT', '3PT', 'ORB', 'DRB', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF', 'MIN']);
-    g.teamB.roster.forEach(p => data.push(playerStatsToArray(p, g.teamB.stats[p.number])));
-    data.push(['']);
-    data.push(['Final Score'], [g.teamA.name, g.teamA.score], [g.teamB.name, g.teamB.score]);
-    return data;
+
+    // --- Title Row ---
+    ws['A1'] = { v: g.settings.gameName, s: STYLES.title };
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: statHeaders.length - 1 } }]; 
+
+    // --- Final Score ---
+    ws['A2'] = { v: `${g.teamA.name}: ${g.teamA.score}  |  ${g.teamB.name}: ${g.teamB.score}`, s: STYLES.subtitle };
+    ws['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: statHeaders.length - 1 } });
+    
+    let R = 3; // Start content from row 4
+
+    // --- Team A ---
+    ws[`A${R}`] = { v: g.teamA.name, s: STYLES.teamHeader };
+    ws['!merges'].push({ s: { r: R-1, c: 0 }, e: { r: R-1, c: statHeaders.length - 1 } });
+    R++;
+    
+    statHeaders.forEach((h, C) => {
+        ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: h, s: STYLES.statHeader };
+    });
+    R++;
+    
+    g.teamA.roster.forEach(p => {
+        const stats = g.teamA.stats[p.number] || {};
+        const row = playerStatsToArray(p, stats);
+        row.forEach((cell, C) => {
+            ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: cell, s: C === 1 ? STYLES.cell : STYLES.cellCenter };
+        });
+        R++;
+    });
+
+    R++; // Add a blank row
+    
+    // --- Team B ---
+    ws[`A${R}`] = { v: g.teamB.name, s: STYLES.teamHeader };
+    ws['!merges'].push({ s: { r: R-1, c: 0 }, e: { r: R-1, c: statHeaders.length - 1 } });
+    R++;
+    
+    statHeaders.forEach((h, C) => {
+        ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: h, s: STYLES.statHeader };
+    });
+    R++;
+    
+    g.teamB.roster.forEach(p => {
+        const stats = g.teamB.stats[p.number] || {};
+        const row = playerStatsToArray(p, stats);
+        row.forEach((cell, C) => {
+            ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: cell, s: C === 1 ? STYLES.cell : STYLES.cellCenter };
+        });
+        R++;
+    });
+
+    ws['!ref'] = `A1:${XLSX.utils.encode_cell({r: R-1, c: statHeaders.length - 1})}`;
+    ws['!cols'] = colWidths;
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'Box Score');
+    return wb;
 }
 
+// This function is now just a data helper
 function playerStatsToArray(player, stats) {
     const s = stats || { totalPoints: 0, freeThrows: 0, fieldGoals: 0, threePointers: 0, offensiveRebounds: 0, defensiveRebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, fouls: 0, minutes: 0 };
     const totalRebounds = s.offensiveRebounds + s.defensiveRebounds;
-    return [player.number, player.name, s.totalPoints, s.freeThrows, s.fieldGoals, s.threePointers, s.offensiveRebounds, s.defensiveRebounds, totalRebounds, s.assists, s.steals, s.blocks, s.turnovers, s.fouls, s.minutes];
+    return [
+        player.number, player.name, 
+        s.totalPoints, s.freeThrows, s.fieldGoals, s.threePointers,
+        s.offensiveRebounds, s.defensiveRebounds, totalRebounds,
+        s.assists, s.steals, s.blocks, s.turnovers, s.fouls, s.minutes
+    ];
 }
+// --- END EXPORT FUNCTIONS ---
 
 function showSpectatorView() {
     console.log('Showing spectator view');
     showView('viewer');
 
-    // Disable all host controls for spectator
     $$('.score-btn, .possession-btn, .master-start-btn, .clock-control-row button, .shot-clock-actions button, [data-action]').forEach(btn => {
         btn.disabled = true;
     });
@@ -1805,9 +2078,11 @@ function showSpectatorView() {
         el.title = "Spectator View";
         el.style.cursor = 'default';
     });
-    // Disable quick stat controls
     if ($('quickStatPlayer')) $('quickStatPlayer').disabled = true;
     if ($('statTeamSelect')) $('statTeamSelect').disabled = true;
+    if ($('finalizeGameBtn')) $('finalizeGameBtn').classList.add('hidden');
+    if ($('exportGame')) $('exportGame').classList.add('hidden');
+    if ($('shareGameBtn')) $('shareGameBtn').classList.add('hidden');
 
 
     if(state.game) updateSpectatorView();
@@ -1858,7 +2133,8 @@ function updateSpectatorView() {
 
 function setupAutoSave() {
     if (state.timers.autoSave) clearInterval(state.timers.autoSave);
-    if (state.isHost && state.user) {
+    // Auto-save now works for ALL hosts
+    if (state.isHost) {
         state.timers.autoSave = setInterval(saveGameState, 30000);
     }
 }
@@ -1891,11 +2167,15 @@ function init(utils, user, urlParams) {
         // This is a spectator, join the game immediately
         state.isHost = false;
         joinSpectatorMode(watchCode); // This will showView('viewer')
-    } else if (hostMode) {
-        // This is a host
+    
+    } else if (hostMode === 'true' || hostMode === 'free') {
+        // This is a LOGGED-IN HOST or a GUEST HOST
         state.isHost = true;
         
-        // We still need the landing page listeners for free-host/code-check
+        // Show them the landing page
+        showView('landing'); 
+        
+        // Add listeners for the landing page
         $('watchGameBtn').addEventListener('click', handleWatchGame);
         $('watchCodeInput').addEventListener('input', handleWatchCodeInput);
         $('hostGameBtn').addEventListener('click', handleHostGame);
@@ -1904,14 +2184,11 @@ function init(utils, user, urlParams) {
             e.target.value = value;
         });
 
-        // Show the landing view FOR THE HOST to create a game
-        showView('landing');
     } else {
-        // Fallback in case they land here directly
-        // But the `landing-view` is the default, so we're good.
+        // Fallback (e.g., someone types scoreboard.html?sport=basketball)
+        // Treat as guest
+        state.isHost = true;
         showView('landing');
-        
-        // Add listeners for the fallback case
         $('watchGameBtn').addEventListener('click', handleWatchGame);
         $('watchCodeInput').addEventListener('input', handleWatchCodeInput);
         $('hostGameBtn').addEventListener('click', handleHostGame);

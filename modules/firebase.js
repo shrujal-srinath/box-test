@@ -21,9 +21,12 @@ self.FIREBASE_APPCHECK_DEBUG_TOKEN = "5790a0e7-e070-43b9-a418-44d1819c3132";
 // Initialize Firebase
 let db;
 let auth;
-let GoogleProvider; // For Google Sign-In
+let GoogleProvider;
+let firebase; // <-- NEW: Declare firebase
 
 try {
+  // The CDN import places 'firebase' on the window object
+  firebase = window.firebase; // <-- NEW: Assign it
   firebase.initializeApp(firebaseConfig);
   
   // Initialize services
@@ -42,5 +45,4 @@ try {
 }
 
 // Export the services so other files can import them
-// UPDATED: Added 'firebase' to the export
-export { db, auth, GoogleProvider, firebase };
+export { db, auth, GoogleProvider, firebase }; // <-- NEW: Export firebase
