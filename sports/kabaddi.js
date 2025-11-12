@@ -1,7 +1,7 @@
 // This file exports ONE object: the 'kabaddi' module.
-// (Apply the same logic to basketball.js)
+// This is your existing file, which is well-built and ready.
 
-import { db } from '../modules/firebase.js';
+import { db, firebase } from '../modules/firebase.js';
 
 let $;
 let $$;
@@ -27,9 +27,9 @@ const state = {
 
 // ================== HTML BUILDER ==================
 function buildHtml() {
-    // NO LANDING VIEW
+    // This uses the config-first flow
     return `
-    <section id="config-view" class="view hidden">
+    <section id="config-view" class="view">
         <div class="container">
             <header class="section-header">
                 <div>
@@ -58,10 +58,10 @@ function buildHtml() {
                                 </div>
                             </label>
                             <label class="game-type-option">
-                                <input type="radio" name="gameType" value="advanced">
+                                <input type="radio" name="gameType" value="advanced" disabled>
                                 <div class="game-type-card">
                                     <div class="game-type-icon">📊</div>
-                                    <h4>Advanced Game</h4>
+                                    <h4>Advanced Game (Coming Soon)</h4>
                                     <p>Full game with player stats & revival.</p>
                                 </div>
                             </label>
@@ -136,35 +136,7 @@ function buildHtml() {
             </div>
 
             <div class="section-actions">
-                <button id="proceedToSetup" class="btn btn--primary">Create or Resume Game</button>
-            </div>
-        </div>
-    </section>
-
-    <section id="setup-view" class="view hidden">
-        <div class="container">
-            <header class="section-header">
-                <div>
-                    <h2>Team Setup (Advanced)</h2>
-                    <p>Add players to both teams. (Min 7, Max 12)</p>
-                </div>
-                <div class="game-code-display">
-                    <span class="status status--info">
-                        Game Code: <span id="setupGameCode">...</span>
-                    </span>
-                    <button id="copySetupCode" class="btn btn--outline btn--sm">Copy</button>
-                </div>
-            </header>
-            
-            <p style="text-align: center; font-size: 1.2rem; padding: 40px; color: var(--color-text-secondary);">
-                The "Advanced Mode" with player tracking and revival logic is the next step.
-                <br><br>
-                For now, you can skip this and use the "Easy Mode" scoreboard.
-            </p>
-            
-            <div class="section-actions">
-                <button id="backToConfig" class="btn btn--outline">← Back to Configuration</button>
-                <button id="startGameEasy" class="btn btn--primary">Start "Easy Mode" Game</button>
+                <button id="proceedToControl" class="btn btn--primary">Create or Resume Game</button>
             </div>
         </div>
     </section>
@@ -181,19 +153,24 @@ function buildHtml() {
                         <button id="copyControlCode" class="btn btn--outline btn--sm">Copy</button>
                     </div>
                 </div>
+                 <div class="control-actions">
+                    <button id="shareGameBtn" class="btn btn--outline">Share Link</button>
+                    <button id="finalizeGameBtn" class="btn btn--danger host-control" style="display: none;">End Game</button>
+                </div>
             </header>
 
             <div class="scoreboard">
                 <div class="team-score" id="teamAScoreSection">
-                    <h3 id="teamAName">Team A</h3>
+                    <input id="teamANameInput" class="form-control host-control" value="Team A" style="text-align: center; font-size: 1.5rem; display: none;">
+                    <h3 id="teamANameDisplay">Team A</h3>
                     <div class="score-display" id="teamAScore">0</div>
-                    <div class="score-controls">
+                    <div class="score-controls host-control" style="display: none;">
                         <button class="btn btn--sm score-btn" data-team="teamA" data-points="1">+1</button>
                         <button class="btn btn--sm score-btn" data-team="teamA" data-points="2">+2</button>
                         <button class="btn btn--sm score-btn" data-team="teamA" data-points="3">+3</button>
                         <button class="btn btn--sm score-btn" data-team="teamA" data-points="4">+4</button>
                         <button class="btn btn--sm score-btn btn--warning" data-team="teamA" data-points="2" data-type="all-out">+2 All Out</button>
-                        <button class="btn btn--sm score-btn" data-team="teamA" data-points="-1">-1</button>
+                        <button class="btn btn--sm score-btn btn--score-minus" data-team="teamA" data-points="-1">-1</button>
                     </div>
                 </div>
 
@@ -201,7 +178,7 @@ function buildHtml() {
                     <div id="gameClockSection" style="display: none; flex-direction: column; align-items: center;">
                         <div class="clock-display game-clock" id="gameClockDisplay" title="Click to edit">20:00</div>
                         <div class="period-display">Half <span id="halfDisplay">1</span></div>
-                        <div class="master-clock-controls">
+                        <div class="master-clock-controls host-control" style="display: none;">
                             <button id="startGameClockBtn" class="btn btn--primary master-start-btn">START GAME</button>
                             <div class="clock-control-row">
                                 <button id="editGameClock" class="btn btn--secondary btn--sm">Edit Time</button>
@@ -212,7 +189,7 @@ function buildHtml() {
                     <div class="shot-clock-section" id="raidClockSection" style="display: none;">
                         <div class="shot-clock-display" id="raidClockDisplay" title="Click to edit">30</div>
                         <div class="shot-clock-label">Raid Clock</div>
-                        <div class="shot-clock-actions">
+                        <div class="shot-clock-actions host-control" style="display: none;">
                             <button id="startRaidClock" class="btn btn--success btn--sm">Start Raid</button>
                             <button id="resetRaidClock" class="btn btn--warning btn--sm">Reset Raid</button>
                             <button id="editRaidClock" class="btn btn--secondary btn--sm">Edit</button>
@@ -221,15 +198,16 @@ function buildHtml() {
                 </div>
 
                 <div class="team-score" id="teamBScoreSection">
-                    <h3 id="teamBName">Team B</h3>
+                    <input id="teamBNameInput" class="form-control host-control" value="Team B" style="text-align: center; font-size: 1.5rem; display: none;">
+                    <h3 id="teamBNameDisplay">Team B</h3>
                     <div class="score-display" id="teamBScore">0</div>
-                    <div class="score-controls">
+                    <div class="score-controls host-control" style="display: none;">
                         <button class="btn btn--sm score-btn" data-team="teamB" data-points="1">+1</button>
                         <button class="btn btn--sm score-btn" data-team="teamB" data-points="2">+2</button>
                         <button class="btn btn--sm score-btn" data-team="teamB" data-points="3">+3</button>
                         <button class="btn btn--sm score-btn" data-team="teamB" data-points="4">+4</button>
                         <button class="btn btn--sm score-btn btn--warning" data-team="teamB" data-points="2" data-type="all-out">+2 All Out</button>
-                        <button class="btn btn--sm score-btn" data-team="teamB" data-points="-1">-1</button>
+                        <button class="btn btn--sm score-btn btn--score-minus" data-team="teamB" data-points="-1">-1</button>
                     </div>
                 </div>
             </div>
@@ -238,38 +216,14 @@ function buildHtml() {
                 <div class="card">
                     <div class="card__body">
                         <h4>Possession (Next Raid)</h4>
-                        <div class="possession-controls">
+                        <div class="possession-controls host-control" style="display: none;">
                             <button id="possessionTeamA" class="btn btn--outline possession-btn active">Team A</button>
                             <button id="possessionTeamB" class="btn btn--outline possession-btn">Team B</button>
                         </div>
+                        <div id="possessionDisplay" class="period-display" style="text-align: center; display: none;">
+                            Team A
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="viewer-view" class="view hidden">
-        <div class="container-fluid">
-            <div class="viewer-scoreboard">
-                <div class="viewer-team" id="viewerTeamA">
-                    <h2 id="viewerTeamAName">Team A</h2>
-                    <div class="viewer-score" id="viewerTeamAScore">0</div>
-                </div>
-                <div class="viewer-center" style="display: flex;">
-                    <div class="viewer-clock" id="viewerGameClock" style="display: none;">20:00</div>
-                    <div class="viewer-period" id="viewerHalfArea" style="display: none;">Half <span id="viewerHalf">1</span></div>
-                    <div class="viewer-shot-clock" id="viewerRaidClock" style="display: none;">30</div>
-                </div>
-                <div class="viewer-team" id="viewerTeamB">
-                    <h2 id="viewerTeamBName">Team B</h2>
-                    <div class="viewer-score" id="viewerTeamBScore">0</div>
-                </div>
-            </div>
-            <div class="viewer-info">
-                <div class="game-name" id="viewerGameName">Kabaddi Game</div>
-                <div class="possession-indicator">
-                    <span>Possession:</span>
-                    <span id="viewerPossession">Team A</span>
                 </div>
             </div>
         </div>
@@ -310,8 +264,6 @@ function buildHtml() {
 }
 
 // ================== KABADDI FUNCTIONS ==================
-// ... (All functions from handleFormatTime to setupAutoSave remain) ...
-// ... (No changes to the core game logic functions) ...
 
 // --- Utility Functions ---
 function formatTime(minutes, seconds) {
@@ -324,17 +276,12 @@ function generateGameCode() {
 
 function showView(viewName) {
     console.log(`Switching to view: ${viewName}`);
-    // Now includes 'landing'
-    const views = ['config', 'setup', 'control', 'viewer'];
+    const views = ['config', 'control'];
     
     views.forEach(view => {
         const element = $(`${view}-view`);
         if (element) {
-            if (view === viewName) {
-                element.classList.remove('hidden');
-            } else {
-                element.classList.add('hidden');
-            }
+            element.classList.toggle('hidden', view !== viewName);
         }
     });
     
@@ -405,8 +352,7 @@ function startGameTimer() {
             }
         }
         
-        if (state.view === 'control') updateControlDisplay();
-        if (state.view === 'viewer') updateSpectatorView();
+        updateClocksUI();
 
     }, 1000);
 }
@@ -458,23 +404,10 @@ function updateGameClockButton() {
     }
 }
 
-function startRaidTimer() {
-    if (!state.game || !state.isHost) return;
-
-    if (!state.game.gameState.gameRunning && state.game.settings.enableGameClock) {
-        toggleGameClock(true); // CLOCK SYNC
-    }
-
+function startRaidTimerInterval() {
     if (state.timers.raidTimer) {
         clearInterval(state.timers.raidTimer);
     }
-    
-    if (state.game.gameState.raidClock === 0) {
-        state.game.gameState.raidClock = state.game.settings.raidClockDuration;
-    }
-
-    state.game.gameState.raidRunning = true;
-    showToast('Raid started!', 'success', 1500);
 
     state.timers.raidTimer = setInterval(() => {
         if (!state.game || !state.game.gameState.raidRunning) {
@@ -492,11 +425,29 @@ function startRaidTimer() {
             }
         }
         
-        if (state.view === 'control') updateControlDisplay();
-        if (state.view === 'viewer') updateSpectatorView();
+        updateClocksUI();
 
     }, 1000);
 }
+
+function startRaidTimer() {
+    if (!state.game || !state.isHost) return;
+
+    // Auto-start game clock if not running
+    if (!state.game.gameState.gameRunning && state.game.settings.enableGameClock) {
+        toggleGameClock(true); // CLOCK SYNC
+    }
+    
+    if (state.game.gameState.raidClock === 0) {
+        state.game.gameState.raidClock = state.game.settings.raidClockDuration;
+    }
+
+    state.game.gameState.raidRunning = true;
+    startRaidTimerInterval();
+    showToast('Raid started!', 'success', 1500);
+    saveGameState();
+}
+
 
 function stopRaidTimer() {
     if (state.timers.raidTimer) {
@@ -512,7 +463,7 @@ function resetRaidClock() {
     if (!state.game || !state.isHost) return;
     stopRaidTimer();
     state.game.gameState.raidClock = state.game.settings.raidClockDuration;
-    updateControlDisplay();
+    updateClocksUI();
     saveGameState();
     showToast('Raid clock reset', 'info', 1500);
 }
@@ -532,7 +483,7 @@ function showEditGameClockModal() {
     $('saveGameClockEdit').onclick = () => {
         state.game.gameState.gameTime.minutes = Math.max(0, parseInt(editMinutes.value) || 0);
         state.game.gameState.gameTime.seconds = Math.max(0, Math.min(59, parseInt(editSeconds.value) || 0));
-        updateControlDisplay();
+        updateClocksUI();
         saveGameState();
         modal.classList.add('hidden');
         state.clockEditing = false;
@@ -556,7 +507,7 @@ function showEditRaidClockModal() {
     
     $('saveRaidClockEdit').onclick = () => {
         state.game.gameState.raidClock = Math.max(0, Math.min(60, parseInt(editRaidClockSeconds.value) || 0));
-        updateControlDisplay();
+        updateClocksUI();
         saveGameState();
         modal.classList.add('hidden');
         state.clockEditing = false;
@@ -577,6 +528,8 @@ function createGameSkeleton(code, config = {}) {
     return {
         hostId: hostId,
         code: code,
+        sport: 'kabaddi',
+        status: 'live',
         gameType: state.gameType,
         settings: {
             gameName: config.gameName || 'Kabaddi Game',
@@ -590,16 +543,12 @@ function createGameSkeleton(code, config = {}) {
             color: config.teamAColor || '#FF6B35',
             score: 0,
             allOuts: 0,
-            roster: [], 
-            stats: {}     
         },
         teamB: {
             name: config.teamBName || 'Team B',
             color: config.teamBColor || '#1B263B',
             score: 0,
             allOuts: 0,
-            roster: [], 
-            stats: {}     
         },
         gameState: {
             half: 1,
@@ -617,8 +566,7 @@ function createGameSkeleton(code, config = {}) {
 }
 
 async function saveGameState() {
-    // Only save if logged in
-    if (!state.user || !state.isHost) return; 
+    if (!state.isHost) return; 
 
     if (state.game && state.gameCode && db) {
         try {
@@ -626,37 +574,27 @@ async function saveGameState() {
             await db.collection('games').doc(state.gameCode).set(state.game);
         } catch (e) {
             console.warn('Failed to save game to Firebase:', e);
-            showToast('Sync failed. Check permissions.', 'error', 2000);
+            if (state.user) {
+                showToast('Sync failed. Check permissions.', 'error', 2000);
+            }
         }
     }
 }
 
-// --- NEW FUNCTION ---
-/**
- * Updates the host's user profile with the new game code.
- * @param {string} gameCode - The 6-digit game code.
- */
 async function updateUserProfileWithGame(gameCode) {
-    if (!state.user || !db) return;
+    if (!state.user || !db || !firebase) return;
     
     const userRef = db.collection('users').doc(state.user.uid);
     
     try {
-        // Use the global 'firebase' object to get FieldValue
         await userRef.update({
             hostedGames: firebase.firestore.FieldValue.arrayUnion(gameCode)
         });
         console.log('User profile updated with new game.');
     } catch (error) {
-        if (error.code === 'not-found') {
-            // This shouldn't happen if auth.js logic is correct, but good to have a fallback.
-            console.warn('User profile not found, could not update hosted games.');
-        } else {
-            console.error('Error updating user profile:', error);
-        }
+        console.error('Error updating user profile:', error);
     }
 }
-// --- END NEW FUNCTION ---
 
 async function loadGameState(code) {
     if (!db) {
@@ -665,12 +603,7 @@ async function loadGameState(code) {
     }
     try {
         const doc = await db.collection('games').doc(code).get();
-        if (doc.exists) {
-            return doc.data();
-        } else {
-            console.warn(`Game doc '${code}' does not exist`);
-            return null;
-        }
+        return doc.exists ? doc.data() : null;
     } catch (e) {
         console.warn('Failed to load game from Firebase:', e);
         return null;
@@ -684,21 +617,20 @@ async function joinSpectatorMode(code) {
     const savedGame = await loadGameState(code);
     if (!savedGame) {
         showToast('Game not found', 'error', 2000);
+        window.location.href = 'index.html'; // Send home
         return;
     }
     
     state.gameCode = code;
     state.game = savedGame;
     state.gameType = savedGame.gameType || 'easy';
-    state.isHost = false; // Spectators are never hosts
+    state.isHost = false;
     
-    showSpectatorView();
+    showControlView(); // Show the main control view
 }
 
 function showConfigurationView() {
     console.log('✓ Showing configuration view');
-    
-    // Generate a game code
     state.gameCode = generateGameCode();
     
     showView('config');
@@ -715,24 +647,18 @@ function setupConfigurationHandlers() {
         radio.onchange = (e) => { state.gameType = e.target.value; };
     });
     
-    $('proceedToSetup').onclick = (e) => {
+    $('proceedToControl').onclick = (e) => {
         e.preventDefault();
         const config = gatherConfigurationData();
         
         state.game = createGameSkeleton(state.gameCode, config);
-        saveGameState(); // Initial save
         
-        // --- NEW LOGIC: Update user profile if logged in ---
-        if (state.user) {
-            updateUserProfileWithGame(state.gameCode);
-        }
-        // --- END NEW LOGIC ---
-        
-        if (state.gameType === 'easy') {
-            showControlView();
-        } else {
-            showTeamSetupView();
-        }
+        saveGameState().then(() => {
+            if (state.user) {
+                updateUserProfileWithGame(state.gameCode);
+            }
+            showControlView(); // Go to control view
+        });
     };
 }
 
@@ -750,31 +676,12 @@ function gatherConfigurationData() {
     };
 }
 
-function showTeamSetupView() {
-    console.log('Showing team setup view');
-    showView('setup');
-    $('setupGameCode').textContent = state.gameCode;
-    setupTeamSetupHandlers();
-}
-
-function setupTeamSetupHandlers() {
-    $('copySetupCode').onclick = (e) => { e.preventDefault(); copyToClipboard(state.gameCode); };
-    $('backToConfig').onclick = (e) => { e.preventDefault(); showView('config'); };
-    $('startGameEasy').onclick = (e) => {
-        e.preventDefault();
-        state.game.gameType = 'easy';
-        saveGameState();
-        showControlView();
-    };
-}
-
 function showControlView() {
     console.log('Showing control view');
     showView('control');
     
     $('controlGameCode').textContent = state.gameCode;
     $('copyControlCode').onclick = (e) => { e.preventDefault(); copyToClipboard(state.gameCode); };
-    $('gameNameDisplay').textContent = state.game.settings.gameName;
     
     const gameClockOn = state.game.settings.enableGameClock;
     const raidClockOn = state.game.settings.enableRaidClock;
@@ -793,43 +700,44 @@ function showControlView() {
         clockSection.style.display = 'flex';
     }
 
+    // Show/hide host controls based on state.isHost
+    $$('.host-control').forEach(el => {
+        el.style.display = state.isHost ? 'flex' : 'none'; // 'flex' for buttons, 'block' for inputs
+    });
+    // Handle special cases
+    if(state.isHost) {
+        $('teamANameInput').style.display = 'block';
+        $('teamBNameInput').style.display = 'block';
+        $('teamANameDisplay').style.display = 'none';
+        $('teamBNameDisplay').style.display = 'none';
+        $('possessionDisplay').style.display = 'none';
+        $('.possession-controls').style.display = 'flex';
+        $('.master-clock-controls').style.display = 'flex';
+        $('.shot-clock-actions').style.display = 'grid';
+    } else {
+        // Is Spectator
+        $('teamANameInput').style.display = 'none';
+        $('teamBNameInput').style.display = 'none';
+        $('teamANameDisplay').style.display = 'block';
+        $('teamBNameDisplay').style.display = 'block';
+        $('possessionDisplay').style.display = 'block';
+        $('.possession-controls').style.display = 'none';
+        $('.master-clock-controls').style.display = 'none';
+        $('.shot-clock-actions').style.display = 'none';
+        $('finalizeGameBtn').style.display = 'none';
+    }
+
+
     setupControlHandlers();
     updateControlDisplay();
     updateGameClockButton();
     setupAutoSave();
-
-    if (db && state.user && state.isHost) {
-        if (state.firestoreListener) state.firestoreListener(); 
-
-        state.firestoreListener = db.collection('games').doc(state.gameCode)
-          .onSnapshot((doc) => {
-              console.log('ControlView received snapshot');
-              if (doc.exists) {
-                  state.game = doc.data();
-                  updateControlDisplay();
-                  
-                  const newState = state.game.gameState;
-                  if (newState.gameRunning && !state.timers.gameTimer) {
-                      startGameTimer();
-                  } else if (!newState.gameRunning && state.timers.gameTimer) {
-                      stopGameTimer();
-                  }
-                  if (newState.raidRunning && !state.timers.raidTimer) {
-                      startRaidTimer();
-                  } else if (!newState.raidRunning && state.timers.raidTimer) {
-                      stopRaidTimer();
-                  }
-              } else {
-                  showToast('Game session not found', 'error', 3000);
-              }
-          }, (error) => {
-              console.error("Error in Firestore listener:", error);
-              showToast('Connection lost', 'error', 3000);
-          });
-    }
+    setupFirebaseListener();
 }
 
 function setupControlHandlers() {
+    if (!state.isHost) return; // Don't attach for spectators
+
     console.log('Setting up control handlers');
     
     $('startGameClockBtn').onclick = (e) => { e.preventDefault(); toggleGameClock(); };
@@ -845,10 +753,6 @@ function setupControlHandlers() {
     $$('.score-btn').forEach(btn => {
         btn.onclick = (e) => {
             e.preventDefault();
-            if (!state.isHost) {
-                showToast('Only the host can control the game', 'warning');
-                return;
-            }
             const points = parseInt(e.target.dataset.points);
             const team = e.target.dataset.team;
             const type = e.target.dataset.type || 'default';
@@ -856,15 +760,36 @@ function setupControlHandlers() {
         };
     });
     
-    $('possessionTeamA').onclick = (e) => { 
-        e.preventDefault(); 
-        if (!state.isHost) return;
-        setPossession('teamA'); 
+    $('possessionTeamA').onclick = (e) => { e.preventDefault(); setPossession('teamA'); };
+    $('possessionTeamB').onclick = (e) => { e.preventDefault(); setPossession('teamB'); };
+
+    // Team name inputs
+    $('teamANameInput').onchange = (e) => {
+        state.game.teamA.name = e.target.value || 'Team A';
+        saveGameState();
     };
-    $('possessionTeamB').onclick = (e) => { 
-        e.preventDefault(); 
-        if (!state.isHost) return;
-        setPossession('teamB'); 
+    $('teamBNameInput').onchange = (e) => {
+        state.game.teamB.name = e.target.value || 'Team B';
+        saveGameState();
+    };
+    
+    // Header buttons
+    $('shareGameBtn').onclick = () => {
+        const shareUrl = `${window.location.origin}${window.location.pathname.replace('scoreboard.html', 'sports.html')}?mode=watch&code=${state.gameCode}&sport=kabaddi`;
+        copyToClipboard(shareUrl);
+        showToast('Spectator link copied!', 'success', 2500);
+    };
+    
+    $('finalizeGameBtn').onclick = () => {
+        if (confirm('Are you sure you want to end this game?')) {
+            state.game.status = 'final';
+            stopGameTimer();
+            stopRaidTimer();
+            saveGameState().then(() => {
+                showToast('Game finalized!', 'success', 2000);
+                window.location.href = state.user ? 'sports.html?mode=host' : 'index.html';
+            });
+        }
     };
 }
 
@@ -902,31 +827,35 @@ function updateScore(team, points, type = 'default') {
     const newPossession = team === 'teamA' ? 'teamB' : 'teamA';
     setPossession(newPossession);
     
-    showScoreAnimation(points, team);
     updateControlDisplay();
     saveGameState();
 }
 
-function showScoreAnimation(points, team) {
-    const scoreElement = $(`${team}Score`);
-    if (!scoreElement) return;
-    const rect = scoreElement.getBoundingClientRect();
-    const anim = document.createElement('div');
-    anim.className = 'score-animation';
-    anim.textContent = points > 0 ? `+${points}` : points.toString();
-    anim.style.left = `${rect.left + rect.width / 2 - 20}px`;
-    anim.style.top = `${rect.top}px`;
-    anim.style.color = points > 0 ? 'var(--color-success)' : 'var(--color-error)';
-    document.body.appendChild(anim);
-    setTimeout(() => { if (anim.parentNode) anim.parentNode.removeChild(anim); }, 1500);
-}
-
 function updateControlDisplay() {
     if (!state.game) return;
+    
+    // Update scores
     $('teamAScore').textContent = state.game.teamA.score;
     $('teamBScore').textContent = state.game.teamB.score;
-    $('teamAName').textContent = state.game.teamA.name;
-    $('teamBName').textContent = state.game.teamB.name;
+    
+    // Update names (inputs for host, h3 for spectator)
+    $('teamANameInput').value = state.game.teamA.name;
+    $('teamBNameInput').value = state.game.teamB.name;
+    $('teamANameDisplay').textContent = state.game.teamA.name;
+    $('teamBNameDisplay').textContent = state.game.teamB.name;
+    
+    // Update game name
+    $('gameNameDisplay').textContent = state.game.settings.gameName;
+
+    // Update clocks
+    updateClocksUI();
+    
+    // Update possession
+    updatePossessionDisplay();
+}
+
+function updateClocksUI() {
+    if (!state.game) return;
     
     if (state.game.settings.enableGameClock) {
         $('gameClockDisplay').textContent = formatTime(state.game.gameState.gameTime.minutes, state.game.gameState.gameTime.seconds);
@@ -935,8 +864,6 @@ function updateControlDisplay() {
     if (state.game.settings.enableRaidClock) {
         $('raidClockDisplay').textContent = state.game.gameState.raidClock;
     }
-    
-    updatePossessionDisplay();
 }
 
 function setPossession(team) {
@@ -947,139 +874,97 @@ function setPossession(team) {
 }
 
 function updatePossessionDisplay() {
-    const btnA = $('possessionTeamA');
-    const btnB = $('possessionTeamB');
-    if (btnA && btnB && state.game) {
+    if (!state.game) return;
+    const possessionTeamName = state.game.gameState.possession === 'teamA' 
+        ? state.game.teamA.name 
+        : state.game.teamB.name;
+
+    if (state.isHost) {
+        const btnA = $('possessionTeamA');
+        const btnB = $('possessionTeamB');
         const isTeamA = state.game.gameState.possession === 'teamA';
         btnA.classList.toggle('active', isTeamA);
         btnB.classList.toggle('active', !isTeamA);
         btnA.textContent = state.game.teamA.name;
         btnB.textContent = state.game.teamB.name;
-    }
-    const viewerPossession = $('viewerPossession');
-    if(viewerPossession && state.game) {
-        viewerPossession.textContent = state.game.gameState.possession === 'teamA' ? state.game.teamA.name : state.game.teamB.name;
+    } else {
+        $('possessionDisplay').textContent = possessionTeamName;
     }
 }
 
-function showSpectatorView() {
-    console.log('Showing spectator view');
-    showView('viewer');
-    
-    // Disable all host controls for spectator
-    $$('.score-btn, .possession-btn, .master-start-btn, .clock-control-row button, .shot-clock-actions button').forEach(btn => {
-        btn.disabled = true;
-    });
-    $$('.clock-display, .shot-clock-display').forEach(el => {
-        el.title = "Spectator View";
-        el.style.cursor = 'default';
-    });
-    
-    if (state.game) {
-        const gameClockOn = state.game.settings.enableGameClock;
-        const raidClockOn = state.game.settings.enableRaidClock;
+function setupFirebaseListener() {
+    if (state.firestoreListener) state.firestoreListener(); // Detach old listener
 
-        $('viewerGameClock').style.display = gameClockOn ? 'block' : 'none';
-        $('viewerHalfArea').style.display = gameClockOn ? 'block' : 'none';
-        $('viewerRaidClock').style.display = raidClockOn ? 'block' : 'none';
-        
-        const viewerCenter = $('.viewer-center');
-        if (!gameClockOn && !raidClockOn) {
-            viewerCenter.style.display = 'none';
-        } else {
-            viewerCenter.style.display = 'flex';
-        }
-    }
-
-    if(state.game) updateSpectatorView();
-
-    if (db && state.gameCode) {
-        if (state.firestoreListener) state.firestoreListener();
-        state.firestoreListener = db.collection('games').doc(state.gameCode)
-          .onSnapshot((doc) => {
-              console.log('SpectatorView received snapshot');
-              if (doc.exists) {
-                  state.game = doc.data();
-                  updateSpectatorView();
-
-                  const newState = state.game.gameState;
-                  if (newState.gameRunning && !state.timers.gameTimer) {
-                      startGameTimer();
-                  } else if (!newState.gameRunning && state.timers.gameTimer) {
-                      stopGameTimer();
-                  }
-                  if (newState.raidRunning && !state.timers.raidTimer) {
-                      startRaidTimer();
-                  } else if (!newState.raidRunning && state.timers.raidTimer) {
-                      stopRaidTimer();
-                  }
+    state.firestoreListener = db.collection('games').doc(state.gameCode)
+      .onSnapshot((doc) => {
+          console.log('Received game update');
+          if (doc.exists) {
+              const newGame = doc.data();
+              // If we are not host, just accept the new game state
+              if (!state.isHost) {
+                  state.game = newGame;
               } else {
-                  showToast('Game session has ended', 'error', 3000);
+                  // If we are host, only update if the new data is newer
+                  // (prevents overwriting our own changes)
+                  if (newGame.lastUpdate > state.game.lastUpdate) {
+                      state.game = newGame;
+                  }
               }
-          }, (error) => {
-              console.error("Error in Firestore listener:", error);
-              showToast('Connection lost', 'error', 3000);
-          });
-    }
+              
+              updateControlDisplay();
+              
+              // Sync timers
+              const newState = state.game.gameState;
+              if (newState.gameRunning && !state.timers.gameTimer) {
+                  startGameTimer();
+              } else if (!newState.gameRunning && state.timers.gameTimer) {
+                  stopGameTimer();
+              }
+              if (newState.raidRunning && !state.timers.raidTimer) {
+                  startRaidTimerInterval();
+              } else if (!newState.raidRunning && state.timers.raidTimer) {
+                  stopRaidTimer();
+              }
+          } else {
+              showToast('Game session has ended', 'error', 3000);
+          }
+      }, (error) => {
+          console.error("Error in Firestore listener:", error);
+          showToast('Connection lost', 'error', 3000);
+      });
 }
 
-function updateSpectatorView() {
-    if (!state.game) return;
-    $('viewerTeamAName').textContent = state.game.teamA.name;
-    $('viewerTeamBName').textContent = state.game.teamB.name;
-    $('viewerTeamAScore').textContent = state.game.teamA.score;
-    $('viewerTeamBScore').textContent = state.game.teamB.score;
-    $('viewerGameName').textContent = state.game.settings.gameName;
-
-    if (state.game.settings.enableGameClock) {
-        $('viewerGameClock').textContent = formatTime(state.game.gameState.gameTime.minutes, state.game.gameState.gameTime.seconds);
-        $('viewerHalf').textContent = state.game.gameState.half;
-    }
-    if (state.game.settings.enableRaidClock) {
-        $('viewerRaidClock').textContent = state.game.gameState.raidClock;
-    }
-    
-    updatePossessionDisplay();
-}
 
 function setupAutoSave() {
     if (state.timers.autoSave) clearInterval(state.timers.autoSave);
-    if (state.isHost && state.user) { // Only save if logged in
+    if (state.isHost) {
         state.timers.autoSave = setInterval(saveGameState, 30000); 
     }
 }
 
 // ================== INITIALIZER (CALLED BY MAIN.JS) ==================
-
-/**
- * @param {object} utils - The global utilities from main.js
- * @param {firebase.User | null} user - The authenticated user (or null)
- * @param {URLSearchParams} urlParams - The URL parameters
- */
-function init(utils, user, urlParams) {
+async function init(utils, user, urlParams) {
     console.log('Kabaddi module initializing...');
     
     $ = utils.$;
     $$ = utils.$$;
     showToast = utils.showToast;
     copyToClipboard = utils.copyToClipboard;
-
-    state.user = user; // Set user state (null if not logged in)
+    state.user = user;
     
     const watchCode = urlParams.get('watch');
-    const hostMode = urlParams.get('host'); // 'true' (logged in) or 'free'
+    const hostMode = urlParams.get('host');
 
     if (watchCode) {
         // This is a spectator
         state.isHost = false;
-        joinSpectatorMode(watchCode);
+        await joinSpectatorMode(watchCode);
     } else if (hostMode) {
         // This is a host
         state.isHost = true;
-        // init config page
         showConfigurationView();
     } else {
-        // How did they get here? Send 'em home.
+        // Should not happen, send home
         window.location.href = 'index.html';
     }
     

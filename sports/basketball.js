@@ -10,8 +10,9 @@ let showToast;
 let copyToClipboard;
 
 // ================== MODULE-SPECIFIC STATE ==================
+
 const state = {
-    view: 'landing', // Default view
+    view: 'landing', // Default view is the landing/welcome page
     isHost: false,
     user: null, // Will be set by init
     gameCode: null,
@@ -23,7 +24,7 @@ const state = {
         shotClockTimer: null
     },
     selectedPlayer: null,
-    actionHistory: [],
+    actionHistory: [], // For the Undo feature
     clockEditing: false,
     firestoreListener: null
 };
@@ -115,9 +116,21 @@ function buildHtml() {
                             <label class="form-label" for="gameNameInput">Game Name</label>
                             <input id="gameNameInput" class="form-control" placeholder="Championship Final" maxlength="50">
                         </div>
+                        
                         <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label" for="periodDurationSelect">Period Duration</label>
+                                <label class="form-label">Game Format</label>
+                                <div style="display: flex; gap: 16px; margin-top: 8px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 16px;">
+                                        <input type="radio" name="periodType" value="quarter" checked> Quarters (4)
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 16px;">
+                                        <input type="radio" name="periodType" value="half"> Halves (2)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Duration (Mins)</label>
                                 <select id="periodDurationSelect" class="form-control">
                                     <option value="8">8 minutes</option>
                                     <option value="10">10 minutes</option>
@@ -126,19 +139,18 @@ function buildHtml() {
                                     <option value="20">20 minutes</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label" for="shotClockSelect">Shot Clock</label>
-                                <select id="shotClockSelect" class="form-control">
-                                    <option value="0">No Shot Clock</option>
-                                    <option value="14">14 seconds</option>
-                                    <option value="24" selected>24 seconds</option>
-                                    <option value="30">30 seconds</option>
-                                    <option value="custom">Custom</option>
-                                </select>
-                            </div>
                         </div>
-                        <div id="customShotClockGroup" class="form-group hidden">
-                            <input id="customShotClock" class="form-control" type="number" min="5" max="60" placeholder="Custom seconds">
+
+                        <div class="form-group">
+                            <label class="form-label">Shot Clock (Defaults to 24s)</label>
+                            <div class="theme-switch-container">
+                                <span>Off</span>
+                                <label class="theme-switch">
+                                    <input type="checkbox" id="shotClockToggle" checked>
+                                    <span class="theme-slider"></span>
+                                </label>
+                                <span>On</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -200,16 +212,19 @@ function buildHtml() {
                     <div class="card__body">
                         <h3 id="teamASetupTitle">Team A</h3>
                         <div class="player-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <input id="teamAPlayerName" class="form-control" placeholder="Player Name" maxlength="30">
+                            <div class="form-row" style="grid-template-columns: 1fr 90px 100px auto; gap: 8px; align-items: flex-end;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Player Name</label>
+                                    <input id="teamAPlayerName" class="form-control" placeholder="Name" maxlength="30">
                                 </div>
-                                <div class="form-group">
-                                    <input id="teamAPlayerNumber" class="form-control" type="number" min="0" max="99" placeholder="Jersey #">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Jersey #</label>
+                                    <input id="teamAPlayerNumber" class="form-control" type="number" min="0" max="99" placeholder="#">
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Position</label>
                                     <select id="teamAPlayerPosition" class="form-control">
-                                        <option value="">Position</option>
+                                        <option value="">Pos</option>
                                         <option value="PG">PG</option>
                                         <option value="SG">SG</option>
                                         <option value="SF">SF</option>
@@ -220,7 +235,7 @@ function buildHtml() {
                                 <button id="addTeamAPlayer" class="btn btn--primary">Add</button>
                             </div>
                         </div>
-                        <div id="teamARoster" class="roster-list" style="padding: 0 16px;"></div>
+                        <div id="teamARoster" class="roster-list" style="padding: 16px 0 0 0;"></div>
                         <div class="card__body">
                             <div class="roster-counter">
                                 Players: <span id="teamACount">0</span>/15
@@ -232,16 +247,19 @@ function buildHtml() {
                     <div class="card__body">
                         <h3 id="teamBSetupTitle">Team B</h3>
                         <div class="player-form">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <input id="teamBPlayerName" class="form-control" placeholder="Player Name" maxlength="30">
+                             <div class="form-row" style="grid-template-columns: 1fr 90px 100px auto; gap: 8px; align-items: flex-end;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Player Name</label>
+                                    <input id="teamBPlayerName" class="form-control" placeholder="Name" maxlength="30">
                                 </div>
-                                <div class="form-group">
-                                    <input id="teamBPlayerNumber" class="form-control" type="number" min="0" max="99" placeholder="Jersey #">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Jersey #</label>
+                                    <input id="teamBPlayerNumber" class="form-control" type="number" min="0" max="99" placeholder="#">
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Position</label>
                                     <select id="teamBPlayerPosition" class="form-control">
-                                        <option value="">Position</option>
+                                        <option value="">Pos</option>
                                         <option value="PG">PG</option>
                                         <option value="SG">SG</option>
                                         <option value="SF">SF</option>
@@ -252,7 +270,7 @@ function buildHtml() {
                                 <button id="addTeamBPlayer" class="btn btn--primary">Add</button>
                             </div>
                         </div>
-                        <div id="teamBRoster" class="roster-list" style="padding: 0 16px;"></div>
+                        <div id="teamBRoster" class="roster-list" style="padding: 16px 0 0 0;"></div>
                         <div class="card__body">
                             <div class="roster-counter">
                                 Players: <span id="teamBCount">0</span>/15
@@ -265,6 +283,43 @@ function buildHtml() {
                 <button id="backToConfig" class="btn btn--outline">← Back to Configuration</button>
                 <button id="skipRosterSetup" class="btn btn--secondary">Skip & Start Game</button>
                 <button id="startGame" class="btn btn--primary" disabled>Start Game</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="pre-game-view" class="view hidden">
+        <div class="container" style="max-width: 600px; padding-top: 50px; text-align: center;">
+            <header class="landing-header">
+                <h1 class="main-title">Game Ready!</h1>
+                <p class="hero-subtitle">The game is set up. Review the shortcuts below.</p>
+            </header>
+            
+            <div class="card">
+                <div class="card__body">
+                    <h3 style="text-align: center;">Keyboard Shortcuts</h3>
+                    <table class="comprehensive-stats-table" style="font-size: 14px; table-layout: auto; margin-top: 16px;">
+                        <thead>
+                            <tr style="background: none;">
+                                <th style="text-align: left; background: var(--color-secondary);">Key</th>
+                                <th style="text-align: left; background: var(--color-secondary);">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="border: 1px solid var(--color-border);">
+                            <tr><td style="font-weight: 600;">Spacebar</td><td>Start / Pause Game Clock</td></tr>
+                            <tr><td style="font-weight: 600;">Enter</td><td>Reset Shot Clock to Full & START</td></tr>
+                            <tr><td style="font-weight: 600;">R (Shift+r)</td><td>Reset Shot Clock to Full (No Start)</td></tr>
+                            <tr><td style="font-weight: 600;">r</td><td>Reset Shot Clock to 14s (No Start)</td></tr>
+                            <tr><td style="font-weight: 600;">s</td><td>Start Shot Clock Only</td></tr>
+                            <tr><td style="font-weight: 600;">p</td><td>Toggle Possession</td></tr>
+                            <tr><td style="font-weight: 600;">z</td><td>Undo Last Action</td></tr>
+                            <tr><td style="font-weight: 600;">h</td><td>Show Help Menu</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section-actions" style="justify-content: center; margin-top: 24px;">
+                <button id="startControlViewBtn" class="btn btn--primary btn--lg">START GAME</button>
             </div>
         </div>
     </section>
@@ -282,6 +337,8 @@ function buildHtml() {
                     </div>
                 </div>
                 <div class="control-actions">
+                    <button id="helpBtn" class="btn btn--outline">Help (h)</button>
+                    <button id="undoBtn" class="btn btn--secondary" disabled>Undo (z)</button>
                     <button id="shareGameBtn" class="btn btn--outline">Share</button>
                     <button id="exportGame" class="btn btn--outline">Export</button>
                     <button id="finalizeGameBtn" class="btn btn--danger">End Game</button>
@@ -305,13 +362,13 @@ function buildHtml() {
                                 </div>
                                 <div class="clock-section">
                                     <div class="clock-display game-clock" id="gameClockDisplay" title="Click to edit">12:00</div>
-                                    <div class="period-display">Period <span id="periodDisplay">1</span></div>
+                                    <div class="period-display"><span id="quarterHalfLabel">Quarter</span> <span id="periodDisplay">1</span></div>
                                     <div class="master-clock-controls">
-                                        <button id="startGameBtn" class="btn btn--primary master-start-btn">START GAME</button>
+                                        <button id="startGameBtn" class="btn btn--primary master-start-btn">START (Space)</button>
                                         <div class="clock-control-row">
                                             <button id="resetAllBtn" class="btn btn--outline btn--sm">Reset All</button>
                                             <button id="editGameClock" class="btn btn--secondary btn--sm">Edit Time</button>
-                                            <button id="nextPeriod" class="btn btn--secondary btn--sm">Next Period</button>
+                                            <button id="nextPeriod" class="btn btn--secondary btn--sm">Next</button>
                                         </div>
                                     </div>
                                     <div class="shot-clock-section" id="shotClockSection">
@@ -319,7 +376,7 @@ function buildHtml() {
                                         <div class="shot-clock-label">Shot Clock</div>
                                         <div class="shot-clock-actions">
                                             <button id="resetShotClock14" class="btn btn--warning btn--sm">14s</button>
-                                            <button id="resetShotClock24" class="btn btn--warning btn--sm">24s</button>
+                                            <button id="resetShotClockFull" class="btn btn--warning btn--sm">Full</button>
                                             <button id="editShotClock" class="btn btn--secondary btn--sm">Edit</button>
                                             <button id="startShotClock" class="btn btn--success btn--sm">Start</button>
                                         </div>
@@ -365,7 +422,7 @@ function buildHtml() {
                         </div>
                         <div class="card">
                             <div class="card__body">
-                                <h4>Possession</h4>
+                                <h4>Possession (p)</h4>
                                 <div class="possession-controls">
                                     <button id="possessionTeamA" class="btn btn--outline possession-btn active">Team A</button>
                                     <button id="possessionTeamB" class="btn btn--outline possession-btn">Team B</button>
@@ -462,34 +519,94 @@ function buildHtml() {
         </div>
     </section>
 
-    <section id="viewer-view" class="view hidden">
-        <div class="container-fluid">
-            <div class="viewer-scoreboard">
-                <div class="viewer-team" id="viewerTeamA">
-                    <h2 id="viewerTeamAName">Team A</h2>
-                    <div class="viewer-score" id="viewerTeamAScore">0</div>
-                    <div class="viewer-top-scorer" id="viewerTeamATopScorer">No scorer yet</div>
+    <section id="viewer-view-pro" class="view hidden">
+        <header class="viewer-header">
+            <div id="viewerGameName" class="viewer-game-name">Basketball Game</div>
+            <button id="toggleViewPro" class="viewer-settings-btn">⚙️</button>
+            <div id="viewerPossession" class="viewer-possession">
+                <span class="possession-dot"></span>
+                <span id="viewerPossessionTeamName">Team A</span>
+            </div>
+        </header>
+
+        <main class="viewer-main-scoreboard">
+            <div class="viewer-team-panel left" id="viewerTeamA">
+                <div id="viewerTeamAName" class="viewer-team-name">TEAM A</div>
+                <div id="viewerTeamAScore" class="viewer-team-score">0</div>
+            </div>
+
+            <div class="viewer-center-panel">
+                <div class="viewer-qtr-box">
+                    <div id="viewerQuarterHalfLabel" class="viewer-qtr-label">QUARTER</div>
+                    <div id="viewerPeriod" class="viewer-quarter">1</div>
                 </div>
-                <div class="viewer-center">
-                    <div class="viewer-clock" id="viewerGameClock">12:00</div>
-                    <div class="viewer-period">Period <span id="viewerPeriod">1</span></div>
-                    <div class="viewer-shot-clock" id="viewerShotClock" style="display: none;">24</div>
-                </div>
-                <div class="viewer-team" id="viewerTeamB">
-                    <h2 id="viewerTeamBName">Team B</h2>
-                    <div class="viewer-score" id="viewerTeamBScore">0</div>
-                    <div class="viewer-top-scorer" id="viewerTeamBTopScorer">No scorer yet</div>
+                <div id="viewerGameClock" class="viewer-game-clock">12:00</div>
+                <div class="viewer-sc-box" id="viewerShotClockBox">
+                    <div class="viewer-sc-label">SHOT</div>
+                    <div id="viewerShotClock" class="viewer-shot-clock">24</div>
                 </div>
             </div>
-            <div class="viewer-info">
-                <div class="game-name" id="viewerGameName">Basketball Game</div>
+
+            <div class="viewer-team-panel right" id="viewerTeamB">
+                <div id="viewerTeamBName" class="viewer-team-name">TEAM B</div>
+                <div id="viewerTeamBScore" class="viewer-team-score">0</div>
+            </div>
+        </main>
+
+        <footer class="viewer-footer">
+            <div class="viewer-stat-box" id="viewerTeamAFoulsBox">
+                <div class="viewer-stat-label">FOULS</div>
+                <div id="viewerTeamAFouls" class="viewer-stat-value">0</div>
+            </div>
+            <div class="viewer-stat-box" id="viewerTeamATimeoutsBox">
+                <div class="viewer-stat-label">TIMEOUTS</div>
+                <div id="viewerTeamATimeouts" class="viewer-stat-value">7</div>
+            </div>
+            <div id="viewerTeamATopScorer" class="viewer-top-scorer-small" style="text-align: right;">
+            </div>
+            <div id="viewerTeamBTopScorer" class="viewer-top-scorer-small" style="text-align: left;">
+            </div>
+            <div class="viewer-stat-box" id="viewerTeamBTimeoutsBox">
+                <div class="viewer-stat-label">TIMEOUTS</div>
+                <div id="viewerTeamBTimeouts" class="viewer-stat-value">7</div>
+            </div>
+            <div class="viewer-stat-box" id="viewerTeamBFoulsBox">
+                <div class="viewer-stat-label">FOULS</div>
+                <div id="viewerTeamBFouls" class="viewer-stat-value">0</div>
+            </div>
+        </footer>
+    </section>
+
+    <section id="viewer-view-classic" class="view hidden">
+        <div class="container-fluid" style="padding-top: 20px;">
+            <div class="viewer-info" style="margin-bottom: 20px; position: relative;">
+                <div id="classicViewerGameName" class="game-name">Basketball Game</div>
+                <button id="toggleViewClassic" class="btn btn--outline" style="font-size: 24px; padding: 4px 10px; position: absolute; right: 20px; top: 50%; transform: translateY(-50%);">⚙️</button>
                 <div class="possession-indicator">
                     <span>Possession:</span>
-                    <span id="viewerPossession">Team A</span>
+                    <span id="classicViewerPossession">Team A</span>
+                </div>
+            </div>
+            <div class="viewer-scoreboard">
+                <div class="viewer-team" id="classicViewerTeamA">
+                    <h2 id="classicViewerTeamAName">Team A</h2>
+                    <div id="classicViewerTeamAScore" class="viewer-score">0</div>
+                    <div id="classicViewerTeamATopScorer" class="viewer-top-scorer">No scorer yet</div>
+                </div>
+                <div class="viewer-center">
+                    <div id="classicViewerGameClock" class="viewer-clock">12:00</div>
+                    <div class="viewer-period"><span id="classicQuarterHalfLabel">Quarter</span> <span id="classicViewerPeriod">1</span></div>
+                    <div id="classicViewerShotClock" class="viewer-shot-clock" style="display: none;">24</div>
+                </div>
+                <div class="viewer-team" id="classicViewerTeamB">
+                    <h2 id="classicViewerTeamBName">Team B</h2>
+                    <div id="classicViewerTeamBScore" class="viewer-score">0</div>
+                    <div id="classicViewerTeamBTopScorer" class="viewer-top-scorer">No scorer yet</div>
                 </div>
             </div>
         </div>
     </section>
+
     
     <div id="guestHostModal" class="modal hidden">
         <div class="modal-content">
@@ -512,6 +629,90 @@ function buildHtml() {
             <div class="modal-actions">
                 <button id="cancelFinalize" class="btn btn--outline">Cancel</button>
                 <button id="confirmFinalize" class="btn btn--danger">End Game</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resetAllModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Reset All Clocks</h3>
+            <p style="color: var(--color-text-secondary); margin: 16px 0;">
+                Are you sure you want to reset the Game Clock and Shot Clock?
+            </p>
+            <div class="modal-actions">
+                <button id="cancelResetAll" class="btn btn--outline">Cancel</button>
+                <button id="confirmResetAll" class="btn btn--danger">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="undoModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Undo Last Action</h3>
+            <p style="color: var(--color-text-secondary); margin: 16px 0;">
+                Are you sure you want to undo this action?
+            </p>
+            <p id="undoMessage" style="font-weight: 600; text-align: center; color: var(--color-warning);"></p>
+            <div class="modal-actions">
+                <button id="cancelUndo" class="btn btn--outline">Cancel</button>
+                <button id="confirmUndo" class="btn btn--danger">Undo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="helpModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3>Keyboard Shortcuts</h3>
+            <p style="color: var(--color-text-secondary); margin: 16px 0;">
+                Use these keys to control the game when not editing text.
+            </p>
+            <table class="comprehensive-stats-table" style="font-size: 14px; table-layout: auto;">
+                <thead>
+                    <tr style="background: none;">
+                        <th style="text-align: left; background: var(--color-secondary);">Key</th>
+                        <th style="text-align: left; background: var(--color-secondary);">Action</th>
+                    </tr>
+                </thead>
+                <tbody style="border: 1px solid var(--color-border);">
+                    <tr><td style="font-weight: 600;">Spacebar</td><td>Start / Pause Game Clock</td></tr>
+                    <tr><td style="font-weight: 600;">Enter</td><td>Reset Shot Clock to Full & START</td></tr>
+                    <tr><td style="font-weight: 600;">R (Shift+r)</td><td>Reset Shot Clock to Full (No Start)</td></tr>
+                    <tr><td style="font-weight: 600;">r</td><td>Reset Shot Clock to 14s (No Start)</td></tr>
+                    <tr><td style="font-weight: 600;">s</td><td>Start Shot Clock Only</td></tr>
+                    <tr><td style="font-weight: 600;">p</td><td>Toggle Possession</td></tr>
+                    <tr><td style="font-weight: 600;">z</td><td>Undo Last Action</td></tr>
+                    <tr><td style="font-weight: 600;">h</td><td>Show this Help Menu</td></tr>
+                </tbody>
+            </table>
+            <div class="modal-actions" style="justify-content: space-between; margin-top: 20px;">
+                <button id="detailedHelpBtn" class="btn btn--outline">Detailed Explanations</button>
+                <button id="closeHelpModal" class="btn btn--primary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailedHelpModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px; text-align: left;">
+            <h3>Detailed Explanations</h3>
+            
+            <h5 style="margin-top: 16px;">Clock Controls</h5>
+            <ul style="font-size: 14px; color: var(--color-text-secondary); margin-left: 20px; line-height: 1.6;">
+                <li><b>Start/Pause (Space):</b> Toggles the main game clock. This will also pause the shot clock.</li>
+                <li><b>Reset Full & Start (Enter):</b> This is for a new possession after a score. It resets the shot clock to its full time (e.g., 24s) and starts it instantly.</li>
+                <li><b>Reset Full (R):</b> Resets the shot clock to full but does NOT start it. Useful for setting up before a play.</li>
+                <li><b>Reset 14s (r):</b> Resets the shot clock to 14s (or the offensive rebound time) and does NOT start it. Use this after an offensive rebound.</li>
+                <li><b>Start Shot Clock (s):</b> Starts *only* the shot clock. The game clock remains paused. Use this for inbounding at the start of a period.</li>
+            </ul>
+
+            <h5 style="margin-top: 16px;">Game Management</h5>
+            <ul style="font-size: 14px; color: var(--color-text-secondary); margin-left: 20px; line-height: 1.6;">
+                <li><b>Undo (z):</b> Reverts the last major action (e.g., score, clock edit, foul). A confirmation is required.</li>
+                <li><b>Toggle Possession (p):</b> Manually switches the possession arrow.</li>
+                <li><b>Friendly vs. Full Game:</b> "Friendly" is for quick games with no player stats. "Full Game" enables player rosters and tracking of individual stats (PTS, REB, AST, etc.).</li>
+            </ul>
+
+            <div class="modal-actions">
+                <button id="closeDetailedHelpModal" class="btn btn--primary">Close</button>
             </div>
         </div>
     </div>
@@ -560,12 +761,78 @@ function generateGameCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
+// --- NEW: Snapshot state for Undo feature ---
+function snapshotState(actionDescription) {
+    if (!state.isHost) return;
+    
+    state.actionHistory.push({ 
+        description: actionDescription, 
+        gameData: JSON.parse(JSON.stringify(state.game)) // Deep copy
+    });
+    
+    // Limit history size
+    if (state.actionHistory.length > 20) {
+        state.actionHistory.shift();
+    }
+    
+    // Enable the undo button
+    const undoBtn = $('undoBtn');
+    if (undoBtn) undoBtn.disabled = false;
+}
+
+// --- NEW: Undo last action ---
+function handleUndo() {
+    if (!state.isHost || state.actionHistory.length === 0) {
+        showToast("Nothing to undo", "warning");
+        return;
+    }
+    
+    const lastAction = state.actionHistory[state.actionHistory.length - 1];
+    showUndoConfirmation(lastAction.description);
+}
+
+function showUndoConfirmation(description) {
+    const modal = $('undoModal');
+    if (!modal) return;
+    
+    $('undoMessage').textContent = `Undo: "${description}"?`;
+    modal.classList.remove('hidden');
+
+    $('confirmUndo').onclick = () => {
+        const lastState = state.actionHistory.pop();
+        if (lastState) {
+            state.game = lastState.gameData; // Revert to the old state
+            
+            if (state.actionHistory.length === 0) {
+                $('undoBtn').disabled = true;
+            }
+            
+            // Need to stop/start timers based on reverted state
+            stopMasterTimer();
+            if (state.game.gameState.gameRunning || state.game.gameState.shotClockRunning) {
+                startMasterTimer();
+            }
+            
+            updateControlDisplay();
+            saveGameState(); // Save the reverted state
+            showToast("Action undone", "success");
+        }
+        modal.classList.add('hidden');
+    };
+    
+    $('cancelUndo').onclick = () => {
+        modal.classList.add('hidden');
+    };
+}
+
+
 function showView(viewName) {
     console.log(`Switching to view: ${viewName}`);
-    const views = ['landing', 'config', 'setup', 'control', 'viewer'];
+    // Added classic and pro viewer views
+    const views = ['landing-view', 'config-view', 'setup-view', 'pre-game-view', 'control-view', 'viewer-view-pro', 'viewer-view-classic'];
     
     views.forEach(view => {
-        const element = $(`${view}-view`);
+        const element = $(view);
         if (element) {
             if (view === viewName) {
                 element.classList.remove('hidden');
@@ -577,13 +844,20 @@ function showView(viewName) {
     
     state.view = viewName;
 
-    if (viewName === 'landing' || viewName === 'config') {
+    // --- BUG FIX: Attach pre-game handlers when switching to pre-game view ---
+    if (viewName === 'pre-game-view') {
+        setupPreGameHandlers();
+    }
+
+    if (viewName === 'landing-view' || viewName === 'config-view') {
         if (state.firestoreListener) {
             state.firestoreListener(); 
             state.firestoreListener = null;
             console.log('Detached Firestore listener.');
         }
         stopMasterTimer();
+        state.actionHistory = []; // Clear undo history
+        if($('undoBtn')) $('undoBtn').disabled = true;
     }
 }
 
@@ -609,6 +883,7 @@ function handleShotClockViolation() {
     showToast('SHOT CLOCK VIOLATION!', 'error', 3000);
     
     if (state.game) {
+        snapshotState("Shot Clock Violation"); // Log for undo
         state.game.gameState.shotClockRunning = false;
         const currentPossession = state.game.gameState.possession;
         const newPossession = currentPossession === 'teamA' ? 'teamB' : 'teamA';
@@ -656,11 +931,10 @@ function startMasterTimer() {
                 state.game.gameState.shotClock--;
                 updated = true;
                 
-                if (state.game.gameState.shotClock === 5) {
-                    const shotClockDisplay = $('shotClockDisplay');
-                    const viewerShotClock = $('viewerShotClock');
-                    if (shotClockDisplay) shotClockDisplay.classList.add('warning');
-                    if (viewerShotClock) viewerShotClock.classList.add('warning');
+                if (state.game.gameState.shotClock <= 5) {
+                    $('shotClockDisplay')?.classList.add('warning');
+                    $('viewerShotClock')?.classList.add('warning');
+                    $('classicViewerShotClock')?.classList.add('warning');
                 }
             } else {
                 if (state.isHost) {
@@ -673,13 +947,13 @@ function startMasterTimer() {
         }
         
         if (updated) {
-            if (state.view === 'control') updateControlDisplay();
-            if (state.view === 'viewer') updateSpectatorView();
+            if (state.view.startsWith('control')) updateControlDisplay();
+            if (state.view.startsWith('viewer')) updateSpectatorView();
         }
 
         if (!state.game.gameState.gameRunning && !state.game.gameState.shotClockRunning) {
             stopMasterTimer();
-            if (state.view === 'control' && $('startGameBtn')) updateMasterStartButton();
+            if (state.view.startsWith('control') && $('startGameBtn')) updateMasterStartButton();
         }
     }, 1000);
 }
@@ -689,12 +963,15 @@ function stopMasterTimer() {
         clearInterval(state.timers.masterTimer);
         state.timers.masterTimer = null;
     }
-    if (state.view === 'control' && $('startGameBtn')) updateMasterStartButton();
+    if (state.view.startsWith('control') && $('startGameBtn')) updateMasterStartButton();
 }
 
 function toggleMasterGame() {
     if (!state.game || !state.isHost) return;
     
+    // Snapshot the state BEFORE changing it
+    snapshotState(state.game.gameState.gameRunning || state.game.gameState.shotClockRunning ? "Pause Game" : "Start Game");
+
     if (state.game.gameState.gameRunning || state.game.gameState.shotClockRunning) {
         state.game.gameState.gameRunning = false;
         state.game.gameState.shotClockRunning = false;
@@ -718,16 +995,31 @@ function updateMasterStartButton() {
     if (!btn || !state.game) return;
     
     if (state.game.gameState.gameRunning || state.game.gameState.shotClockRunning) {
-        btn.textContent = 'PAUSE GAME';
+        btn.textContent = 'PAUSE (Space)';
         btn.className = 'btn btn--primary master-start-btn pause';
     } else {
-        btn.textContent = 'START GAME';
+        btn.textContent = 'START (Space)';
         btn.className = 'btn btn--primary master-start-btn resume';
     }
 }
 
+function showResetAllModal() {
+    const modal = $('resetAllModal');
+    modal.classList.remove('hidden');
+    
+    $('confirmResetAll').onclick = () => {
+        modal.classList.add('hidden');
+        resetAllClocks(); // Call the actual function
+    };
+    $('cancelResetAll').onclick = () => {
+        modal.classList.add('hidden');
+    };
+}
+
 function resetAllClocks() {
     if (!state.game || !state.isHost) return;
+    snapshotState("Reset All Clocks"); // Log for undo
+    
     state.game.gameState.gameTime.minutes = state.game.settings.periodDuration;
     state.game.gameState.gameTime.seconds = 0;
     
@@ -743,14 +1035,15 @@ function resetAllClocks() {
 }
 
 function removeShotClockWarning() {
-    const shotClockDisplay = $('shotClockDisplay');
-    const viewerShotClock = $('viewerShotClock');
-    if (shotClockDisplay) shotClockDisplay.classList.remove('warning');
-    if (viewerShotClock) viewerShotClock.classList.remove('warning');
+    $('shotClockDisplay')?.classList.remove('warning');
+    $('viewerShotClock')?.classList.remove('warning');
+    $('classicViewerShotClock')?.classList.remove('warning');
 }
 
 function resetShotClockTo14() {
     if (!state.game || !state.isHost || state.game.settings.shotClockDuration === 0) return;
+    snapshotState("Reset Shot Clock (14s)"); // Log for undo
+    
     state.game.gameState.shotClock = 14;
     removeShotClockWarning();
     updateControlDisplay();
@@ -758,27 +1051,38 @@ function resetShotClockTo14() {
     showToast('Shot clock reset to 14s', 'info', 1500);
 }
 
-function resetShotClockTo24() {
+// Renamed from resetShotClockTo24
+function resetShotClockDefault() {
     if (!state.game || !state.isHost || state.game.settings.shotClockDuration === 0) return;
-    state.game.gameState.shotClock = 24;
+    snapshotState("Reset Shot Clock (Full)"); // Log for undo
+    
+    state.game.gameState.shotClock = state.game.settings.shotClockDuration;
     removeShotClockWarning();
     updateControlDisplay();
     saveGameState();
-    showToast('Shot clock reset to 24s', 'info', 1500);
+    showToast(`Shot clock reset to ${state.game.settings.shotClockDuration}s`, 'info', 1500);
 }
 
-function handle24sResetKey(event) {
-    if (
-        event.key === 'Enter' &&
-        state.view === 'control' &&
-        !state.clockEditing &&
-        state.isHost &&
-        document.activeElement.tagName !== 'INPUT' &&
-        document.activeElement.tagName !== 'TEXTAREA'
-    ) {
-        resetShotClockTo24();
+// --- NEW: Function for Enter key ---
+function resetShotClockDefaultAndStart() {
+    if (!state.game || !state.isHost || state.game.settings.shotClockDuration === 0) return;
+    snapshotState("Reset Shot Clock & Start"); // Log for undo
+    
+    state.game.gameState.shotClock = state.game.settings.shotClockDuration;
+    removeShotClockWarning();
+    
+    // Auto-start game clock if it's paused
+    if (!state.game.gameState.gameRunning) {
+        state.game.gameState.gameRunning = true;
     }
+    state.game.gameState.shotClockRunning = true;
+    startMasterTimer(); // This will start both
+    
+    updateControlDisplay();
+    saveGameState();
+    showToast(`Shot clock reset & started`, 'success', 1500);
 }
+
 
 function startShotClockOnly() {
     if (!state.game || !state.isHost || state.game.settings.shotClockDuration === 0) return;
@@ -786,6 +1090,8 @@ function startShotClockOnly() {
         showToast('Reset shot clock first', 'warning', 2000);
         return;
     }
+    snapshotState("Start Shot Clock Only"); // Log for undo
+    
     state.game.gameState.shotClockRunning = true;
     startMasterTimer();
     showToast('Shot clock started', 'success', 1500);
@@ -806,6 +1112,7 @@ function showEditClockModal() {
     state.clockEditing = true;
     
     $('saveClockEdit').onclick = () => {
+        snapshotState("Edit Game Clock"); // Log for undo
         state.game.gameState.gameTime.minutes = Math.max(0, parseInt(editMinutes.value) || 0);
         state.game.gameState.gameTime.seconds = Math.max(0, Math.min(59, parseInt(editSeconds.value) || 0));
         updateControlDisplay();
@@ -831,6 +1138,7 @@ function showEditShotClockModal() {
     state.clockEditing = true;
     
     $('saveShotClockEdit').onclick = () => {
+        snapshotState("Edit Shot Clock"); // Log for undo
         state.game.gameState.shotClock = Math.max(0, Math.min(60, parseInt(editShotClockSeconds.value) || 0));
         removeShotClockWarning();
         updateControlDisplay();
@@ -875,6 +1183,8 @@ function showGuestHostModal() {
 async function finalizeGame() {
     if (!state.game || !state.isHost) return;
     
+    snapshotState("Finalize Game"); // Log for undo (though it's final)
+    
     // Stop all clocks
     state.game.gameState.gameRunning = false;
     state.game.gameState.shotClockRunning = false;
@@ -894,7 +1204,7 @@ async function finalizeGame() {
         if (state.user) {
             window.location.href = 'sports.html?mode=host';
         } else {
-            showView('landing');
+            showView('landing-view');
         }
     }, 2000);
 }
@@ -907,17 +1217,19 @@ function createGameSkeleton(code, config = {}) {
         hostId: hostId, // This will be null for guests
         code: code,
         gameType: state.gameType,
-        sport: 'basketball', // <-- CRITICAL FIELD
-        status: 'live', // <-- NEW: Game status
+        sport: 'basketball', 
+        status: 'live', 
         settings: {
             gameName: config.gameName || 'Basketball Game',
             periodDuration: config.periodDuration || 12,
             shotClockDuration: config.shotClockDuration || 24,
-            timeoutsPerTeam: config.timeoutsPerTeam || 7
+            timeoutsPerTeam: config.timeoutsPerTeam || 7,
+            periodType: config.periodType || 'quarter', // NEW
+            periodCount: config.periodType === 'half' ? 2 : 4 // NEW
         },
         teamA: {
             name: config.teamAName || 'Team A',
-            color: config.teamAColor || '#EA4335', // New Default
+            color: config.teamAColor || '#EA4335',
             score: 0,
             timeouts: config.timeoutsPerTeam || 7,
             fouls: 0,
@@ -926,7 +1238,7 @@ function createGameSkeleton(code, config = {}) {
         },
         teamB: {
             name: config.teamBName || 'Team B',
-            color: config.teamBColor || '#4285F4', // New Default
+            color: config.teamBColor || '#4285F4',
             score: 0,
             timeouts: config.timeoutsPerTeam || 7,
             fouls: 0,
@@ -934,7 +1246,7 @@ function createGameSkeleton(code, config = {}) {
             stats: {}
         },
         gameState: {
-            period: 1,
+            period: 1, // Store period as a 1-based number
             gameTime: {
                 minutes: config.periodDuration || 12,
                 seconds: 0
@@ -949,8 +1261,6 @@ function createGameSkeleton(code, config = {}) {
 }
 
 async function saveGameState() {
-    // --- UPDATED LOGIC ---
-    // Now saves as long as you are the host (logged in or not)
     if (!state.isHost) return; 
 
     if (state.game && state.gameCode && db) {
@@ -959,19 +1269,12 @@ async function saveGameState() {
             await db.collection('games').doc(state.gameCode).set(state.game);
         } catch (e) {
             console.warn('Failed to save game to Firebase:', e);
-            // Don't show toast to guests, they don't have permissions
-            if (state.user) {
-                showToast('Sync failed. Check permissions.', 'error', 2000);
-            }
+            showToast('Game sync failed. Check connection.', 'error', 3000);
         }
     }
 }
 
-/**
- * Updates the host's user profile with the new game code.
- */
 async function updateUserProfileWithGame(gameCode) {
-    // This function will only run if state.user exists
     if (!state.user || !db || !firebase) return; 
     
     const userRef = db.collection('users').doc(state.user.uid);
@@ -1034,13 +1337,13 @@ function updateTopScorerDisplay() {
     const teamATopScorer = getTopScorer('teamA');
     const teamBTopScorer = getTopScorer('teamB');
     
+    // Control View
     const teamADisplay = $('teamATopScorer');
     if (teamADisplay) {
         teamADisplay.textContent = (teamATopScorer && teamATopScorer.points > 0)
             ? `Top: ${teamATopScorer.name} (${teamATopScorer.points} pts)`
             : 'No scorer yet';
     }
-    
     const teamBDisplay = $('teamBTopScorer');
     if (teamBDisplay) {
         teamBDisplay.textContent = (teamBTopScorer && teamBTopScorer.points > 0)
@@ -1048,22 +1351,46 @@ function updateTopScorerDisplay() {
             : 'No scorer yet';
     }
     
+    // Pro Viewer
     const viewerTeamATopScorer = $('viewerTeamATopScorer');
     if (viewerTeamATopScorer) {
-        viewerTeamATopScorer.textContent = (teamATopScorer && teamATopScorer.points > 0)
+        viewerTeamATopScorer.innerHTML = (teamATopScorer && teamATopScorer.points > 0)
+            ? `<span style="color: #AAA; font-size: 1.2vw;">TOP SCORER:</span> ${teamATopScorer.name} (${teamATopScorer.points} PTS)`
+            : '';
+    }
+    const viewerTeamBTopScorer = $('viewerTeamBTopScorer');
+    if (viewerTeamBTopScorer) {
+        viewerTeamBTopScorer.innerHTML = (teamBTopScorer && teamBTopScorer.points > 0)
+            ? `<span style="color: #AAA; font-size: 1.2vw;">TOP SCORER:</span> ${teamBTopScorer.name} (${teamBTopScorer.points} PTS)`
+            : '';
+    }
+
+    // Classic Viewer
+    const classicTeamADisplay = $('classicViewerTeamATopScorer');
+    if (classicTeamADisplay) {
+        classicTeamADisplay.textContent = (teamATopScorer && teamATopScorer.points > 0)
             ? `Top: ${teamATopScorer.name} (${teamATopScorer.points} pts)`
             : 'No scorer yet';
     }
-    
-    const viewerTeamBTopScorer = $('viewerTeamBTopScorer');
-    if (viewerTeamBTopScorer) {
-        viewerTeamBTopScorer.textContent = (teamBTopScorer && teamBTopScorer.points > 0)
+    const classicTeamBDisplay = $('classicViewerTeamBTopScorer');
+    if (classicTeamBDisplay) {
+        classicTeamBDisplay.textContent = (teamBTopScorer && teamBTopScorer.points > 0)
             ? `Top: ${teamBTopScorer.name} (${teamBTopScorer.points} pts)`
             : 'No scorer yet';
     }
 }
 
 // ================== EVENT HANDLERS ==================
+
+function setupLandingHandlers() {
+    $('watchGameBtn').addEventListener('click', handleWatchGame);
+    $('watchCodeInput').addEventListener('input', handleWatchCodeInput);
+    $('hostGameBtn').addEventListener('click', handleHostGame);
+    $('hostCodeInput').addEventListener('input', (e) => {
+        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+        e.target.value = value;
+    });
+}
 
 async function handleWatchGame() {
     console.log('✓ handleWatchGame called');
@@ -1121,11 +1448,7 @@ async function checkCodeAndProceed(code) {
                     return;
                 }
                 
-                if (state.gameType === 'friendly') {
-                    showControlView();
-                } else {
-                    showTeamSetupView(); // Let them review/edit roster
-                }
+                showView('pre-game-view'); // Go to pre-game screen
 
             } else {
                 validationMsg.textContent = 'This code is already in use. Try another.';
@@ -1186,6 +1509,7 @@ async function validateWatchCode(code) {
     }
 }
 
+// --- UPDATED: Spectator View Logic ---
 async function joinSpectatorMode(code) {
     console.log('Joining spectator mode for code:', code);
     const savedGame = await loadGameState(code);
@@ -1204,16 +1528,72 @@ async function joinSpectatorMode(code) {
     state.gameType = savedGame.gameType || 'friendly';
     state.isHost = false; 
     
-    showSpectatorView();
+    showSpectatorView(); // This function now handles which view (pro/classic) to show
 }
+
+// --- NEW: Toggle Spectator View ---
+function toggleSpectatorView() {
+    const currentMode = localStorage.getItem('spectatorMode') || 'pro';
+    if (currentMode === 'pro') {
+        localStorage.setItem('spectatorMode', 'classic');
+        showView('viewer-view-classic');
+    } else {
+        localStorage.setItem('spectatorMode', 'pro');
+        showView('viewer-view-pro');
+    }
+    updateSpectatorView(); // Re-populate the new view
+}
+
+// --- NEW: showSpectatorView decides which view to show ---
+function showSpectatorView() {
+    const preferredMode = localStorage.getItem('spectatorMode') || 'pro';
+    
+    if (preferredMode === 'classic') {
+        showView('viewer-view-classic');
+    } else {
+        showView('viewer-view-pro');
+    }
+    
+    // Attach listeners for the toggle buttons
+    $('toggleViewPro').onclick = toggleSpectatorView;
+    $('toggleViewClassic').onclick = toggleSpectatorView;
+
+    // All controls are naturally hidden in this view
+    if(state.game) updateSpectatorView();
+
+    if (db && state.gameCode) {
+        if (state.firestoreListener) state.firestoreListener();
+        state.firestoreListener = db.collection('games').doc(state.gameCode)
+          .onSnapshot((doc) => {
+              console.log('SpectatorView received snapshot');
+              if (doc.exists) {
+                  state.game = doc.data();
+                  updateSpectatorView();
+                  const newState = state.game.gameState;
+                  if ((newState.gameRunning || newState.shotClockRunning) && !state.timers.masterTimer) {
+                      startMasterTimer();
+                  } else if (!newState.gameRunning && !newState.shotClockRunning && state.timers.masterTimer) {
+                      stopMasterTimer();
+                  }
+              } else {
+                  showToast('Game session has ended', 'error', 3000);
+              }
+          }, (error) => {
+              console.error("Error in Firestore listener:", error);
+              showToast('Connection lost', 'error', 3000);
+          });
+    }
+}
+// --- END: Spectator View Logic ---
 
 function showConfigurationView() {
     console.log('✓ Showing configuration view');
-    showView('config');
     
     if (!state.gameCode) {
         state.gameCode = generateGameCode();
     }
+    
+    showView('config-view');
     
     $('configGameCode').textContent = state.gameCode;
     setupConfigurationHandlers();
@@ -1234,10 +1614,6 @@ function setupConfigurationHandlers() {
         radio.onchange = (e) => { state.gameType = e.target.value; };
     });
     
-    $('shotClockSelect').onchange = (e) => {
-        $('customShotClockGroup').classList.toggle('hidden', e.target.value !== 'custom');
-    };
-    
     $('teamAColor').onchange = updateColorPreviews;
     $('teamBColor').onchange = updateColorPreviews;
 
@@ -1246,7 +1622,7 @@ function setupConfigurationHandlers() {
         backBtn.onclick = (e) => {
             e.preventDefault();
             // This button now always goes back to the landing view
-            showView('landing'); 
+            showView('landing-view'); 
         };
     }
     
@@ -1267,7 +1643,7 @@ function setupConfigurationHandlers() {
             
             if (state.gameType === 'friendly') {
                 initializeFriendlyGame();
-                showControlView();
+                showView('pre-game-view'); // Go to pre-game screen
             } else {
                 showTeamSetupView();
             }
@@ -1276,13 +1652,9 @@ function setupConfigurationHandlers() {
 }
 
 function gatherConfigurationData() {
-    const shotClockSelect = $('shotClockSelect').value;
-    let shotClockDuration = 24;
-    if (shotClockSelect === 'custom') {
-        shotClockDuration = parseInt($('customShotClock').value || '24');
-    } else {
-        shotClockDuration = parseInt(shotClockSelect);
-    }
+    // NEW: Read toggle switch
+    const shotClockEnabled = $('shotClockToggle').checked;
+    let shotClockDuration = shotClockEnabled ? 24 : 0; // Default to 24s if on, 0 if off.
     
     return {
         gameName: $('gameNameInput').value.trim() || 'Basketball Game',
@@ -1291,16 +1663,13 @@ function gatherConfigurationData() {
         timeoutsPerTeam: 7, 
         teamAName: $('teamAName').value.trim() || 'Team A',
         teamBName: $('teamBName').value.trim() || 'Team B',
-        teamAColor: $('teamAColor').value || '#EA4335', // New Default
-        teamBColor: $('teamBColor').value || '#4285F4'  // New Default
+        teamAColor: $('teamAColor').value || '#EA4335',
+        teamBColor: $('teamBColor').value || '#4285F4',
+        periodType: document.querySelector('input[name="periodType"]:checked').value || 'quarter' // NEW
     };
 }
 
 function validateConfiguration(config) {
-    if (config.shotClockDuration < 0 || config.shotClockDuration > 60) {
-        showToast('Shot clock: 0-60 seconds (0 = disabled)', 'error', 3000);
-        return false;
-    }
     if (config.teamAName === config.teamBName) {
         showToast('Team names must be different', 'error', 2000);
         return false;
@@ -1320,7 +1689,7 @@ function initializeFriendlyGame() {
 
 function showTeamSetupView() {
     console.log('Showing team setup view');
-    showView('setup');
+    showView('setup-view');
     $('setupGameCode').textContent = state.gameCode;
     updateTeamSetupTitles();
     setupTeamSetupHandlers();
@@ -1339,31 +1708,29 @@ function setupTeamSetupHandlers() {
     $('copySetupCode').onclick = (e) => { e.preventDefault(); copyToClipboard(state.gameCode); };
     $('addTeamAPlayer').onclick = (e) => { e.preventDefault(); addPlayer('teamA'); };
     $('addTeamBPlayer').onclick = (e) => { e.preventDefault(); addPlayer('teamB'); };
-    $('backToConfig').onclick = (e) => { e.preventDefault(); showView('config'); };
+    $('backToConfig').onclick = (e) => { e.preventDefault(); showView('config-view'); };
     
     $('skipRosterSetup').onclick = (e) => {
         e.preventDefault();
         initializeFriendlyGame();
         saveGameState();
-        showControlView();
+        showView('pre-game-view'); // Go to pre-game screen
     };
     $('startGame').onclick = (e) => {
         e.preventDefault();
         if (validateTeamSetup()) {
             initializePlayerStats();
             saveGameState();
-            showControlView();
+            showView('pre-game-view'); // Go to pre-game screen
         }
     };
 }
 
 function addPlayer(team) {
-    // Order changed
     const nameInput = $(`${team}PlayerName`);
     const numberInput = $(`${team}PlayerNumber`);
     const positionSelect = $(`${team}PlayerPosition`);
     
-    // Order changed
     const name = nameInput.value.trim();
     const number = parseInt(numberInput.value);
     const position = positionSelect.value || '';
@@ -1371,8 +1738,8 @@ function addPlayer(team) {
     if (!validatePlayerInput(team, number, name)) return;
     
     state.game[team].roster.push({ number, name, position });
-    numberInput.value = '';
     nameInput.value = '';
+    numberInput.value = '';
     positionSelect.value = '';
     updateRosterDisplays();
     saveGameState();
@@ -1439,6 +1806,7 @@ function updateTeamRoster(team) {
 function removePlayer(team, index) {
     if (state.game && state.game[team].roster[index]) {
         const playerName = state.game[team].roster[index].name;
+        snapshotState(`Remove Player: ${playerName}`); // Log for undo
         state.game[team].roster.splice(index, 1);
         updateRosterDisplays();
         saveGameState();
@@ -1473,6 +1841,17 @@ function initializePlayerStats() {
     });
 }
 
+// --- BUG FIX: New function to set up pre-game screen button ---
+function setupPreGameHandlers() {
+    const startBtn = $('startControlViewBtn');
+    if(startBtn) {
+        startBtn.onclick = (e) => { 
+            e.preventDefault(); 
+            showControlView(); 
+        };
+    }
+}
+
 function showControlView() {
     console.log('Showing control view');
     
@@ -1482,20 +1861,20 @@ function showControlView() {
         return;
     }
     
-    showView('control');
+    showView('control-view');
+    
+    // Update button text for shot clock
+    $('resetShotClockFull').textContent = `${state.game.settings.shotClockDuration}s`;
     
     $('controlGameCode').textContent = state.gameCode;
     $('copyControlCode').onclick = (e) => { e.preventDefault(); copyToClipboard(state.gameCode); };
     $('gameNameDisplay').textContent = state.game.settings.gameName;
     
     const shotClockSection = $('shotClockSection');
-    const viewerShotClock = $('viewerShotClock');
     if (state.game.settings.shotClockDuration === 0) {
         if (shotClockSection) shotClockSection.classList.add('hidden');
-        if (viewerShotClock) viewerShotClock.style.display = 'none';
     } else {
         if (shotClockSection) shotClockSection.classList.remove('hidden');
-        if (viewerShotClock) viewerShotClock.style.display = 'block';
     }
     
     const statsSection = $('statsSection');
@@ -1649,8 +2028,11 @@ function setupQuickStatControls() {
 
 function addPlayerScore(team, playerNumber, statType, points) {
     if (!state.game || !state.isHost || !state.game[team].stats[playerNumber]) return;
-    const playerStats = state.game[team].stats[playerNumber];
+    
     const playerName = state.game[team].roster.find(p => p.number == playerNumber)?.name || `#${playerNumber}`;
+    snapshotState(`+${points}pts for ${playerName}`); // Log for undo
+
+    const playerStats = state.game[team].stats[playerNumber];
     
     playerStats[statType]++;
     playerStats.totalPoints += points;
@@ -1664,15 +2046,22 @@ function addPlayerScore(team, playerNumber, statType, points) {
     saveGameState();
     
     const statDisplay = statType === 'freeThrows' ? 'Free Throw' : 
-                        statType === 'fieldGoals' ? 'Field Goal' : '3-Pointer';
+                          statType === 'fieldGoals' ? 'Field Goal' : '3-Pointer';
     showToast(`+${points} ${statDisplay} for ${playerName}`, 'success', 1500);
 }
 
 function addPlayerStat(team, playerNumber, statType) {
     if (!state.game || !state.isHost || !state.game[team].stats[playerNumber]) return;
-    const playerStats = state.game[team].stats[playerNumber];
+
+    const statNames = {
+        'offensiveRebounds': 'Off. Rebound', 'defensiveRebounds': 'Def. Rebound', 
+        'assists': 'Assist', 'steals': 'Steal', 'blocks': 'Block',
+        'turnovers': 'Turnover', 'fouls': 'Personal Foul'
+    };
     const playerName = state.game[team].roster.find(p => p.number == playerNumber)?.name || `#${playerNumber}`;
-    
+    snapshotState(`${statNames[statType]} for ${playerName}`); // Log for undo
+
+    const playerStats = state.game[team].stats[playerNumber];    
     playerStats[statType]++;
     
     if(statType === 'fouls') {
@@ -1684,11 +2073,6 @@ function addPlayerStat(team, playerNumber, statType) {
     updateControlDisplay(); 
     saveGameState();
     
-    const statNames = {
-        'offensiveRebounds': 'Off. Rebound', 'defensiveRebounds': 'Def. Rebound', 
-        'assists': 'Assist', 'steals': 'Steal', 'blocks': 'Block',
-        'turnovers': 'Turnover', 'fouls': 'Personal Foul'
-    };
     showToast(`${statNames[statType]} for ${playerName}`, 'success', 1500);
 }
 
@@ -1731,24 +2115,31 @@ function setupControlHandlers() {
     console.log('Setting up control handlers');
     
     $('startGameBtn').onclick = (e) => { e.preventDefault(); toggleMasterGame(); };
-    $('resetAllBtn').onclick = (e) => { e.preventDefault(); resetAllClocks(); };
+    $('resetAllBtn').onclick = (e) => { e.preventDefault(); showResetAllModal(); };
     $('editGameClock').onclick = (e) => { e.preventDefault(); showEditClockModal(); };
     $('gameClockDisplay').onclick = (e) => { if (state.isHost) showEditClockModal(); };
     $('shotClockDisplay').onclick = (e) => { if (state.isHost) showEditShotClockModal(); };
     $('editShotClock').onclick = (e) => { e.preventDefault(); showEditShotClockModal(); };
     $('nextPeriod').onclick = (e) => { e.preventDefault(); nextPeriodFunc(); };
     $('resetShotClock14').onclick = (e) => { e.preventDefault(); resetShotClockTo14(); };
-    $('resetShotClock24').onclick = (e) => { e.preventDefault(); resetShotClockTo24(); };
+    $('resetShotClockFull').onclick = (e) => { e.preventDefault(); resetShotClockDefault(); };
     $('startShotClock').onclick = (e) => { e.preventDefault(); startShotClockOnly(); };
     
     $('finalizeGameBtn').onclick = (e) => { e.preventDefault(); showFinalizeGameModal(); };
     $('exportGame').onclick = (e) => { e.preventDefault(); exportGameData(); };
     
-    // Share Button Listener
+    // Help and Undo handlers
+    $('helpBtn').onclick = (e) => { e.preventDefault(); $('helpModal').classList.remove('hidden'); };
+    $('closeHelpModal').onclick = () => { $('helpModal').classList.add('hidden'); };
+    $('detailedHelpBtn').onclick = () => { $('detailedHelpModal').classList.remove('hidden'); };
+    $('closeDetailedHelpModal').onclick = () => { $('detailedHelpModal').classList.add('hidden'); };
+    $('undoBtn').onclick = (e) => { e.preventDefault(); handleUndo(); };
+    
+    // --- BUG FIX: Share Button copies direct scoreboard URL ---
     $('shareGameBtn').onclick = (e) => {
         e.preventDefault();
-        // Construct the full URL for watching
-        const shareUrl = `${window.location.origin}${window.location.pathname.replace('scoreboard.html', 'sports.html')}?mode=watch&code=${state.gameCode}&sport=basketball`;
+        // This is the correct, direct link
+        const shareUrl = `${window.location.origin}${window.location.pathname}?watch=${state.gameCode}&sport=basketball`;
         copyToClipboard(shareUrl);
         showToast('Spectator link copied to clipboard!', 'success', 2500);
     };
@@ -1775,9 +2166,42 @@ function setupControlHandlers() {
     $('possessionTeamB').onclick = (e) => { e.preventDefault(); if (!state.isHost) return; setPossession('teamB'); };
 }
 
+
+// --- NEW: Helper function to get the period label ---
+function getPeriodLabel(periodNumber) {
+    const periodType = state.game.settings.periodType;
+    const periodCount = state.game.settings.periodCount;
+
+    if (periodNumber <= periodCount) {
+        // Regular period
+        if (periodType === 'half') {
+            return periodNumber === 1 ? "1st" : "2nd";
+        } else {
+            // Quarters
+            switch (periodNumber) {
+                case 1: return "1st";
+                case 2: return "2nd";
+                case 3: return "3rd";
+                case 4: return "4th";
+                default: return `${periodNumber}th`;
+            }
+        }
+    } else {
+        // Overtime
+        const otNumber = periodNumber - periodCount;
+        return `OT ${otNumber}`;
+    }
+}
+
+
 function nextPeriodFunc() {
     if (!state.game || !state.isHost) return;
+    snapshotState("Next Period"); // Log for undo
+    
+    // Increment period
     state.game.gameState.period++;
+
+    // Reset clocks
     state.game.gameState.gameTime.minutes = state.game.settings.periodDuration;
     state.game.gameState.gameTime.seconds = 0;
     if (state.game.settings.shotClockDuration > 0) {
@@ -1789,11 +2213,17 @@ function nextPeriodFunc() {
     updateControlDisplay();
     updateMasterStartButton();
     saveGameState();
-    showToast(`Period ${state.game.gameState.period} started`, 'info', 2000);
+    
+    const periodName = getPeriodLabel(state.game.gameState.period);
+    showToast(`Starting ${periodName}`, 'info', 2000);
 }
 
 function updateScore(team, points) {
     if (!state.game || !state.isHost) return;
+    
+    const teamName = state.game[team].name;
+    snapshotState(`Score ${points > 0 ? '+' : ''}${points} for ${teamName}`); // Log for undo
+
     state.game[team].score = Math.max(0, state.game[team].score + points);
     showScoreAnimation(points, team);
     updateControlDisplay();
@@ -1819,6 +2249,8 @@ function showScoreAnimation(points, team) {
 
 function updateControlDisplay() {
     if (!state.game) return;
+    
+    // Update main controls
     $('teamAScore').textContent = state.game.teamA.score;
     $('teamBScore').textContent = state.game.teamB.score;
     $('teamAName').textContent = state.game.teamA.name;
@@ -1827,7 +2259,12 @@ function updateControlDisplay() {
     if ($('shotClockDisplay') && state.game.settings.shotClockDuration > 0) {
         $('shotClockDisplay').textContent = state.game.gameState.shotClock;
     }
-    $('periodDisplay').textContent = state.game.gameState.period;
+    
+    // Update Quarter/Half label
+    const periodLabel = state.game.settings.periodType === 'half' ? "Half" : "Quarter";
+    $('quarterHalfLabel').textContent = periodLabel;
+    $('periodDisplay').textContent = getPeriodLabel(state.game.gameState.period);
+    
     $('teamATimeouts').textContent = state.game.teamA.timeouts;
     $('teamBTimeouts').textContent = state.game.teamB.timeouts;
     $('teamAFouls').textContent = state.game.teamA.fouls;
@@ -1845,6 +2282,8 @@ function handleCounterAction(action, team) {
     const [type, operation] = action.split('-');
     const change = operation === 'plus' ? 1 : -1;
     
+    snapshotState(`${type} ${operation} for ${state.game[team].name}`); // Log for undo
+    
     if (type === 'timeout') {
         state.game[team].timeouts = Math.max(0, Math.min(7, state.game[team].timeouts + change));
     } else if (type === 'foul') {
@@ -1856,6 +2295,8 @@ function handleCounterAction(action, team) {
 
 function setPossession(team) {
     if (!state.game || !state.isHost) return;
+    snapshotState(`Set Possession: ${state.game[team].name}`); // Log for undo
+    
     state.game.gameState.possession = team;
     updatePossessionDisplay();
     saveGameState();
@@ -1871,263 +2312,130 @@ function updatePossessionDisplay() {
         btnA.textContent = state.game.teamA.name;
         btnB.textContent = state.game.teamB.name;
     }
-}
-
-// --- NEW STYLISH EXPORT FUNCTIONS ---
-
-// Define Styles
-const STYLES = {
-    title: {
-        font: { bold: true, sz: 24, color: { rgb: "FFFFFFFF" } },
-        fill: { fgColor: { rgb: "357568" } }, // Teal
-        alignment: { horizontal: "center", vertical: "center" }
-    },
-    subtitle: {
-        font: { bold: true, sz: 14 },
-        alignment: { horizontal: "center", vertical: "center" }
-    },
-    teamHeader: {
-        font: { bold: true, sz: 16, color: { rgb: "FFFFFFFF" } },
-        fill: { fgColor: { rgb: "5F6368" } } // Dark Grey
-    },
-    statHeader: {
-        font: { bold: true, sz: 10, color: { rgb: "000000" } },
-        fill: { fgColor: { rgb: "D9D9D9" } }, // Light Grey
-        alignment: { horizontal: "center" },
-        border: {
-            top: { style: "thin", color: { rgb: "000000" } },
-            bottom: { style: "thin", color: { rgb: "000000" } },
-            left: { style: "thin", color: { rgb: "000000" } },
-            right: { style: "thin", color: { rgb: "000000" } }
-        }
-    },
-    cell: {
-        font: { sz: 10 },
-        border: {
-            top: { style: "thin", color: { rgb: "000000" } },
-            bottom: { style: "thin", color: { rgb: "000000" } },
-            left: { style: "thin", color: { rgb: "000000" } },
-            right: { style: "thin", color: { rgb: "000000" } }
-        }
-    },
-    cellCenter: {
-        font: { sz: 10 },
-        alignment: { horizontal: "center" },
-        border: {
-            top: { style: "thin", color: { rgb: "000000" } },
-            bottom: { style: "thin", color: { rgb: "000000" } },
-            left: { style: "thin", color: { rgb: "000000" } },
-            right: { style: "thin", color: { rgb: "000000" } }
-        }
-    }
-};
-
-function exportGameData() {
-    if (!state.game || typeof XLSX === 'undefined') {
-        showToast('Export not available', 'error', 2000);
-        return;
+    
+    // Pro Viewer
+    const possDot = document.querySelector('.possession-dot');
+    const possName = $('viewerPossessionTeamName');
+    if (possName && state.game) {
+        const isTeamA = state.game.gameState.possession === 'teamA';
+        possName.textContent = isTeamA ? state.game.teamA.name.toUpperCase() : state.game.teamB.name.toUpperCase();
+        if(possDot) possDot.style.background = isTeamA ? state.game.teamA.color : state.game.teamB.color;
     }
     
+    // Classic Viewer
+    const classicPoss = $('classicViewerPossession');
+    if (classicPoss && state.game) {
+        classicPoss.textContent = state.game.gameState.possession === 'teamA' ? state.game.teamA.name : state.game.teamB.name;
+    }
+}
+
+// --- STYLED EXPORT FUNCTIONS (Unchanged) ---
+const STYLES = {
+    title: { font: { bold: true, sz: 24, color: { rgb: "FFFFFFFF" } }, fill: { fgColor: { rgb: "357568" } }, alignment: { horizontal: "center", vertical: "center" } },
+    subtitle: { font: { bold: true, sz: 14 }, alignment: { horizontal: "center", vertical: "center" } },
+    teamHeader: { font: { bold: true, sz: 16, color: { rgb: "FFFFFFFF" } }, fill: { fgColor: { rgb: "5F6368" } } },
+    statHeader: { font: { bold: true, sz: 10, color: { rgb: "000000" } }, fill: { fgColor: { rgb: "D9D9D9" } }, alignment: { horizontal: "center" }, border: { top: { style: "thin", color: { rgb: "000000" } }, bottom: { style: "thin", color: { rgb: "000000" } }, left: { style: "thin", color: { rgb: "000000" } }, right: { style: "thin", color: { rgb: "000000" } } } },
+    cell: { font: { sz: 10 }, border: { top: { style: "thin", color: { rgb: "000000" } }, bottom: { style: "thin", color: { rgb: "000000" } }, left: { style: "thin", color: { rgb: "000000" } }, right: { style: "thin", color: { rgb: "000000" } } } },
+    cellCenter: { font: { sz: 10 }, alignment: { horizontal: "center" }, border: { top: { style: "thin", color: { rgb: "000000" } }, bottom: { style: "thin", color: { rgb: "000000" } }, left: { style: "thin", color: { rgb: "000000" } }, right: { style: "thin", color: { rgb: "000000" } } } }
+};
+function exportGameData() {
+    if (!state.game || typeof XLSX === 'undefined') { showToast('Export not available', 'error', 2000); return; }
     try {
-        const wb = (state.game.gameType === 'full') 
-            ? createComprehensiveBoxScoreData(state.game) 
-            : createFriendlyGameExport(state.game); // Use new friendly export
-            
+        const wb = (state.game.gameType === 'full') ? createComprehensiveBoxScoreData(state.game) : createFriendlyGameExport(state.game);
         const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
         const blob = new Blob([wbout], { type: "application/octet-stream" });
-        
         const fileName = `${state.game.settings.gameName.replace(/\s+/g, '_')}_Box_Score.xlsx`;
-        
-        // Use FileSaver.js (which is included in xlsx-js-style)
         saveAs(blob, fileName);
-        
         showToast('Data exported successfully!', 'success', 2000);
-    } catch (error) {
-        console.error('Export error:', error);
-        showToast('Export failed', 'error', 2000);
-    }
+    } catch (error) { console.error('Export error:', error); showToast('Export failed', 'error', 2000); }
 }
-
-// New Styled Export for Friendly Games
 function createFriendlyGameExport(g) {
-    const wb = XLSX.utils.book_new();
-    const ws = {};
-
+    const wb = XLSX.utils.book_new(); const ws = {};
     const colWidths = [{ wch: 30 }, { wch: 20 }];
-    
-    // Title
     ws['A1'] = { v: g.settings.gameName, s: STYLES.title };
     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
-    
-    // Subtitle
     ws['A2'] = { v: `${g.teamA.name} vs ${g.teamB.name}`, s: STYLES.subtitle };
     ws['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: 1 } });
-    
-    // Headers
-    ws['A4'] = { v: "Team", s: STYLES.teamHeader };
-    ws['B4'] = { v: "Final Score", s: STYLES.teamHeader };
-    
-    // Team A
-    ws['A5'] = { v: g.teamA.name, s: STYLES.cell };
-    ws['B5'] = { v: g.teamA.score, s: STYLES.cellCenter };
-    
-    // Team B
-    ws['A6'] = { v: g.teamB.name, s: STYLES.cell };
-    ws['B6'] = { v: g.teamB.score, s: STYLES.cellCenter };
-    
-    ws['!ref'] = `A1:B6`;
-    ws['!cols'] = colWidths;
-    
-    XLSX.utils.book_append_sheet(wb, ws, 'Game Summary');
-    return wb;
+    ws['A4'] = { v: "Team", s: STYLES.teamHeader }; ws['B4'] = { v: "Final Score", s: STYLES.teamHeader };
+    ws['A5'] = { v: g.teamA.name, s: STYLES.cell }; ws['B5'] = { v: g.teamA.score, s: STYLES.cellCenter };
+    ws['A6'] = { v: g.teamB.name, s: STYLES.cell }; ws['B6'] = { v: g.teamB.score, s: STYLES.cellCenter };
+    ws['!ref'] = `A1:B6`; ws['!cols'] = colWidths;
+    XLSX.utils.book_append_sheet(wb, ws, 'Game Summary'); return wb;
 }
-
-
 function createComprehensiveBoxScoreData(g) {
-    const wb = XLSX.utils.book_new();
-    const ws = {};
-    
+    const wb = XLSX.utils.book_new(); const ws = {};
     const statHeaders = ['#', 'Player', 'PTS', 'FT', '2PT', '3PT', 'ORB', 'DRB', 'REB', 'AST', 'STL', 'BLK', 'TO', 'PF', 'MIN'];
-    const colWidths = [
-        { wch: 5 },  // #
-        { wch: 25 }, // Player
-        { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, // PTS, FT, 2PT, 3PT
-        { wch: 5 }, { wch: 5 }, { wch: 5 }, // ORB, DRB, REB
-        { wch: 5 }, { wch: 5 }, { wch: 5 }, // AST, STL, BLK
-        { wch: 5 }, { wch: 5 }, { wch: 5 }  // TO, PF, MIN
-    ];
-
-    // --- Title Row ---
+    const colWidths = [ { wch: 5 }, { wch: 25 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 } ];
     ws['A1'] = { v: g.settings.gameName, s: STYLES.title };
     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: statHeaders.length - 1 } }]; 
-
-    // --- Final Score ---
     ws['A2'] = { v: `${g.teamA.name}: ${g.teamA.score}  |  ${g.teamB.name}: ${g.teamB.score}`, s: STYLES.subtitle };
     ws['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: statHeaders.length - 1 } });
-    
-    let R = 3; // Start content from row 4
-
-    // --- Team A ---
+    let R = 3; 
     ws[`A${R}`] = { v: g.teamA.name, s: STYLES.teamHeader };
-    ws['!merges'].push({ s: { r: R-1, c: 0 }, e: { r: R-1, c: statHeaders.length - 1 } });
-    R++;
-    
-    statHeaders.forEach((h, C) => {
-        ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: h, s: STYLES.statHeader };
-    });
-    R++;
-    
-    g.teamA.roster.forEach(p => {
-        const stats = g.teamA.stats[p.number] || {};
-        const row = playerStatsToArray(p, stats);
-        row.forEach((cell, C) => {
-            ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: cell, s: C === 1 ? STYLES.cell : STYLES.cellCenter };
-        });
-        R++;
-    });
-
-    R++; // Add a blank row
-    
-    // --- Team B ---
+    ws['!merges'].push({ s: { r: R-1, c: 0 }, e: { r: R-1, c: statHeaders.length - 1 } }); R++;
+    statHeaders.forEach((h, C) => { ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: h, s: STYLES.statHeader }; }); R++;
+    g.teamA.roster.forEach(p => { const stats = g.teamA.stats[p.number] || {}; const row = playerStatsToArray(p, stats); row.forEach((cell, C) => { ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: cell, s: C === 1 ? STYLES.cell : STYLES.cellCenter }; }); R++; });
+    R++; 
     ws[`A${R}`] = { v: g.teamB.name, s: STYLES.teamHeader };
-    ws['!merges'].push({ s: { r: R-1, c: 0 }, e: { r: R-1, c: statHeaders.length - 1 } });
-    R++;
-    
-    statHeaders.forEach((h, C) => {
-        ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: h, s: STYLES.statHeader };
-    });
-    R++;
-    
-    g.teamB.roster.forEach(p => {
-        const stats = g.teamB.stats[p.number] || {};
-        const row = playerStatsToArray(p, stats);
-        row.forEach((cell, C) => {
-            ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: cell, s: C === 1 ? STYLES.cell : STYLES.cellCenter };
-        });
-        R++;
-    });
-
-    ws['!ref'] = `A1:${XLSX.utils.encode_cell({r: R-1, c: statHeaders.length - 1})}`;
-    ws['!cols'] = colWidths;
-    
-    XLSX.utils.book_append_sheet(wb, ws, 'Box Score');
-    return wb;
+    ws['!merges'].push({ s: { r: R-1, c: 0 }, e: { r: R-1, c: statHeaders.length - 1 } }); R++;
+    statHeaders.forEach((h, C) => { ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: h, s: STYLES.statHeader }; }); R++;
+    g.teamB.roster.forEach(p => { const stats = g.teamB.stats[p.number] || {}; const row = playerStatsToArray(p, stats); row.forEach((cell, C) => { ws[XLSX.utils.encode_cell({r: R-1, c: C})] = { v: cell, s: C === 1 ? STYLES.cell : STYLES.cellCenter }; }); R++; });
+    ws['!ref'] = `A1:${XLSX.utils.encode_cell({r: R-1, c: statHeaders.length - 1})}`; ws['!cols'] = colWidths;
+    XLSX.utils.book_append_sheet(wb, ws, 'Box Score'); return wb;
 }
-
-// This function is now just a data helper
 function playerStatsToArray(player, stats) {
     const s = stats || { totalPoints: 0, freeThrows: 0, fieldGoals: 0, threePointers: 0, offensiveRebounds: 0, defensiveRebounds: 0, assists: 0, steals: 0, blocks: 0, turnovers: 0, fouls: 0, minutes: 0 };
     const totalRebounds = s.offensiveRebounds + s.defensiveRebounds;
-    return [
-        player.number, player.name, 
-        s.totalPoints, s.freeThrows, s.fieldGoals, s.threePointers,
-        s.offensiveRebounds, s.defensiveRebounds, totalRebounds,
-        s.assists, s.steals, s.blocks, s.turnovers, s.fouls, s.minutes
-    ];
+    return [ player.number, player.name, s.totalPoints, s.freeThrows, s.fieldGoals, s.threePointers, s.offensiveRebounds, s.defensiveRebounds, totalRebounds, s.assists, s.steals, s.blocks, s.turnovers, s.fouls, s.minutes ];
 }
 // --- END EXPORT FUNCTIONS ---
 
-function showSpectatorView() {
-    console.log('Showing spectator view');
-    showView('viewer');
-
-    $$('.score-btn, .possession-btn, .master-start-btn, .clock-control-row button, .shot-clock-actions button, [data-action]').forEach(btn => {
-        btn.disabled = true;
-    });
-    $$('.clock-display, .shot-clock-display').forEach(el => {
-        el.title = "Spectator View";
-        el.style.cursor = 'default';
-    });
-    if ($('quickStatPlayer')) $('quickStatPlayer').disabled = true;
-    if ($('statTeamSelect')) $('statTeamSelect').disabled = true;
-    if ($('finalizeGameBtn')) $('finalizeGameBtn').classList.add('hidden');
-    if ($('exportGame')) $('exportGame').classList.add('hidden');
-    if ($('shareGameBtn')) $('shareGameBtn').classList.add('hidden');
-
-
-    if(state.game) updateSpectatorView();
-
-    if (db && state.gameCode) {
-        if (state.firestoreListener) state.firestoreListener();
-        state.firestoreListener = db.collection('games').doc(state.gameCode)
-          .onSnapshot((doc) => {
-              console.log('SpectatorView received snapshot');
-              if (doc.exists) {
-                  state.game = doc.data();
-                  updateSpectatorView();
-                  const newState = state.game.gameState;
-                  if ((newState.gameRunning || newState.shotClockRunning) && !state.timers.masterTimer) {
-                      startMasterTimer();
-                  } else if (!newState.gameRunning && !newState.shotClockRunning && state.timers.masterTimer) {
-                      stopMasterTimer();
-                  }
-              } else {
-                  showToast('Game session has ended', 'error', 3000);
-              }
-          }, (error) => {
-              console.error("Error in Firestore listener:", error);
-              showToast('Connection lost', 'error', 3000);
-          });
-    }
-}
-
+// --- UPDATED: Now updates BOTH spectator views ---
 function updateSpectatorView() {
     if (!state.game) return;
-    $('viewerTeamAName').textContent = state.game.teamA.name;
-    $('viewerTeamBName').textContent = state.game.teamB.name;
-    $('viewerTeamAScore').textContent = state.game.teamA.score;
-    $('viewerTeamBScore').textContent = state.game.teamB.score;
-    $('viewerGameClock').textContent = formatTime(state.game.gameState.gameTime.minutes, state.game.gameState.gameTime.seconds);
-    const viewerShotClock = $('viewerShotClock');
-    if (viewerShotClock && state.game.settings.shotClockDuration > 0) {
-        viewerShotClock.textContent = state.game.gameState.shotClock;
-        viewerShotClock.style.display = 'block';
-    } else if (viewerShotClock) {
-        viewerShotClock.style.display = 'none';
-    }
-    $('viewerPeriod').textContent = state.game.gameState.period;
+    
+    // Common data
+    const gameTime = formatTime(state.game.gameState.gameTime.minutes, state.game.gameState.gameTime.seconds);
+    const periodLabel = state.game.settings.periodType === 'half' ? "HALF" : "QUARTER";
+    const periodNum = getPeriodLabel(state.game.gameState.period);
+    const shotClockVal = state.game.gameState.shotClock;
+    const shotClockOn = state.game.settings.shotClockDuration > 0;
+    const shotClockWarning = shotClockOn && shotClockVal <= 5;
+    
+    // Pro View
     $('viewerGameName').textContent = state.game.settings.gameName;
-    $('viewerPossession').textContent = state.game.gameState.possession === 'teamA' ? state.game.teamA.name : state.game.teamB.name;
+    $('viewerTeamAName').textContent = state.game.teamA.name.toUpperCase();
+    $('viewerTeamAName').style.color = state.game.teamA.color;
+    $('viewerTeamAScore').textContent = state.game.teamA.score;
+    $('viewerTeamBName').textContent = state.game.teamB.name.toUpperCase();
+    $('viewerTeamBName').style.color = state.game.teamB.color;
+    $('viewerTeamBScore').textContent = state.game.teamB.score;
+    $('viewerGameClock').textContent = gameTime;
+    $('viewerQuarterHalfLabel').textContent = periodLabel;
+    $('viewerPeriod').textContent = periodNum;
+    $('viewerShotClockBox').style.display = shotClockOn ? 'block' : 'none';
+    $('viewerShotClock').textContent = shotClockVal;
+    $('viewerShotClock').classList.toggle('warning', shotClockWarning);
+    $('viewerTeamAFouls').textContent = state.game.teamA.fouls;
+    $('viewerTeamATimeouts').textContent = state.game.teamA.timeouts;
+    $('viewerTeamBFouls').textContent = state.game.teamB.fouls;
+    $('viewerTeamBTimeouts').textContent = state.game.teamB.timeouts;
+    
+    // Classic View
+    $('classicViewerGameName').textContent = state.game.settings.gameName;
+    $('classicViewerTeamAName').textContent = state.game.teamA.name;
+    $('classicViewerTeamAScore').textContent = state.game.teamA.score;
+    $('classicViewerTeamBName').textContent = state.game.teamB.name;
+    $('classicViewerTeamBScore').textContent = state.game.teamB.score;
+    $('classicViewerGameClock').textContent = gameTime;
+    $('classicQuarterHalfLabel').textContent = periodLabel;
+    $('classicViewerPeriod').textContent = periodNum;
+    $('classicViewerShotClock').style.display = shotClockOn ? 'block' : 'none';
+    $('classicViewerShotClock').textContent = shotClockVal;
+    $('classicViewerShotClock').classList.toggle('warning', shotClockWarning);
+
+    // Update shared data
+    updatePossessionDisplay();
     updateTopScorerDisplay();
 }
 
@@ -2137,6 +2445,57 @@ function setupAutoSave() {
     if (state.isHost) {
         state.timers.autoSave = setInterval(saveGameState, 30000);
     }
+}
+
+// --- NEW: Keyboard Shortcut Handler ---
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        // Only run shortcuts if in control view and not editing
+        if (state.view !== 'control-view' || state.clockEditing) return;
+        
+        // Don't hijack text inputs
+        const activeEl = document.activeElement;
+        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'SELECT' || activeEl.tagName === 'TEXTAREA')) {
+            return;
+        }
+
+        // --- Handle shortcuts ---
+        switch(e.key) {
+            case ' ': // Spacebar
+                e.preventDefault();
+                toggleMasterGame();
+                break;
+            case 'Enter': // Enter key
+                e.preventDefault();
+                resetShotClockDefaultAndStart();
+                break;
+            case 's': // Start Shot Clock
+                e.preventDefault();
+                startShotClockOnly();
+                break;
+            case 'r': // Reset Shot Clock (14s)
+                e.preventDefault();
+                resetShotClockTo14();
+                break;
+            case 'R': // Reset Shot Clock (Full, no start)
+                e.preventDefault();
+                resetShotClockDefault();
+                break;
+            case 'p': // Toggle Possession
+                e.preventDefault();
+                const newPoss = state.game.gameState.possession === 'teamA' ? 'teamB' : 'teamA';
+                setPossession(newPoss);
+                break;
+            case 'z': // Undo
+                e.preventDefault();
+                handleUndo();
+                break;
+            case 'h': // Help
+                e.preventDefault();
+                $('helpModal').classList.toggle('hidden');
+                break;
+        }
+    });
 }
 
 // ================== INITIALIZER (CALLED BY MAIN.JS) ==================
@@ -2156,15 +2515,15 @@ function init(utils, user, urlParams) {
     state.user = user; // Set user state
 
     // 2. Add global event listeners
-    document.addEventListener('keydown', handle24sResetKey);
+    setupKeyboardShortcuts(); 
 
-    // 3. --- THIS IS THE NEW LOGIC ---
-    // Read the mode from the URL
+    // 3. Read the mode from the URL
     const watchCode = urlParams.get('watch');
     const hostMode = urlParams.get('host'); // 'true' (logged in) or 'free'
+    const resumeCode = urlParams.get('code'); // Check if resuming a game (from sports.html)
 
     if (watchCode) {
-        // This is a spectator, join the game immediately
+        // This is a spectator
         state.isHost = false;
         joinSpectatorMode(watchCode); // This will showView('viewer')
     
@@ -2172,30 +2531,42 @@ function init(utils, user, urlParams) {
         // This is a LOGGED-IN HOST or a GUEST HOST
         state.isHost = true;
         
-        // Show them the landing page
-        showView('landing'); 
-        
-        // Add listeners for the landing page
-        $('watchGameBtn').addEventListener('click', handleWatchGame);
-        $('watchCodeInput').addEventListener('input', handleWatchCodeInput);
-        $('hostGameBtn').addEventListener('click', handleHostGame);
-        $('hostCodeInput').addEventListener('input', (e) => {
-            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-            e.target.value = value;
-        });
+        if (resumeCode) {
+            // User clicked "Resume Game" on sports.html
+            console.log('Resuming game with code:', resumeCode);
+            state.gameCode = resumeCode; // Set the code from URL
+            
+            // Need to load the game data first
+            loadGameState(resumeCode).then(gameData => {
+                if (gameData) {
+                    state.game = gameData;
+                    state.gameType = gameData.gameType;
+                    
+                    if (gameData.status === 'final') {
+                        showToast('This game is finalized. Viewing stats.', 'info', 2000);
+                        joinSpectatorMode(resumeCode);
+                        return;
+                    }
+                    
+                    showView('pre-game-view'); // Go to pre-game screen
+                } else {
+                    showToast(`Game ${resumeCode} not found.`, 'error', 3000);
+                    showView('landing-view'); // Fallback to landing
+                    setupLandingHandlers();
+                }
+            });
+
+        } else {
+            // This is a new game, show the landing page
+            showView('landing-view'); 
+            setupLandingHandlers();
+        }
 
     } else {
         // Fallback (e.g., someone types scoreboard.html?sport=basketball)
-        // Treat as guest
-        state.isHost = true;
-        showView('landing');
-        $('watchGameBtn').addEventListener('click', handleWatchGame);
-        $('watchCodeInput').addEventListener('input', handleWatchCodeInput);
-        $('hostGameBtn').addEventListener('click', handleHostGame);
-        $('hostCodeInput').addEventListener('input', (e) => {
-            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-            e.target.value = value;
-        });
+        // Show the landing page
+        showView('landing-view');
+        setupLandingHandlers();
     }
     
     console.log('✓ Basketball module ready!');

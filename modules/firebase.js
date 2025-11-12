@@ -6,7 +6,7 @@ import "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js";
 
 // YOUR NEW, CORRECT CONFIG
 const firebaseConfig = {
-  apiKey: "AIzaSyCOxfphialDsr8jrwU7Cad2bfakM_2n1H0",
+  apiKey: "AIzaSyCOxfphialDsr8jrwU7Cad2bfakM_2n1H0", // PLEASE ROTATE THIS KEY
   authDomain: "bmsce-box.firebaseapp.com",
   projectId: "bmsce-box",
   storageBucket: "bmsce-box.firebasestorage.app",
@@ -15,6 +15,19 @@ const firebaseConfig = {
   measurementId: "G-P6VC5RQRDY"
 };
 
+// This file runs *before* the page loads to prevent a theme flash.
+
+(function() {
+    const savedTheme = localStorage.getItem('theme');
+    
+    // We now default to 'dark' if no theme is saved or if it's 'dark'.
+    // We only switch to 'light' if it's explicitly saved as 'light'.
+    if (savedTheme === 'light') {
+        document.documentElement.setAttribute('data-color-scheme', 'light');
+    } else {
+        document.documentElement.setAttribute('data-color-scheme', 'dark');
+    }
+})();
 // This is your correct debug token for 127.0.0.1
 self.FIREBASE_APPCHECK_DEBUG_TOKEN = "5790a0e7-e070-43b9-a418-44d1819c3132"; 
 
@@ -29,6 +42,11 @@ try {
   firebase = window.firebase; // <-- NEW: Assign it
   firebase.initializeApp(firebaseConfig);
   
+  // --- THIS IS THE MISSING LINE ---
+  // You must initialize the appCheck service for the debug token to be used
+  firebase.appCheck(); 
+  // --- END MISSING LINE ---
+  
   // Initialize services
   db = firebase.firestore();
   auth = firebase.auth();
@@ -37,7 +55,7 @@ try {
   GoogleProvider = new firebase.auth.GoogleAuthProvider();
 
   console.log("Firebase services initialized successfully from module.");
-  console.log("App Check is in DEBUG MODE.");
+  console.log("App Check is active in DEBUG MODE.");
 
 } catch (e) {
   console.error("Firebase initialization failed:", e);
@@ -45,4 +63,4 @@ try {
 }
 
 // Export the services so other files can import them
-export { db, auth, GoogleProvider, firebase }; // <-- NEW: Export firebase
+export { db, auth, GoogleProvider, firebase };
