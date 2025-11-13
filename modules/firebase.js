@@ -15,19 +15,6 @@ const firebaseConfig = {
   measurementId: "G-P6VC5RQRDY"
 };
 
-// This file runs *before* the page loads to prevent a theme flash.
-
-(function() {
-    const savedTheme = localStorage.getItem('theme');
-    
-    // We now default to 'dark' if no theme is saved or if it's 'dark'.
-    // We only switch to 'light' if it's explicitly saved as 'light'.
-    if (savedTheme === 'light') {
-        document.documentElement.setAttribute('data-color-scheme', 'light');
-    } else {
-        document.documentElement.setAttribute('data-color-scheme', 'dark');
-    }
-})();
 // This is your correct debug token for 127.0.0.1
 self.FIREBASE_APPCHECK_DEBUG_TOKEN = "5790a0e7-e070-43b9-a418-44d1819c3132"; 
 
@@ -42,7 +29,7 @@ try {
   firebase = window.firebase; // <-- NEW: Assign it
   firebase.initializeApp(firebaseConfig);
   
-  // --- THIS IS THE MISSING LINE ---
+  // --- THIS WAS THE MISSING LINE ---
   // You must initialize the appCheck service for the debug token to be used
   firebase.appCheck(); 
   // --- END MISSING LINE ---

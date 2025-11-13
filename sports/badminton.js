@@ -78,6 +78,10 @@ function buildHtml() {
 
 // ================== HELPER FUNCTIONS ==================
 
+function generateGameCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
 function createGameSkeleton(code) {
     return {
         hostId: state.user ? state.user.uid : null,
@@ -223,7 +227,7 @@ function setupFirebaseListener() {
             if (doc.exists) {
                 console.log('Received game update from Firebase');
                 const newGame = doc.data();
-                if (state.isHost && newGame.lastUpdate <= state.game.lastUpdate) {
+                if (state.isHost && state.game && newGame.lastUpdate <= state.game.lastUpdate) {
                     return;
                 }
                 state.game = newGame;
@@ -263,6 +267,7 @@ async function init(utils, user, urlParams) {
     
     const watchCode = urlParams.get('watch');
     const hostMode = urlParams.get('host');
+    const resumeCode = urlParams.get('code'); // <-- NEW
 
     if (watchCode) {
         // --- SPECTATOR ---
@@ -278,13 +283,25 @@ async function init(utils, user, urlParams) {
     } else if (hostMode) {
         // --- HOST ---
         state.isHost = true;
-        state.gameCode = Math.floor(100000 + Math.random() * 900000).toString();
-        state.game = createGameSkeleton(state.gameCode);
-        
-        await saveGameState();
-        
-        if (state.user) {
-            await updateUserProfileWithGame(state.gameCode);
+        if (resumeCode) {
+            // --- HOST IS RESUMING ---
+            state.game = await loadGameState(resumeCode);
+            if (state.game && (state.game.hostId === state.user?.uid || !state.game.hostId)) {
+                state.gameCode = resumeCode;
+                showToast(`Resuming game: ${state.gameCode}`, 'success');
+            } else {
+                showToast(`Game ${resumeCode} not found. Starting new game.`, 'warning');
+                state.gameCode = generateGameCode();
+                state.game = createGameSkeleton(state.gameCode);
+                await saveGameState();
+                if (state.user) await updateUserProfileWithGame(state.gameCode);
+            }
+        } else {
+            // --- HOST IS STARTING NEW GAME ---
+            state.gameCode = generateGameCode();
+            state.game = createGameSkeleton(state.gameCode);
+            await saveGameState();
+            if (state.user) await updateUserProfileWithGame(state.gameCode);
         }
         
     } else {

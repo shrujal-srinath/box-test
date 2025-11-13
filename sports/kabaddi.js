@@ -1,5 +1,4 @@
 // This file exports ONE object: the 'kabaddi' module.
-// This is your existing file, which is well-built and ready.
 
 import { db, firebase } from '../modules/firebase.js';
 
@@ -27,7 +26,6 @@ const state = {
 
 // ================== HTML BUILDER ==================
 function buildHtml() {
-    // This uses the config-first flow
     return `
     <section id="config-view" class="view">
         <div class="container">
@@ -228,6 +226,33 @@ function buildHtml() {
             </div>
         </div>
     </section>
+    
+    <section id="viewer-view" class="view hidden">
+        <div class="container-fluid">
+            <div class="viewer-scoreboard">
+                <div class="viewer-team" id="viewerTeamA">
+                    <h2 id="viewerTeamAName">Team A</h2>
+                    <div class="viewer-score" id="viewerTeamAScore">0</div>
+                </div>
+                <div class="viewer-center" style="display: flex;">
+                    <div class="viewer-clock" id="viewerGameClock" style="display: none;">20:00</div>
+                    <div class="viewer-period" id="viewerHalfArea" style="display: none;">Half <span id="viewerHalf">1</span></div>
+                    <div class="viewer-shot-clock" id="viewerRaidClock" style="display: none;">30</div>
+                </div>
+                <div class="viewer-team" id="viewerTeamB">
+                    <h2 id="viewerTeamBName">Team B</h2>
+                    <div class="viewer-score" id="viewerTeamBScore">0</div>
+                </div>
+            </div>
+            <div class="viewer-info">
+                <div class="game-name" id="viewerGameName">Kabaddi Game</div>
+                <div class="possession-indicator">
+                    <span>Possession:</span>
+                    <span id="viewerPossession">Team A</span>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <div id="editGameClockModal" class="modal hidden">
         <div class="modal-content">
@@ -276,7 +301,7 @@ function generateGameCode() {
 
 function showView(viewName) {
     console.log(`Switching to view: ${viewName}`);
-    const views = ['config', 'control'];
+    const views = ['config', 'control', 'viewer-view']; // 'setup' is removed for now
     
     views.forEach(view => {
         const element = $(`${view}-view`);
@@ -626,14 +651,14 @@ async function joinSpectatorMode(code) {
     state.gameType = savedGame.gameType || 'easy';
     state.isHost = false;
     
-    showControlView(); // Show the main control view
+    showSpectatorView(); // Show the spectator view
 }
 
 function showConfigurationView() {
     console.log('✓ Showing configuration view');
     state.gameCode = generateGameCode();
     
-    showView('config');
+    showView('config-view');
     $('configGameCode').textContent = state.gameCode;
     setupConfigurationHandlers();
 }
@@ -678,7 +703,7 @@ function gatherConfigurationData() {
 
 function showControlView() {
     console.log('Showing control view');
-    showView('control');
+    showView('control-view');
     
     $('controlGameCode').textContent = state.gameCode;
     $('copyControlCode').onclick = (e) => { e.preventDefault(); copyToClipboard(state.gameCode); };
@@ -892,6 +917,52 @@ function updatePossessionDisplay() {
     }
 }
 
+function showSpectatorView() {
+    console.log('Showing spectator view');
+    showView('viewer-view');
+    
+    if (state.game) {
+        const gameClockOn = state.game.settings.enableGameClock;
+        const raidClockOn = state.game.settings.enableRaidClock;
+
+        $('viewerGameClock').style.display = gameClockOn ? 'block' : 'none';
+        $('viewerHalfArea').style.display = gameClockOn ? 'block' : 'none';
+        $('viewerRaidClock').style.display = raidClockOn ? 'block' : 'none';
+        
+        const viewerCenter = $('.viewer-center');
+        if (!gameClockOn && !raidClockOn) {
+            viewerCenter.style.display = 'none';
+        } else {
+            viewerCenter.style.display = 'flex';
+        }
+    }
+
+    if(state.game) updateSpectatorView();
+    setupFirebaseListener(); // Spectators also need the listener
+}
+
+function updateSpectatorView() {
+    if (!state.game) return;
+    $('viewerTeamAName').textContent = state.game.teamA.name;
+    $('viewerTeamBName').textContent = state.game.teamB.name;
+    $('viewerTeamAScore').textContent = state.game.teamA.score;
+    $('viewerTeamBScore').textContent = state.game.teamB.score;
+    $('viewerGameName').textContent = state.game.settings.gameName;
+
+    if (state.game.settings.enableGameClock) {
+        $('viewerGameClock').textContent = formatTime(state.game.gameState.gameTime.minutes, state.game.gameState.gameTime.seconds);
+        $('viewerHalf').textContent = state.game.gameState.half;
+    }
+    if (state.game.settings.enableRaidClock) {
+        $('viewerRaidClock').textContent = state.game.gameState.raidClock;
+    }
+    
+    const viewerPossession = $('viewerPossession');
+    if(viewerPossession) {
+        viewerPossession.textContent = state.game.gameState.possession === 'teamA' ? state.game.teamA.name : state.game.teamB.name;
+    }
+}
+
 function setupFirebaseListener() {
     if (state.firestoreListener) state.firestoreListener(); // Detach old listener
 
@@ -900,18 +971,16 @@ function setupFirebaseListener() {
           console.log('Received game update');
           if (doc.exists) {
               const newGame = doc.data();
-              // If we are not host, just accept the new game state
-              if (!state.isHost) {
-                  state.game = newGame;
-              } else {
-                  // If we are host, only update if the new data is newer
-                  // (prevents overwriting our own changes)
-                  if (newGame.lastUpdate > state.game.lastUpdate) {
-                      state.game = newGame;
-                  }
+              
+              // If we are host, only update if the new data is newer
+              if (state.isHost && state.game && newGame.lastUpdate <= state.game.lastUpdate) {
+                  return; // Our local state is newer, don't overwrite
               }
               
-              updateControlDisplay();
+              state.game = newGame;
+              
+              if(state.view === 'control-view') updateControlDisplay();
+              if(state.view === 'viewer-view') updateSpectatorView();
               
               // Sync timers
               const newState = state.game.gameState;
@@ -943,6 +1012,11 @@ function setupAutoSave() {
 }
 
 // ================== INITIALIZER (CALLED BY MAIN.JS) ==================
+/**
+ * @param {object} utils - The global utilities from main.js
+ * @param {firebase.User | null} user - The authenticated user (or null)
+ * @param {URLSearchParams} urlParams - The URL parameters
+ */
 async function init(utils, user, urlParams) {
     console.log('Kabaddi module initializing...');
     
@@ -954,15 +1028,32 @@ async function init(utils, user, urlParams) {
     
     const watchCode = urlParams.get('watch');
     const hostMode = urlParams.get('host');
+    const resumeCode = urlParams.get('code'); // <-- NEW: Check for resume code
 
     if (watchCode) {
-        // This is a spectator
+        // --- SPECTATOR ---
         state.isHost = false;
         await joinSpectatorMode(watchCode);
+
     } else if (hostMode) {
-        // This is a host
+        // --- HOST ---
         state.isHost = true;
-        showConfigurationView();
+        if (resumeCode) {
+            // --- HOST IS RESUMING ---
+            state.game = await loadGameState(resumeCode);
+            if (state.game && (state.game.hostId === state.user?.uid || !state.game.hostId)) {
+                state.gameCode = resumeCode;
+                state.gameType = state.game.gameType;
+                showToast(`Resuming game: ${state.gameCode}`, 'success');
+                showControlView(); // Go straight to game
+            } else {
+                showToast(`Game ${resumeCode} not found or invalid.`, 'error');
+                showConfigurationView(); // Fallback to new game
+            }
+        } else {
+            // --- HOST IS STARTING NEW GAME ---
+            showConfigurationView();
+        }
     } else {
         // Should not happen, send home
         window.location.href = 'index.html';

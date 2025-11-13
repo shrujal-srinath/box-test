@@ -70,40 +70,40 @@
                             </div>
                         </a>
 
-                        <a href="#" data-sport="kabaddi" class="sport-card-link disabled" onclick="return false;">
-                            <div class="card sport-card landing-card disabled">
+                        <a href="#" data-sport="kabaddi" class="sport-card-link">
+                            <div class="card sport-card landing-card">
                                 <div class="card__body">
                                     <div class="card-icon">🏃‍♂️</div>
                                     <h3>Kabaddi</h3>
-                                    <p>Coming Soon</p>
+                                    <p>Live scoreboard with raid and game timers.</p>
                                 </div>
                             </div>
                         </a>
                         
-                        <a href="#" data-sport="volleyball" class="sport-card-link disabled" onclick="return false;">
-                            <div class="card sport-card landing-card disabled">
+                        <a href="#" data-sport="volleyball" class="sport-card-link">
+                            <div class="card sport-card landing-card">
                                 <div class="card__body">
                                     <div class="card-icon">🏐</div>
                                     <h3>Volleyball</h3>
-                                    <p>Coming Soon</p>
+                                    <p>Score points and track sets won.</p>
                                 </div>
                             </div>
                         </a>
-                        <a href="#" data-sport="badminton" class="sport-card-link disabled" onclick="return false;">
-                            <div class="card sport-card landing-card disabled">
+                        <a href="#" data-sport="badminton" class="sport-card-link">
+                            <div class="card sport-card landing-card">
                                 <div class="card__body">
                                     <div class="card-icon">🏸</div>
                                     <h3>Badminton</h3>
-                                    <p>Coming Soon</p>
+                                    <p>Score points and track games won.</p>
                                 </div>
                             </div>
                         </a>
-                        <a href="#" data-sport="general" class="sport-card-link disabled" onclick="return false;">
-                            <div class="card sport-card landing-card disabled">
+                        <a href="#" data-sport="general" class="sport-card-link">
+                            <div class="card sport-card landing-card">
                                 <div class="card__body">
                                     <div class="card-icon">⭐</div>
                                     <h3>General Points</h3>
-                                    <p>Coming Soon</p>
+                                    <p>A simple +1 / -1 scoreboard for any event.</p>
                                 </div>
                             </div>
                         </a>
@@ -379,10 +379,11 @@
             const isFinal = game.status === 'final';
             const sport = game.sport || 'basketball'; // Default to basketball
             
-            // If final, link to spectator view. If not, link to host view.
+            // --- THIS IS THE FIX ---
+            // 'Resume Game' now passes the game code in the URL
             const gameUrl = isFinal
                 ? `scoreboard.html?watch=${game.code}&sport=${sport}`
-                : `scoreboard.html?host=true&sport=${sport}`;
+                : `scoreboard.html?host=true&sport=${sport}&code=${game.code}`;
             
             const buttonText = isFinal ? 'View Stats' : 'Resume Game';
             const buttonClass = isFinal ? 'btn--secondary' : 'btn--primary'; // Grey for stats, blue for resume
@@ -390,6 +391,9 @@
             let icon = '⭐';
             if (sport === 'basketball') icon = '🏀';
             if (sport === 'kabaddi') icon = '🏃‍♂️';
+            if (sport === 'volleyball') icon = '🏐';
+            if (sport === 'badminton') icon = '🏸';
+
             
             // Card is now just a single link, no separate export button
             return `
