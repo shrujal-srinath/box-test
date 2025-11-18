@@ -127,7 +127,7 @@ function buildHtml() {
                                     <label style="display: flex; align-items: center; gap: 8px; font-size: 16px;">
                                         <input type="radio" name="periodType" value="half"> Halves (2)
                                     </label>
-                                </div>
+                                </div >
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Duration (Mins)</label>
@@ -491,7 +491,7 @@ function buildHtml() {
                                             </tr>
                                         </thead>
                                         <tbody id="comprehensiveStatsTableBody">
-                                        </tbody>
+                                        </t body>
                                     </table>
                                 </div>
                             </div>
@@ -895,67 +895,82 @@ function handleShotClockViolation() {
     }
 }
 
+// --- MODIFIED: Implemented Delta Time Logic to prevent clock drift ---
 function startMasterTimer() {
     if (state.timers.masterTimer) {
         clearInterval(state.timers.masterTimer);
     }
     
+    let lastTick = Date.now(); // Initialize last tick time
+
     state.timers.masterTimer = setInterval(() => {
         if (!state.game) {
             stopMasterTimer();
             return;
         }
-        
-        let updated = false;
-        
-        if (state.game.gameState.gameRunning) {
-            if (state.game.gameState.gameTime.seconds > 0) {
-                state.game.gameState.gameTime.seconds--;
-                updated = true;
-            } else if (state.game.gameState.gameTime.minutes > 0) {
-                state.game.gameState.gameTime.minutes--;
-                state.game.gameState.gameTime.seconds = 59;
-                updated = true;
-            } else {
-                state.game.gameState.gameRunning = false;
-                state.game.gameState.shotClockRunning = false;
-                if(state.isHost) {
-                    showToast('Period ended!', 'warning', 3000);
-                    saveGameState();
-                }
-            }
-        }
-        
-        if (state.game.gameState.shotClockRunning && state.game.settings.shotClockDuration > 0) {
-            if (state.game.gameState.shotClock > 0) {
-                state.game.gameState.shotClock--;
-                updated = true;
-                
-                if (state.game.gameState.shotClock <= 5) {
-                    $('shotClockDisplay')?.classList.add('warning');
-                    $('viewerShotClock')?.classList.add('warning');
-                    $('classicViewerShotClock')?.classList.add('warning');
-                }
-            } else {
-                if (state.isHost) {
-                    handleShotClockViolation();
-                } else {
-                    state.game.gameState.shotClockRunning = false;
-                }
-                updated = true;
-            }
-        }
-        
-        if (updated) {
-            if (state.view.startsWith('control')) updateControlDisplay();
-            if (state.view.startsWith('viewer')) updateSpectatorView();
-        }
 
-        if (!state.game.gameState.gameRunning && !state.game.gameState.shotClockRunning) {
-            stopMasterTimer();
-            if (state.view.startsWith('control') && $('startGameBtn')) updateMasterStartButton();
+        const now = Date.now();
+        const delta = now - lastTick; 
+
+        if (delta >= 1000) {
+            const secondsPassed = Math.floor(delta / 1000);
+            lastTick = now - (delta % 1000); 
+
+            let updated = false;
+
+            // --- GAME CLOCK LOGIC ---
+            if (state.game.gameState.gameRunning) {
+                let totalSeconds = (state.game.gameState.gameTime.minutes * 60) + state.game.gameState.gameTime.seconds;
+                
+                if (totalSeconds > 0) {
+                    totalSeconds = Math.max(0, totalSeconds - secondsPassed); 
+                    state.game.gameState.gameTime.minutes = Math.floor(totalSeconds / 60);
+                    state.game.gameState.gameTime.seconds = totalSeconds % 60;
+                    updated = true;
+                } else {
+                    // Time is up logic...
+                    state.game.gameState.gameRunning = false;
+                    state.game.gameState.shotClockRunning = false;
+                    if(state.isHost) {
+                        showToast('Period ended!', 'warning', 3000);
+                        saveGameState();
+                    }
+                }
+            }
+            
+            // --- SHOT CLOCK LOGIC ---
+            if (state.game.gameState.shotClockRunning && state.game.settings.shotClockDuration > 0) {
+                if (state.game.gameState.shotClock > 0) {
+                    state.game.gameState.shotClock = Math.max(0, state.game.gameState.shotClock - secondsPassed);
+                    updated = true;
+                    
+                    if (state.game.gameState.shotClock <= 5) {
+                        $('shotClockDisplay')?.classList.add('warning');
+                        $('viewerShotClock')?.classList.add('warning');
+                        $('classicViewerShotClock')?.classList.add('warning');
+                    }
+                } else {
+                    if (state.isHost) {
+                        handleShotClockViolation();
+                    } else {
+                        state.game.gameState.shotClockRunning = false;
+                    }
+                    updated = true;
+                }
+            }
+
+
+            if (updated) {
+                if (state.view.startsWith('control')) updateControlDisplay();
+                if (state.view.startsWith('viewer')) updateSpectatorView();
+            }
+
+            if (!state.game.gameState.gameRunning && !state.game.gameState.shotClockRunning) {
+                stopMasterTimer();
+                if (state.view.startsWith('control') && $('startGameBtn')) updateMasterStartButton();
+            }
         }
-    }, 1000);
+    }, 100); // Check every 100ms for higher precision
 }
 
 function stopMasterTimer() {
@@ -1570,6 +1585,7 @@ function showSpectatorView() {
                   state.game = doc.data();
                   updateSpectatorView();
                   const newState = state.game.gameState;
+                  // Spectator view starts/stops the timer locally based on the host's state
                   if ((newState.gameRunning || newState.shotClockRunning) && !state.timers.masterTimer) {
                       startMasterTimer();
                   } else if (!newState.gameRunning && !newState.shotClockRunning && state.timers.masterTimer) {
@@ -1908,6 +1924,7 @@ function showControlView() {
               console.log('ControlView received snapshot');
               if (doc.exists) {
                   const newGame = doc.data();
+                  // Host only updates if receiving newer data from another sync client/user
                   if (!state.game || newGame.lastUpdate > state.game.lastUpdate) {
                       state.game = newGame;
                       updateControlDisplay();
@@ -1918,6 +1935,7 @@ function showControlView() {
                   }
                   
                   const newState = state.game.gameState;
+                  // Sync timers
                   if ((newState.gameRunning || newState.shotClockRunning) && !state.timers.masterTimer) {
                       startMasterTimer();
                   } else if (!newState.gameRunning && !newState.shotClockRunning && state.timers.masterTimer) {
@@ -2175,15 +2193,15 @@ function getPeriodLabel(periodNumber) {
     if (periodNumber <= periodCount) {
         // Regular period
         if (periodType === 'half') {
-            return periodNumber === 1 ? "1st" : "2nd";
+            return periodNumber === 1 ? "1st Half" : "2nd Half";
         } else {
             // Quarters
             switch (periodNumber) {
-                case 1: return "1st";
-                case 2: return "2nd";
-                case 3: return "3rd";
-                case 4: return "4th";
-                default: return `${periodNumber}th`;
+                case 1: return "1st Quarter";
+                case 2: return "2nd Quarter";
+                case 3: return "3rd Quarter";
+                case 4: return "4th Quarter";
+                default: return `${periodNumber}th Quarter`;
             }
         }
     } else {
@@ -2194,28 +2212,39 @@ function getPeriodLabel(periodNumber) {
 }
 
 
+// --- MODIFIED: Added confirmation and team foul reset ---
 function nextPeriodFunc() {
     if (!state.game || !state.isHost) return;
-    snapshotState("Next Period"); // Log for undo
     
-    // Increment period
-    state.game.gameState.period++;
+    const nextPeriod = state.game.gameState.period + 1;
+    const periodName = getPeriodLabel(nextPeriod);
 
-    // Reset clocks
-    state.game.gameState.gameTime.minutes = state.game.settings.periodDuration;
-    state.game.gameState.gameTime.seconds = 0;
-    if (state.game.settings.shotClockDuration > 0) {
-        state.game.gameState.shotClock = state.game.settings.shotClockDuration;
+    if (confirm(`Are you sure you want to advance to ${periodName}? \n\nTeam Fouls will be reset to 0.`)) {
+        snapshotState("Next Period"); // Log for undo
+
+        // Increment period
+        state.game.gameState.period = nextPeriod;
+
+        // Reset clocks
+        state.game.gameState.gameTime.minutes = state.game.settings.periodDuration;
+        state.game.gameState.gameTime.seconds = 0;
+        if (state.game.settings.shotClockDuration > 0) {
+            state.game.gameState.shotClock = state.game.settings.shotClockDuration;
+        }
+
+        // Reset Team Fouls (Standard Basketball Rule for most periods)
+        state.game.teamA.fouls = 0;
+        state.game.teamB.fouls = 0;
+        
+        state.game.gameState.gameRunning = false;
+        state.game.gameState.shotClockRunning = false;
+        stopMasterTimer();
+        updateControlDisplay();
+        updateMasterStartButton();
+        saveGameState();
+        
+        showToast(`Starting ${periodName}`, 'info', 2000);
     }
-    state.game.gameState.gameRunning = false;
-    state.game.gameState.shotClockRunning = false;
-    stopMasterTimer();
-    updateControlDisplay();
-    updateMasterStartButton();
-    saveGameState();
-    
-    const periodName = getPeriodLabel(state.game.gameState.period);
-    showToast(`Starting ${periodName}`, 'info', 2000);
 }
 
 function updateScore(team, points) {
@@ -2263,8 +2292,9 @@ function updateControlDisplay() {
     // Update Quarter/Half label
     const periodLabel = state.game.settings.periodType === 'half' ? "Half" : "Quarter";
     $('quarterHalfLabel').textContent = periodLabel;
-    $('periodDisplay').textContent = getPeriodLabel(state.game.gameState.period);
-    
+    // We now use getPeriodLabel for period display to show correct OT/Quarter/Half
+    $('periodDisplay').textContent = getPeriodLabel(state.game.gameState.period).split(' ')[0]; // Just the number/OT label
+
     $('teamATimeouts').textContent = state.game.teamA.timeouts;
     $('teamBTimeouts').textContent = state.game.teamB.timeouts;
     $('teamAFouls').textContent = state.game.teamA.fouls;
@@ -2397,7 +2427,7 @@ function updateSpectatorView() {
     // Common data
     const gameTime = formatTime(state.game.gameState.gameTime.minutes, state.game.gameState.gameTime.seconds);
     const periodLabel = state.game.settings.periodType === 'half' ? "HALF" : "QUARTER";
-    const periodNum = getPeriodLabel(state.game.gameState.period);
+    const periodNum = getPeriodLabel(state.game.gameState.period).split(' ')[0]; // Just the number/OT label
     const shotClockVal = state.game.gameState.shotClock;
     const shotClockOn = state.game.settings.shotClockDuration > 0;
     const shotClockWarning = shotClockOn && shotClockVal <= 5;

@@ -351,35 +351,47 @@ function handleRaidClockEnd() {
     }
 }
 
+// --- MODIFIED: Implemented Delta Time Logic to prevent game clock drift ---
 function startGameTimer() {
     if (state.timers.gameTimer) {
         clearInterval(state.timers.gameTimer);
     }
+
+    let lastTick = Date.now(); // Initialize last tick time
     
     state.timers.gameTimer = setInterval(() => {
         if (!state.game || !state.game.gameState.gameRunning) {
             stopGameTimer();
             return;
         }
-        
-        if (state.game.gameState.gameTime.seconds > 0) {
-            state.game.gameState.gameTime.seconds--;
-        } else if (state.game.gameState.gameTime.minutes > 0) {
-            state.game.gameState.gameTime.minutes--;
-            state.game.gameState.gameTime.seconds = 59;
-        } else {
-            state.game.gameState.gameRunning = false;
-            stopGameTimer();
-            stopRaidTimer();
-            if(state.isHost) {
-                showToast('Half ended!', 'warning', 3000);
-                saveGameState();
-            }
-        }
-        
-        updateClocksUI();
 
-    }, 1000);
+        const now = Date.now();
+        const delta = now - lastTick;
+
+        if (delta >= 1000) {
+            const secondsPassed = Math.floor(delta / 1000);
+            lastTick = now - (delta % 1000);
+
+            // Convert current time to total seconds
+            let totalSeconds = (state.game.gameState.gameTime.minutes * 60) + state.game.gameState.gameTime.seconds;
+
+            if (totalSeconds > 0) {
+                totalSeconds = Math.max(0, totalSeconds - secondsPassed);
+                state.game.gameState.gameTime.minutes = Math.floor(totalSeconds / 60);
+                state.game.gameState.gameTime.seconds = totalSeconds % 60;
+            } else {
+                state.game.gameState.gameRunning = false;
+                stopGameTimer();
+                stopRaidTimer();
+                if(state.isHost) {
+                    showToast('Half ended!', 'warning', 3000);
+                    saveGameState();
+                }
+            }
+        
+            updateClocksUI();
+        }
+    }, 100); // Check every 100ms for precision
 }
 
 function stopGameTimer() {
@@ -429,10 +441,13 @@ function updateGameClockButton() {
     }
 }
 
+// --- MODIFIED: Implemented Delta Time Logic to prevent raid clock drift ---
 function startRaidTimerInterval() {
     if (state.timers.raidTimer) {
         clearInterval(state.timers.raidTimer);
     }
+
+    let lastTick = Date.now(); // Initialize last tick time
 
     state.timers.raidTimer = setInterval(() => {
         if (!state.game || !state.game.gameState.raidRunning) {
@@ -440,19 +455,27 @@ function startRaidTimerInterval() {
             return;
         }
 
-        if (state.game.gameState.raidClock > 0) {
-            state.game.gameState.raidClock--;
-        } else {
-            state.game.gameState.raidRunning = false;
-            stopRaidTimer();
-            if (state.isHost) {
-                handleRaidClockEnd(); 
-            }
-        }
-        
-        updateClocksUI();
+        const now = Date.now();
+        const delta = now - lastTick;
 
-    }, 1000);
+        if (delta >= 1000) {
+            const secondsPassed = Math.floor(delta / 1000);
+            lastTick = now - (delta % 1000);
+
+            if (state.game.gameState.raidClock > 0) {
+                state.game.gameState.raidClock = Math.max(0, state.game.gameState.raidClock - secondsPassed);
+            } else {
+                state.game.gameState.raidRunning = false;
+                stopRaidTimer();
+                if (state.isHost) {
+                    handleRaidClockEnd(); 
+                }
+            }
+            
+            updateClocksUI();
+        }
+
+    }, 100); // Check every 100ms for precision
 }
 
 function startRaidTimer() {
@@ -982,7 +1005,7 @@ function setupFirebaseListener() {
               if(state.view === 'control-view') updateControlDisplay();
               if(state.view === 'viewer-view') updateSpectatorView();
               
-              // Sync timers
+              // Sync timers (start/stop is handled here, the interval logic handles delta)
               const newState = state.game.gameState;
               if (newState.gameRunning && !state.timers.gameTimer) {
                   startGameTimer();

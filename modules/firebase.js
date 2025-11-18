@@ -15,9 +15,6 @@ const firebaseConfig = {
   measurementId: "G-P6VC5RQRDY"
 };
 
-// This is your correct debug token for 127.0.0.1
-self.FIREBASE_APPCHECK_DEBUG_TOKEN = "5790a0e7-e070-43b9-a418-44d1819c3132"; 
-
 // Initialize Firebase
 let db;
 let auth;
@@ -29,10 +26,15 @@ try {
   firebase = window.firebase; // <-- NEW: Assign it
   firebase.initializeApp(firebaseConfig);
   
-  // --- THIS WAS THE MISSING LINE ---
+  // --- START NEW SECURITY CHECK: Only use debug token on localhost ---
+  if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+    self.FIREBASE_APPCHECK_DEBUG_TOKEN = "5790a0e7-e070-43b9-a418-44d1819c3132"; 
+    console.log("App Check running in DEBUG mode.");
+  }
+  // --- END NEW SECURITY CHECK ---
+
   // You must initialize the appCheck service for the debug token to be used
   firebase.appCheck(); 
-  // --- END MISSING LINE ---
   
   // Initialize services
   db = firebase.firestore();
@@ -42,7 +44,7 @@ try {
   GoogleProvider = new firebase.auth.GoogleAuthProvider();
 
   console.log("Firebase services initialized successfully from module.");
-  console.log("App Check is active in DEBUG MODE.");
+  // Removed the debug mode log from the end since it's now in the check
 
 } catch (e) {
   console.error("Firebase initialization failed:", e);
