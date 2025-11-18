@@ -26,7 +26,9 @@ const state = {
     selectedPlayer: null,
     actionHistory: [], // For the Undo feature
     clockEditing: false,
-    firestoreListener: null
+    firestoreListener: null,
+    // --- NEW: Theme state for viewer ---
+    viewerTheme: localStorage.getItem('viewerTheme') || 'system', // 'system', 'light', 'dark', 'professional'
 };
 
 // ================== HTML BUILDER ==================
@@ -127,7 +129,7 @@ function buildHtml() {
                                     <label style="display: flex; align-items: center; gap: 8px; font-size: 16px;">
                                         <input type="radio" name="periodType" value="half"> Halves (2)
                                     </label>
-                                </div >
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Duration (Mins)</label>
@@ -491,7 +493,7 @@ function buildHtml() {
                                             </tr>
                                         </thead>
                                         <tbody id="comprehensiveStatsTableBody">
-                                        </t body>
+                                        </tbody>
                                     </table>
                                 </div>
                             </div>
@@ -748,6 +750,24 @@ function buildHtml() {
             </div>
         </div>
     </div>
+
+    <div id="viewerSettingsModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 300px;">
+            <h3>Viewer Settings</h3>
+            <p style="color: var(--color-text-secondary); margin-bottom: 20px;">
+                Choose your preferred display theme:
+            </p>
+            <div class="theme-selection-grid" style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="system">System Default</button>
+                <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="light">Light Mode</button>
+                <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="dark">Dark Mode</button>
+                <button class="btn btn--primary btn--full-width viewer-theme-btn" data-theme="professional">Professional Black</button>
+            </div>
+            <div class="modal-actions" style="justify-content: center; margin-top: 20px;">
+                <button id="closeViewerSettingsModal" class="btn btn--outline">Close</button>
+            </div>
+        </div>
+    </div>
     `;
 }
 
@@ -848,6 +868,16 @@ function showView(viewName) {
     if (viewName === 'pre-game-view') {
         setupPreGameHandlers();
     }
+    
+    // Apply theme on view switch to ensure persistence, particularly for the host
+    if (viewName.startsWith('viewer')) {
+        setViewerTheme(state.viewerTheme);
+    } else {
+        // Reset global theme to system/saved for non-viewer pages
+        document.documentElement.removeAttribute('data-color-scheme');
+        const rootContainer = $('root-container');
+        if (rootContainer) rootContainer.classList.remove('viewer-theme-pro-mode');
+    }
 
     if (viewName === 'landing-view' || viewName === 'config-view') {
         if (state.firestoreListener) {
@@ -877,6 +907,7 @@ function playShotClockViolationBuzzer() {
     }
 }
 
+// --- UPDATED: Toast message changed per user request ---
 function handleShotClockViolation() {
     console.log('Shot clock violation!');
     playShotClockViolationBuzzer();
@@ -891,7 +922,8 @@ function handleShotClockViolation() {
         state.game.gameState.shotClock = 0;
         updateControlDisplay();
         saveGameState();
-        showToast('Shot clock stopped - use restart buttons', 'warning', 4000);
+        // --- NEW MESSAGE ---
+        showToast('Shot clock stopped - press ENTER to reset and start the clock.', 'warning', 4000);
     }
 }
 
@@ -1191,6 +1223,71 @@ function showGuestHostModal() {
             modal.classList.add('hidden');
             sessionStorage.setItem('guestWarningShown', 'true');
         };
+    }
+}
+
+// --- NEW: Theme Settings Modal for Spectators ---
+function showViewerSettingsModal() {
+    const modal = $('viewerSettingsModal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+
+    $('closeViewerSettingsModal').onclick = () => {
+        modal.classList.add('hidden');
+    };
+    
+    // Highlight the currently selected theme button
+    $$('.viewer-theme-btn').forEach(btn => {
+        btn.classList.remove('btn--primary');
+        btn.classList.add('btn--secondary');
+        if (btn.dataset.theme === state.viewerTheme) {
+            btn.classList.add('btn--primary');
+            btn.classList.remove('btn--secondary');
+        }
+    });
+
+    // Attach click listeners to all theme buttons
+    $$('.viewer-theme-btn').forEach(btn => {
+        btn.onclick = () => {
+            setViewerTheme(btn.dataset.theme);
+            showViewerSettingsModal(); // Re-render the modal to update button style
+        };
+    });
+}
+
+// --- NEW: Function to set viewer theme ---
+function setViewerTheme(theme) {
+    if (!theme) return;
+    
+    state.viewerTheme = theme;
+    localStorage.setItem('viewerTheme', theme);
+    
+    const html = document.documentElement;
+    const rootContainer = $('root-container');
+    
+    // 1. Handle Global Theme (Light/Dark/System)
+    if (theme === 'light') {
+        html.setAttribute('data-color-scheme', 'light');
+        html.style.backgroundColor = '';
+    } else if (theme === 'dark' || theme === 'professional') {
+        // Professional mode also forces dark mode globally for body/background consistency
+        html.setAttribute('data-color-scheme', 'dark');
+    } else {
+        // System default (theme-loader handles this on load)
+        html.removeAttribute('data-color-scheme'); 
+    }
+    
+    // 2. Handle Professional/Viewer Specific Theme Override
+    if (rootContainer) {
+        rootContainer.classList.remove('viewer-theme-pro-mode');
+        rootContainer.classList.remove('viewer-theme-classic-mode');
+
+        if (state.view === 'viewer-view-pro' && theme === 'professional') {
+            rootContainer.classList.add('viewer-theme-pro-mode');
+        }
+        
+        // Ensure the scoreboard is updated to reflect any color changes
+        updateSpectatorView();
     }
 }
 
@@ -1543,6 +1640,10 @@ async function joinSpectatorMode(code) {
     state.gameType = savedGame.gameType || 'friendly';
     state.isHost = false; 
     
+    // Load and apply viewer theme immediately
+    state.viewerTheme = localStorage.getItem('viewerTheme') || 'system';
+    setViewerTheme(state.viewerTheme);
+    
     showSpectatorView(); // This function now handles which view (pro/classic) to show
 }
 
@@ -1556,6 +1657,7 @@ function toggleSpectatorView() {
         localStorage.setItem('spectatorMode', 'pro');
         showView('viewer-view-pro');
     }
+    // No need to re-attach listeners, just call the modal function from the shared spot.
     updateSpectatorView(); // Re-populate the new view
 }
 
@@ -1569,9 +1671,12 @@ function showSpectatorView() {
         showView('viewer-view-pro');
     }
     
-    // Attach listeners for the toggle buttons
-    $('toggleViewPro').onclick = toggleSpectatorView;
-    $('toggleViewClassic').onclick = toggleSpectatorView;
+    // Attach listeners for the settings buttons to show the theme modal
+    const togglePro = $('toggleViewPro');
+    const toggleClassic = $('toggleViewClassic');
+    
+    if (togglePro) togglePro.onclick = showViewerSettingsModal;
+    if (toggleClassic) toggleClassic.onclick = showViewerSettingsModal;
 
     // All controls are naturally hidden in this view
     if(state.game) updateSpectatorView();
@@ -1585,7 +1690,6 @@ function showSpectatorView() {
                   state.game = doc.data();
                   updateSpectatorView();
                   const newState = state.game.gameState;
-                  // Spectator view starts/stops the timer locally based on the host's state
                   if ((newState.gameRunning || newState.shotClockRunning) && !state.timers.masterTimer) {
                       startMasterTimer();
                   } else if (!newState.gameRunning && !newState.shotClockRunning && state.timers.masterTimer) {
@@ -1924,7 +2028,6 @@ function showControlView() {
               console.log('ControlView received snapshot');
               if (doc.exists) {
                   const newGame = doc.data();
-                  // Host only updates if receiving newer data from another sync client/user
                   if (!state.game || newGame.lastUpdate > state.game.lastUpdate) {
                       state.game = newGame;
                       updateControlDisplay();
@@ -1935,7 +2038,6 @@ function showControlView() {
                   }
                   
                   const newState = state.game.gameState;
-                  // Sync timers
                   if ((newState.gameRunning || newState.shotClockRunning) && !state.timers.masterTimer) {
                       startMasterTimer();
                   } else if (!newState.gameRunning && !newState.shotClockRunning && state.timers.masterTimer) {
@@ -2212,7 +2314,6 @@ function getPeriodLabel(periodNumber) {
 }
 
 
-// --- MODIFIED: Added confirmation and team foul reset ---
 function nextPeriodFunc() {
     if (!state.game || !state.isHost) return;
     
@@ -2292,9 +2393,8 @@ function updateControlDisplay() {
     // Update Quarter/Half label
     const periodLabel = state.game.settings.periodType === 'half' ? "Half" : "Quarter";
     $('quarterHalfLabel').textContent = periodLabel;
-    // We now use getPeriodLabel for period display to show correct OT/Quarter/Half
-    $('periodDisplay').textContent = getPeriodLabel(state.game.gameState.period).split(' ')[0]; // Just the number/OT label
-
+    $('periodDisplay').textContent = getPeriodLabel(state.game.gameState.period).split(' ')[0];
+    
     $('teamATimeouts').textContent = state.game.teamA.timeouts;
     $('teamBTimeouts').textContent = state.game.teamB.timeouts;
     $('teamAFouls').textContent = state.game.teamA.fouls;
@@ -2427,19 +2527,35 @@ function updateSpectatorView() {
     // Common data
     const gameTime = formatTime(state.game.gameState.gameTime.minutes, state.game.gameState.gameTime.seconds);
     const periodLabel = state.game.settings.periodType === 'half' ? "HALF" : "QUARTER";
-    const periodNum = getPeriodLabel(state.game.gameState.period).split(' ')[0]; // Just the number/OT label
+    const periodNum = getPeriodLabel(state.game.gameState.period).split(' ')[0];
     const shotClockVal = state.game.gameState.shotClock;
     const shotClockOn = state.game.settings.shotClockDuration > 0;
     const shotClockWarning = shotClockOn && shotClockVal <= 5;
     
+    // --- BEGIN Professional Theme Color Handling (for viewer-pro only) ---
+    const rootContainer = $('root-container');
+    if (rootContainer && rootContainer.classList.contains('viewer-theme-pro-mode')) {
+        // Apply team colors as CSS variables for the Pro theme to use
+        rootContainer.style.setProperty('--viewer-team-a-color', state.game.teamA.color);
+        rootContainer.style.setProperty('--viewer-team-b-color', state.game.teamB.color);
+    }
+    // --- END Professional Theme Color Handling ---
+
+    
     // Pro View
     $('viewerGameName').textContent = state.game.settings.gameName;
     $('viewerTeamAName').textContent = state.game.teamA.name.toUpperCase();
-    $('viewerTeamAName').style.color = state.game.teamA.color;
+    // Only set inline color if NOT in professional mode
+    if (!rootContainer || !rootContainer.classList.contains('viewer-theme-pro-mode')) {
+        $('viewerTeamAName').style.color = state.game.teamA.color;
+        $('viewerTeamBName').style.color = state.game.teamB.color;
+    } else {
+        $('viewerTeamAName').style.color = '';
+        $('viewerTeamBName').style.color = '';
+    }
     $('viewerTeamAScore').textContent = state.game.teamA.score;
-    $('viewerTeamBName').textContent = state.game.teamB.name.toUpperCase();
-    $('viewerTeamBName').style.color = state.game.teamB.color;
     $('viewerTeamBScore').textContent = state.game.teamB.score;
+    
     $('viewerGameClock').textContent = gameTime;
     $('viewerQuarterHalfLabel').textContent = periodLabel;
     $('viewerPeriod').textContent = periodNum;
