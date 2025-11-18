@@ -2858,3 +2858,35 @@ input:checked + .theme-slider:before {
   text-align: center;
   line-height: 1.3;
 }
+/* =========================================
+   MOBILE OVERRIDES
+   (Only applies if screen is smaller than 768px)
+   ========================================= */
+@media only screen and (max-width: 768px) {
+
+    /* 1. FIX THE LAYOUT */
+    .scoreboard-container, .main-wrapper {
+        display: flex;
+        flex-direction: column; /* Stacks items vertically instead of side-by-side */
+        width: 100%;
+    }
+
+    /* 2. FIX THE "BARELY VISIBLE" COLORS */
+    /* This overrides colors ONLY on the phone, keeping laptop unchanged */
+    body {
+        background-color: #000000; /* High contrast black for outdoor visibility */
+        color: #ffffff;
+    }
+
+    .team-score, .shot-clock {
+        font-size: 12vw; /* Scales text based on phone width, not fixed pixels */
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.8); /* Glow effect for visibility */
+    }
+
+    /* 3. MAKE BUTTONS TAP-FRIENDLY */
+    button {
+        padding: 15px 20px; /* Fatter buttons for fingers */
+        margin: 5px;
+        width: 100%; /* Full width buttons are easier to hit */
+    }
+}
