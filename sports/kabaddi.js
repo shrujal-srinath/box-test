@@ -733,25 +733,44 @@ function showControlView() {
     
     const gameClockOn = state.game.settings.enableGameClock;
     const raidClockOn = state.game.settings.enableRaidClock;
-    $('gameClockSection').style.display = gameClockOn ? 'flex' : 'none';
-    $('raidClockSection').style.display = raidClockOn ? 'flex' : 'none';
     
-    const clockSection = $('.clock-section');
-    if (gameClockOn && raidClockOn) {
-        clockSection.style.flexDirection = 'column';
-    } else {
-        clockSection.style.flexDirection = 'row'; 
-    }
-    if (!gameClockOn && !raidClockOn) {
-        clockSection.style.display = 'none';
-    } else {
-        clockSection.style.display = 'flex';
+    // Check if the sections exist before setting style
+    const gameClockSection = $('gameClockSection');
+    const raidClockSection = $('raidClockSection');
+    if (gameClockSection) gameClockSection.style.display = gameClockOn ? 'flex' : 'none';
+    if (raidClockSection) raidClockSection.style.display = raidClockOn ? 'flex' : 'none';
+    
+    const clockSection = document.querySelector('.clock-section');
+    if (clockSection) {
+        if (gameClockOn && raidClockOn) {
+            clockSection.style.flexDirection = 'column';
+        } else {
+            clockSection.style.flexDirection = 'row'; 
+        }
+        if (!gameClockOn && !raidClockOn) {
+            clockSection.style.display = 'none';
+        } else {
+            clockSection.style.display = 'flex';
+        }
     }
 
+
+    // --- FIX: Correctly access class selectors using querySelector ---
+    const possessionControls = document.querySelector('.possession-controls');
+    const masterClockControls = document.querySelector('.master-clock-controls');
+    const shotClockActions = document.querySelector('.shot-clock-actions');
+    // --- END FIX ---
+    
     // Show/hide host controls based on state.isHost
     $$('.host-control').forEach(el => {
-        el.style.display = state.isHost ? 'flex' : 'none'; // 'flex' for buttons, 'block' for inputs
+        // Use explicit styles to ensure visibility
+        if (el.tagName === 'INPUT') {
+            el.style.display = state.isHost ? 'block' : 'none';
+        } else if (el.tagName === 'BUTTON' || el.classList.contains('host-control')) {
+            el.style.display = state.isHost ? 'flex' : 'none';
+        }
     });
+    
     // Handle special cases
     if(state.isHost) {
         $('teamANameInput').style.display = 'block';
@@ -759,9 +778,13 @@ function showControlView() {
         $('teamANameDisplay').style.display = 'none';
         $('teamBNameDisplay').style.display = 'none';
         $('possessionDisplay').style.display = 'none';
-        $('.possession-controls').style.display = 'flex';
-        $('.master-clock-controls').style.display = 'flex';
-        $('.shot-clock-actions').style.display = 'grid';
+        
+        // --- FIXED CRASHING LINES ---
+        if (possessionControls) possessionControls.style.display = 'flex';
+        if (masterClockControls) masterClockControls.style.display = 'flex';
+        if (shotClockActions) shotClockActions.style.display = 'grid';
+        // --- END FIXED CRASHING LINES ---
+        
     } else {
         // Is Spectator
         $('teamANameInput').style.display = 'none';
@@ -769,9 +792,13 @@ function showControlView() {
         $('teamANameDisplay').style.display = 'block';
         $('teamBNameDisplay').style.display = 'block';
         $('possessionDisplay').style.display = 'block';
-        $('.possession-controls').style.display = 'none';
-        $('.master-clock-controls').style.display = 'none';
-        $('.shot-clock-actions').style.display = 'none';
+
+        // --- FIXED CRASHING LINES ---
+        if (possessionControls) possessionControls.style.display = 'none';
+        if (masterClockControls) masterClockControls.style.display = 'none';
+        if (shotClockActions) shotClockActions.style.display = 'none';
+        // --- END FIXED CRASHING LINES ---
+
         $('finalizeGameBtn').style.display = 'none';
     }
 
@@ -931,12 +958,13 @@ function updatePossessionDisplay() {
         const btnA = $('possessionTeamA');
         const btnB = $('possessionTeamB');
         const isTeamA = state.game.gameState.possession === 'teamA';
-        btnA.classList.toggle('active', isTeamA);
-        btnB.classList.toggle('active', !isTeamA);
-        btnA.textContent = state.game.teamA.name;
-        btnB.textContent = state.game.teamB.name;
+        if (btnA) btnA.classList.toggle('active', isTeamA);
+        if (btnB) btnB.classList.toggle('active', !isTeamA);
+        if (btnA) btnA.textContent = state.game.teamA.name;
+        if (btnB) btnB.textContent = state.game.teamB.name;
     } else {
-        $('possessionDisplay').textContent = possessionTeamName;
+        const possessionDisplay = $('possessionDisplay');
+        if(possessionDisplay) possessionDisplay.textContent = possessionTeamName;
     }
 }
 
@@ -948,15 +976,21 @@ function showSpectatorView() {
         const gameClockOn = state.game.settings.enableGameClock;
         const raidClockOn = state.game.settings.enableRaidClock;
 
-        $('viewerGameClock').style.display = gameClockOn ? 'block' : 'none';
-        $('viewerHalfArea').style.display = gameClockOn ? 'block' : 'none';
-        $('viewerRaidClock').style.display = raidClockOn ? 'block' : 'none';
+        const viewerGameClock = $('viewerGameClock');
+        const viewerHalfArea = $('viewerHalfArea');
+        const viewerRaidClock = $('viewerRaidClock');
+
+        if (viewerGameClock) viewerGameClock.style.display = gameClockOn ? 'block' : 'none';
+        if (viewerHalfArea) viewerHalfArea.style.display = gameClockOn ? 'block' : 'none';
+        if (viewerRaidClock) viewerRaidClock.style.display = raidClockOn ? 'block' : 'none';
         
-        const viewerCenter = $('.viewer-center');
-        if (!gameClockOn && !raidClockOn) {
-            viewerCenter.style.display = 'none';
-        } else {
-            viewerCenter.style.display = 'flex';
+        const viewerCenter = document.querySelector('.viewer-center');
+        if (viewerCenter) {
+            if (!gameClockOn && !raidClockOn) {
+                viewerCenter.style.display = 'none';
+            } else {
+                viewerCenter.style.display = 'flex';
+            }
         }
     }
 
