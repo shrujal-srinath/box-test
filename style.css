@@ -82,6 +82,8 @@
   /* NEW: Variables for Professional Viewer Theme */
   --viewer-team-a-color: #ff6347; /* Default fallback Tomato Red */
   --viewer-team-b-color: #4682b4; /* Default fallback Steel Blue */
+  --viewer-team-a-color-rgb: 255, 99, 71; /* Default RGB */
+  --viewer-team-b-color-rgb: 70, 130, 180; /* Default RGB */
 
 
   /* Typography */
@@ -119,6 +121,7 @@
   --space-20: 20px;
   --space-24: 24px;
   --space-32: 32px;
+  --space-48: 48px; /* Added 48px spacing */
 
   /* Border Radius */
   --radius-sm: 6px;
@@ -1800,7 +1803,7 @@ select.form-control {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--space-12) var(--space-24);
+    padding: var(--space-16) var(--space-24); /* Increased padding */
     background: var(--color-surface);
     color: var(--color-text);
     border-bottom: 1px solid var(--color-border);
@@ -1808,6 +1811,8 @@ select.form-control {
 .viewer-footer {
     border-top: 1px solid var(--color-border);
     border-bottom: none;
+    /* NEW: Subtle gradient background for visual separation */
+    background: linear-gradient(0deg, var(--color-surface) 0%, rgba(var(--color-brown-600-rgb), 0.05) 100%); 
 }
 .viewer-game-name {
     font-size: var(--font-size-xl);
@@ -1819,29 +1824,40 @@ select.form-control {
     font-size: 1.5rem;
     cursor: pointer;
     color: var(--color-text-secondary);
+    transition: transform var(--duration-fast);
 }
+.viewer-settings-btn:hover {
+    color: var(--color-primary);
+    transform: rotate(30deg);
+}
+
+/* NEW: Possession in Header for Non-Pro Mode */
 .viewer-possession {
     display: flex;
     align-items: center;
-    gap: var(--space-8);
+    gap: var(--space-12); /* Increased gap */
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
+    padding: var(--space-4) var(--space-12);
+    border-radius: var(--radius-full);
+    background: var(--color-secondary);
 }
 .possession-dot {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: var(--color-primary);
-    transition: all var(--duration-fast) var(--ease-standard);
+    /* Will be overridden by team color via JS */
+    background: var(--color-primary); 
+    box-shadow: 0 0 5px rgba(var(--color-teal-500-rgb), 0.5);
 }
 
-/* Viewer Scoreboard - PRO MODE */
+/* Viewer Scoreboard - PRO MODE STRUCTURE (Standard Theme) */
 .viewer-main-scoreboard {
     display: grid;
-    grid-template-columns: 1fr 400px 1fr; /* Fixed width for center clock area */
+    grid-template-columns: 1fr 450px 1fr; /* Slightly wider center panel */
     gap: 0;
-    min-height: 400px;
+    min-height: 500px; /* Increased min height */
     align-items: stretch;
     background: linear-gradient(135deg, var(--color-background) 0%, var(--color-bg-1) 100%);
 }
@@ -1849,46 +1865,66 @@ select.form-control {
 .viewer-team-panel {
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: center; /* Center content vertically */
     align-items: center;
-    padding: var(--space-24) 0;
+    padding: var(--space-48) 0; /* Increased vertical padding */
+    position: relative;
+    overflow: hidden;
+}
+
+.viewer-team-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* NEW: Subtle radial gradient for depth */
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
 }
 
 .viewer-team-name {
-    font-size: var(--font-size-4xl);
-    font-weight: 700;
-    margin-bottom: var(--space-16);
+    font-size: 6vw; /* Relative size */
+    font-weight: 800; /* Bolder name */
+    margin-bottom: var(--space-24);
+    letter-spacing: -1px;
+    line-height: 1;
+    text-align: center;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .viewer-team-score {
-    font-size: 8rem; /* 128px */
+    font-size: 15vw; /* MASSIVE Score */
     font-weight: 900;
     font-family: var(--font-family-mono);
     line-height: 1;
+    /* More vibrant gradient */
     background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 .viewer-center-panel {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-around; /* Spread content out */
     align-items: center;
     gap: var(--space-24);
     background: var(--color-surface);
-    padding: var(--space-24) var(--space-32);
+    padding: var(--space-32) var(--space-48); /* Increased padding */
     border-left: 2px solid var(--color-border);
     border-right: 2px solid var(--color-border);
+    box-shadow: var(--shadow-lg); /* Add shadow for lift */
 }
 
 .viewer-game-clock {
-    font-size: 5rem;
+    font-size: 7vw; /* Larger clock */
     font-family: var(--font-family-mono);
     font-weight: 800;
-    background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 100%);
+    /* More pronounced digital gradient */
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-teal-400) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1902,9 +1938,10 @@ select.form-control {
     font-size: var(--font-size-xl);
     color: var(--color-text-secondary);
     font-weight: 500;
+    margin-bottom: var(--space-4);
 }
 .viewer-quarter {
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-4xl); /* Larger quarter number */
     font-weight: 700;
     color: var(--color-text);
 }
@@ -1915,45 +1952,62 @@ select.form-control {
     align-items: center;
     gap: var(--space-4);
     background: var(--color-secondary-hover);
-    padding: var(--space-12) var(--space-20);
+    padding: var(--space-16) var(--space-24); /* Larger box */
     border-radius: var(--radius-base);
 }
 .viewer-sc-label {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-md);
     color: var(--color-text-secondary);
+    font-weight: 600;
 }
 .viewer-shot-clock {
-    font-size: 3rem;
+    font-size: 5vw; /* Larger shot clock */
     font-family: var(--font-family-mono);
     font-weight: 700;
     color: var(--color-warning);
 }
 .viewer-shot-clock.warning {
     color: var(--color-error);
+    /* NEW: Add pulsing shadow for violation warning */
+    animation: pulseWarning 1s infinite alternate;
+}
+@keyframes pulseWarning {
+    from { text-shadow: none; }
+    to { text-shadow: 0 0 10px rgba(var(--color-error-rgb), 0.8); }
 }
 
+/* Footer Stats */
 .viewer-stat-box {
     text-align: center;
+    padding: 0 var(--space-8);
 }
 .viewer-stat-label {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
 }
 .viewer-stat-value {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl); /* Adjusted size */
     font-weight: 700;
     color: var(--color-text);
+    font-family: var(--font-family-mono);
 }
 .viewer-top-scorer-small {
-    font-size: var(--font-size-lg);
-    color: var(--color-text-secondary);
-    padding: var(--space-8);
+    /* NEW: Better visual structure for top scorer */
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text);
+    padding: var(--space-4) var(--space-12);
+    border-radius: var(--radius-full);
+    background: var(--color-secondary);
+    border: 1px solid var(--color-border);
 }
 
 
-/* Viewer Scoreboard - CLASSIC MODE (for tablet/mobile default) */
+/* Viewer Scoreboard - CLASSIC MODE */
 .viewer-scoreboard {
-    /* Preserve the responsive grid but make the scores massive */
+    /* Classic Mode is cleaner and uses team colors directly on the scores for focus */
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     gap: var(--space-32);
@@ -1974,6 +2028,7 @@ select.form-control {
 .viewer-score {
     font-size: 8rem; /* BIGGER SCORE */
     font-weight: 900;
+    /* Color is set via JS inline in this mode for custom team color */
 }
 
 .viewer-center {
@@ -1985,7 +2040,7 @@ select.form-control {
     padding: var(--space-32);
     border-radius: var(--radius-lg);
     border: 2px solid var(--color-primary);
-    order: 0; /* Keep it central on all screen sizes in classic mode */
+    order: 0; 
 }
 .viewer-clock {
     font-size: 4rem;
@@ -1994,35 +2049,41 @@ select.form-control {
     font-size: var(--font-size-2xl);
 }
 
+
 /* Mobile Overrides (Keep the large screen layout as much as possible) */
 @media (max-width: 900px) {
-    /* For smaller tablets/mobile in classic mode, let it be 1fr */
+    /* For smaller tablets/mobile in pro mode, let it be 1fr */
     .viewer-main-scoreboard {
         grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr 1fr;
         min-height: auto;
-    }
-    .viewer-team-panel {
-        padding: var(--space-20) 0;
     }
     .viewer-center-panel {
         order: -1;
         padding: var(--space-20);
+        min-height: 250px;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: 2px solid var(--color-border);
     }
     .viewer-team-score {
-        font-size: 15vw;
+        font-size: 18vw; /* Even larger for mobile */
     }
     .viewer-game-clock {
-        font-size: 12vw;
+        font-size: 10vw;
     }
     .viewer-shot-clock {
+        font-size: 7vw;
+    }
+    .viewer-team-name {
         font-size: 8vw;
     }
-    .viewer-qtr-box {
-        position: static;
-        width: 100%;
+    .viewer-footer {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--space-16);
     }
     
+    /* Classic Mode mobile fixes */
     .viewer-scoreboard {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto;
@@ -2030,13 +2091,15 @@ select.form-control {
     .viewer-center {
         order: 0;
     }
-    
-    .viewer-info {
-        flex-direction: column;
-        align-items: stretch;
-    }
 }
-@media (max-width: 768px) {
+@media (max-width: 500px) {
+    .viewer-footer {
+        flex-direction: column;
+    }
+    .viewer-stat-box, .viewer-top-scorer-small {
+        width: 100%;
+        text-align: center;
+    }
     /* Ensure old overrides do not break the new viewer styles */
     .scoreboard-container, .main-wrapper {
         display: flex;
@@ -2046,7 +2109,6 @@ select.form-control {
     button {
         padding: 15px 20px;
         margin: 5px;
-        width: 100%;
     }
 }
 
@@ -2073,7 +2135,7 @@ select.form-control {
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
-    grid-template-columns: 1fr 400px 1fr; /* Fixed width for clock area */
+    grid-template-columns: 1fr 400px 1fr; 
 }
 @media (max-width: 900px) {
     .viewer-theme-pro-mode .viewer-main-scoreboard {
@@ -2082,29 +2144,42 @@ select.form-control {
 }
 
 
-/* Make team panels match the background but with team color highlights */
+/* Team panels - solid black with bright outline */
 .viewer-theme-pro-mode .viewer-team-panel {
     background: #000 !important;
-    /* Adding subtle border to segment the screen */
-    border-bottom: 2px solid #333;
-    border-top: 2px solid #333;
+    border: none !important;
+    padding: var(--space-32) 0;
+    /* NEW: Subtle team-colored vertical highlight using RGB variables from JS */
 }
 
-/* Ensure Team Names and Scores are high contrast */
+/* Team A Specific Highlight (Uses RGB variable from JS) */
+.viewer-theme-pro-mode #viewerTeamA {
+    --viewer-team-a-color-rgb: 255, 99, 71; /* Default RGB */
+    box-shadow: 
+        inset 5px 0 10px -5px rgba(var(--viewer-team-a-color-rgb), 0.4),
+        inset -5px 0 10px -5px rgba(var(--viewer-team-a-color-rgb), 0.4);
+}
+
+/* Team B Specific Highlight (Uses RGB variable from JS) */
+.viewer-theme-pro-mode #viewerTeamB {
+    --viewer-team-b-color-rgb: 70, 130, 180; /* Default RGB */
+    box-shadow: 
+        inset 5px 0 10px -5px rgba(var(--viewer-team-b-color-rgb), 0.4),
+        inset -5px 0 10px -5px rgba(var(--viewer-team-b-color-rgb), 0.4);
+}
+
 .viewer-theme-pro-mode .viewer-team-name {
     /* Set the dynamic color based on the variable passed by JS */
-    --viewer-team-color: var(--viewer-team-a-color); /* Dynamically set by JS logic */
-    -webkit-text-fill-color: var(--viewer-team-color) !important;
-    color: var(--viewer-team-color) !important; 
-    
-    text-shadow: 0 0 10px rgba(var(--viewer-team-a-color-rgb), 0.5);
-    font-size: 5vw !important; /* Larger team name */
-    font-weight: 800 !important;
+    color: var(--viewer-team-a-color) !important; 
+    -webkit-text-fill-color: var(--viewer-team-a-color) !important;
+    text-shadow: 0 0 15px rgba(var(--viewer-team-a-color-rgb, 255, 99, 71), 0.7);
+    font-size: 5vw !important; 
+    font-weight: 900 !important;
 }
 .viewer-theme-pro-mode #viewerTeamB .viewer-team-name {
-    --viewer-team-color: var(--viewer-team-b-color);
-    -webkit-text-fill-color: var(--viewer-team-b-color) !important;
     color: var(--viewer-team-b-color) !important; 
+    -webkit-text-fill-color: var(--viewer-team-b-color) !important;
+    text-shadow: 0 0 15px rgba(var(--viewer-team-b-color-rgb, 70, 130, 180), 0.7);
 }
 
 
@@ -2117,110 +2192,111 @@ select.form-control {
 }
 
 .viewer-theme-pro-mode .viewer-team-score {
-    font-size: 15vw !important; /* Very large score */
+    font-size: 15vw !important; 
     font-weight: 800 !important;
     font-family: 'Digital-7', monospace !important;
     background: none !important;
-    color: #FF0000 !important; /* Score Red */
-    -webkit-text-fill-color: #FF0000 !important;
-    text-shadow: 0 0 30px rgba(255, 0, 0, 0.8), 0 0 10px #FF0000;
+    color: #FF1A00 !important; /* Brighter Score Red */
+    -webkit-text-fill-color: #FF1A00 !important;
+    /* Stronger shadow for neon effect */
+    text-shadow: 0 0 40px rgba(255, 26, 0, 0.9), 0 0 10px #FF1A00; 
 }
 
 .viewer-theme-pro-mode .viewer-center-panel {
     background: #000 !important;
-    border-top: 2px solid #333 !important;
-    border-bottom: 2px solid #333 !important;
-    border-left: 2px solid #333 !important;
-    border-right: 2px solid #333 !important;
+    /* Use strong gray border for separation */
+    border-top: 3px solid #1a1a1a !important; 
+    border-bottom: 3px solid #1a1a1a !important;
+    border-left: 3px solid #1a1a1a !important;
+    border-right: 3px solid #1a1a1a !important;
 }
 
 .viewer-theme-pro-mode .viewer-game-clock,
 .viewer-theme-pro-mode .viewer-shot-clock {
-    font-size: 8vw !important; /* Super large size */
+    font-size: 8vw !important; 
     font-weight: 800 !important;
     font-family: 'Digital-7', monospace !important;
     background: #000 !important;
-    color: #FFC000 !important; /* Clock Yellow/Orange */
+    color: #FFD700 !important; /* Clock Gold/Yellow */
     border-color: #333 !important;
-    -webkit-text-fill-color: #FFC000 !important;
-    text-shadow: 0 0 20px rgba(255, 192, 0, 0.8), 0 0 4px #FFC000;
+    -webkit-text-fill-color: #FFD700 !important;
+    /* Stronger shadow for neon effect */
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.7), 0 0 8px #FFD700;
     border: none !important;
     padding: 0 !important;
-    
 }
-.viewer-theme-pro-mode .viewer-game-clock {
-    font-size: 8vw !important;
-}
-
 
 .viewer-theme-pro-mode .viewer-shot-clock.warning {
-    color: #00FF00 !important; /* Use green for warning state */
-    -webkit-text-fill-color: #00FF00 !important;
-    text-shadow: 0 0 20px rgba(0, 255, 0, 0.8), 0 0 4px #00FF00;
+    color: #00FF55 !important; /* Bright Neon Green for warning */
+    -webkit-text-fill-color: #00FF55 !important;
+    text-shadow: 0 0 30px rgba(0, 255, 85, 0.7), 0 0 8px #00FF55;
 }
 
 /* Period/Quarter display */
+.viewer-theme-pro-mode .viewer-qtr-box {
+    text-shadow: none;
+}
 .viewer-theme-pro-mode .viewer-qtr-label {
-    color: #FFF !important; /* White label */
+    color: #AAA !important; /* Light Gray label */
     font-size: 3vw !important; 
-    font-weight: 500 !important;
+    font-weight: 600 !important;
 }
 .viewer-theme-pro-mode .viewer-quarter {
-    color: #FFC000 !important; /* Yellow number */
+    color: #FFD700 !important; /* Yellow number */
     font-size: 4vw !important;
-    font-weight: 700 !important;
-    text-shadow: 0 0 10px rgba(255, 192, 0, 0.8);
+    font-weight: 800 !important;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
 }
 
 .viewer-theme-pro-mode .viewer-sc-box {
-    background: none !important;
+    background: #111 !important; /* Dark gray background for SC box */
+    border: 1px solid #333;
 }
 
 
 /* Footer/Stats area */
 .viewer-theme-pro-mode .viewer-footer {
-    background: #111 !important;
+    background: #000 !important;
     color: #AAA !important;
-    border-top: 2px solid #333 !important;
-    padding: 10px 0 !important;
+    border-top: 3px solid #1a1a1a !important;
+    padding: var(--space-12) var(--space-24) !important;
 }
 
 .viewer-theme-pro-mode .viewer-stat-box {
     text-shadow: none;
 }
 .viewer-theme-pro-mode .viewer-stat-value {
-    color: #4682b4 !important; /* Steel Blue for info values */
-    font-weight: 700;
-    text-shadow: 0 0 10px rgba(70, 130, 180, 0.5);
+    color: #4DB8FF !important; /* Bright Blue for info values (Timeouts/Fouls) */
+    font-weight: 800;
+    font-family: 'Digital-7', monospace !important; /* Digital font for stats */
+    text-shadow: 0 0 10px rgba(77, 184, 255, 0.5);
 }
 .viewer-theme-pro-mode .viewer-stat-label {
     color: #FFF !important;
 }
 
 .viewer-theme-pro-mode .viewer-top-scorer-small {
-    color: #AAA !important;
-    font-weight: 400 !important;
+    background: #111 !important;
+    border: 1px solid #333 !important;
+    color: #FFF !important;
 }
-
-/* Remove gradient backgrounds from all viewer sections */
-.viewer-theme-pro-mode .viewer-scoreboard,
-.viewer-theme-pro-mode .viewer-center,
-.viewer-theme-pro-mode .viewer-info {
-    background: #000 !important;
-    border-color: #333 !important;
-    box-shadow: none !important;
+.viewer-theme-pro-mode .viewer-top-scorer-small span {
+    color: #999 !important;
 }
 
 /* Possession Dot for Pro Mode */
 .viewer-theme-pro-mode .viewer-possession {
     background: #111 !important;
     border-color: #333 !important;
-    border-radius: 0 !important;
+    border-radius: var(--radius-base) !important;
     color: #FFF !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
+    padding: var(--space-6) var(--space-12);
 }
 .viewer-theme-pro-mode .possession-dot {
-    /* Use CSS variables for specific team colors defined in JS */
+    /* The color is set inline by JS, only need to style the container */
     border: 2px solid #FFF;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    width: 15px; /* Slightly larger */
+    height: 15px;
 }

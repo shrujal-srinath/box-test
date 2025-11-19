@@ -724,6 +724,7 @@ function gatherConfigurationData() {
     };
 }
 
+// --- FIXED: Reimplemented showControlView to fix the crashing selectors ---
 function showControlView() {
     console.log('Showing control view');
     showView('control-view');
@@ -742,64 +743,65 @@ function showControlView() {
     
     const clockSection = document.querySelector('.clock-section');
     if (clockSection) {
-        if (gameClockOn && raidClockOn) {
-            clockSection.style.flexDirection = 'column';
-        } else {
-            clockSection.style.flexDirection = 'row'; 
-        }
         if (!gameClockOn && !raidClockOn) {
             clockSection.style.display = 'none';
         } else {
             clockSection.style.display = 'flex';
+            clockSection.style.flexDirection = (gameClockOn && raidClockOn) ? 'column' : 'row';
         }
     }
 
 
-    // --- FIX: Correctly access class selectors using querySelector ---
+    // Select specific control wrappers by CLASS using the correct selector
     const possessionControls = document.querySelector('.possession-controls');
     const masterClockControls = document.querySelector('.master-clock-controls');
-    const shotClockActions = document.querySelector('.shot-clock-actions');
-    // --- END FIX ---
+    const raidClockActions = document.querySelector('.shot-clock-actions');
+
+    // Select input/display elements
+    const teamANameInput = $('teamANameInput');
+    const teamBNameInput = $('teamBNameInput');
+    const teamANameDisplay = $('teamANameDisplay');
+    const teamBNameDisplay = $('teamBNameDisplay');
+    const possessionDisplay = $('possessionDisplay');
+    const finalizeGameBtn = $('finalizeGameBtn');
     
+    // Select the direct score button wrappers by class for explicit control
+    const scoreControlsA = document.querySelector('#teamAScoreSection .score-controls');
+    const scoreControlsB = document.querySelector('#teamBScoreSection .score-controls');
+
+
     // Show/hide host controls based on state.isHost
-    $$('.host-control').forEach(el => {
-        // Use explicit styles to ensure visibility
-        if (el.tagName === 'INPUT') {
-            el.style.display = state.isHost ? 'block' : 'none';
-        } else if (el.tagName === 'BUTTON' || el.classList.contains('host-control')) {
-            el.style.display = state.isHost ? 'flex' : 'none';
-        }
-    });
-    
-    // Handle special cases
-    if(state.isHost) {
-        $('teamANameInput').style.display = 'block';
-        $('teamBNameInput').style.display = 'block';
-        $('teamANameDisplay').style.display = 'none';
-        $('teamBNameDisplay').style.display = 'none';
-        $('possessionDisplay').style.display = 'none';
+    if (state.isHost) {
+        // Toggle input vs display name
+        if (teamANameInput) teamANameInput.style.display = 'block';
+        if (teamBNameInput) teamBNameInput.style.display = 'block';
+        if (teamANameDisplay) teamANameDisplay.style.display = 'none';
+        if (teamBNameDisplay) teamBNameDisplay.style.display = 'none';
+        if (possessionDisplay) possessionDisplay.style.display = 'none';
+        if (finalizeGameBtn) finalizeGameBtn.style.display = 'flex';
         
-        // --- FIXED CRASHING LINES ---
+        // Show layout wrappers for host (must be checked for null)
+        if (scoreControlsA) scoreControlsA.style.display = 'flex';
+        if (scoreControlsB) scoreControlsB.style.display = 'flex';
         if (possessionControls) possessionControls.style.display = 'flex';
-        if (masterClockControls) masterClockControls.style.display = 'flex';
-        if (shotClockActions) shotClockActions.style.display = 'grid';
-        // --- END FIXED CRASHING LINES ---
+        if (masterClockControls) masterClockControls.style.display = gameClockOn ? 'flex' : 'none';
+        if (raidClockActions) raidClockActions.style.display = raidClockOn ? 'grid' : 'none';
         
     } else {
-        // Is Spectator
-        $('teamANameInput').style.display = 'none';
-        $('teamBNameInput').style.display = 'none';
-        $('teamANameDisplay').style.display = 'block';
-        $('teamBNameDisplay').style.display = 'block';
-        $('possessionDisplay').style.display = 'block';
-
-        // --- FIXED CRASHING LINES ---
+        // Hide inputs/controls for spectator
+        if (teamANameInput) teamANameInput.style.display = 'none';
+        if (teamBNameInput) teamBNameInput.style.display = 'none';
+        if (teamANameDisplay) teamANameDisplay.style.display = 'block';
+        if (teamBNameDisplay) teamBNameDisplay.style.display = 'block';
+        if (possessionDisplay) possessionDisplay.style.display = 'block';
+        if (finalizeGameBtn) finalizeGameBtn.style.display = 'none';
+        
+        // Hide all control wrappers for spectator
+        if (scoreControlsA) scoreControlsA.style.display = 'none';
+        if (scoreControlsB) scoreControlsB.style.display = 'none';
         if (possessionControls) possessionControls.style.display = 'none';
         if (masterClockControls) masterClockControls.style.display = 'none';
-        if (shotClockActions) shotClockActions.style.display = 'none';
-        // --- END FIXED CRASHING LINES ---
-
-        $('finalizeGameBtn').style.display = 'none';
+        if (raidClockActions) raidClockActions.style.display = 'none';
     }
 
 

@@ -62,7 +62,7 @@ function buildHtml() {
                         <h3>Host Game</h3>
                         <p>Enter a code to resume, or leave blank for new.</p>
                         <div class="form-group" style="margin-top: 16px;">
-                            <label for="hostCodeInput" class="form-label">Game Code (Optional)</label>
+                            <label class="form-label" for="hostCodeInput">Game Code (Optional)</label>
                             <input id="hostCodeInput" class="form-control" placeholder="Leave empty for random code" maxlength="6">
                         </div>
                         <div id="hostCodeValidation" class="validation-message hidden"></div>
@@ -2520,6 +2520,19 @@ function playerStatsToArray(player, stats) {
 }
 // --- END EXPORT FUNCTIONS ---
 
+// --- NEW UTILITY: Convert hex to RGB for CSS variables ---
+function hexToRgb(hex) {
+    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+        return r + r + g + g + b + b;
+    });
+
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255, 255, 255';
+}
+// --- END NEW UTILITY ---
+
 // --- UPDATED: Now updates BOTH spectator views ---
 function updateSpectatorView() {
     if (!state.game) return;
@@ -2538,6 +2551,9 @@ function updateSpectatorView() {
         // Apply team colors as CSS variables for the Pro theme to use
         rootContainer.style.setProperty('--viewer-team-a-color', state.game.teamA.color);
         rootContainer.style.setProperty('--viewer-team-b-color', state.game.teamB.color);
+        // NEW: Pass RGB values for shadows and team panel highlights
+        rootContainer.style.setProperty('--viewer-team-a-color-rgb', hexToRgb(state.game.teamA.color));
+        rootContainer.style.setProperty('--viewer-team-b-color-rgb', hexToRgb(state.game.teamB.color));
     }
     // --- END Professional Theme Color Handling ---
 
@@ -2550,6 +2566,7 @@ function updateSpectatorView() {
         $('viewerTeamAName').style.color = state.game.teamA.color;
         $('viewerTeamBName').style.color = state.game.teamB.color;
     } else {
+        // Set name colors to their default pro mode styles when in pro mode
         $('viewerTeamAName').style.color = '';
         $('viewerTeamBName').style.color = '';
     }
@@ -2570,9 +2587,14 @@ function updateSpectatorView() {
     // Classic View
     $('classicViewerGameName').textContent = state.game.settings.gameName;
     $('classicViewerTeamAName').textContent = state.game.teamA.name;
-    $('classicViewerTeamAScore').textContent = state.game.teamA.score;
+    const classicTeamAScore = $('classicViewerTeamAScore');
+    const classicTeamBScore = $('classicViewerTeamBScore');
+    classicTeamAScore.textContent = state.game.teamA.score;
+    classicTeamAScore.style.color = state.game.teamA.color;
     $('classicViewerTeamBName').textContent = state.game.teamB.name;
-    $('classicViewerTeamBScore').textContent = state.game.teamB.score;
+    classicTeamBScore.textContent = state.game.teamB.score;
+    classicTeamBScore.style.color = state.game.teamB.color;
+
     $('classicViewerGameClock').textContent = gameTime;
     $('classicQuarterHalfLabel').textContent = periodLabel;
     $('classicViewerPeriod').textContent = periodNum;
