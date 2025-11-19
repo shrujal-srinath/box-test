@@ -3,700 +3,11 @@
 // Import the firebase services we need
 import { db, firebase } from '../modules/firebase.js';
 
-// REMOVED: import { buildHtml } from './basketball-view.js';
-
 // Get access to the global utilities from main.js
 let $;
 let $$;
 let showToast;
 let copyToClipboard;
-
-// ================== HTML BUILDER ==================
-function buildHtml() {
-    return `
-    <section id="landing-view" class="view">
-        <div class="container">
-            <header class="landing-header">
-                <div class="basketball-icon">🏀</div>
-                <h1 class="main-title cool-title">Basketball Scoreboard</h1>
-                <p class="hero-subtitle">Professional scoring with shot clock & stats</p>
-            </header>
-
-            <div class="landing-cards">
-                <div class="card landing-card">
-                    <div class="card__body">
-                        <div class="card-icon">👁️</div>
-                        <h3>Watch Game</h3>
-                        <div class="form-group">
-                            <input id="watchCodeInput" class="form-control" placeholder="Enter 6-digit code" maxlength="6" style="text-align: center; letter-spacing: 2px; font-size: 1.2rem;">
-                        </div>
-                        <div id="watchCodeValidation" class="validation-message hidden"></div>
-                        <button id="watchGameBtn" class="btn btn--primary btn--full-width" disabled>Watch</button>
-                    </div>
-                </div>
-
-                <div class="card landing-card">
-                    <div class="card__body">
-                        <div class="card-icon">🎯</div>
-                        <h3>Host Game</h3>
-                        <div class="form-group">
-                            <input id="hostCodeInput" class="form-control" placeholder="Enter code (optional)" maxlength="6" style="text-align: center;">
-                        </div>
-                        <div id="hostCodeValidation" class="validation-message hidden"></div>
-                        <button id="hostGameBtn" class="btn btn--primary btn--full-width">Host New Game</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="config-view" class="view hidden">
-        <div class="container">
-            <header class="section-header">
-                <div>
-                    <h2>Game Setup</h2>
-                    <p>Configure your match parameters</p>
-                </div>
-                <div class="game-code-display">
-                    <span class="status status--info">Code: <span id="configGameCode">...</span></span>
-                    <button id="copyConfigCode" class="btn btn--outline btn--sm">Copy</button>
-                </div>
-            </header>
-            
-            <div class="config-grid">
-                <div class="card">
-                    <div class="card__body">
-                        <h3>1. Game Type</h3>
-                        <div class="game-type-selection">
-                            <label class="game-type-option">
-                                <input type="radio" name="gameType" value="friendly" checked>
-                                <div class="game-type-card">
-                                    <div class="game-type-icon">🤝</div>
-                                    <h4>Friendly</h4>
-                                    <p>Simple scoring, no player stats.</p>
-                                </div>
-                            </label>
-                            <label class="game-type-option">
-                                <input type="radio" name="gameType" value="full">
-                                <div class="game-type-card">
-                                    <div class="game-type-icon">📊</div>
-                                    <h4>Full Match</h4>
-                                    <p>Rosters, player stats, & box score.</p>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card__body">
-                        <h3>2. Rules</h3>
-                        <div class="form-group">
-                            <label class="form-label">Game Name</label>
-                            <input id="gameNameInput" class="form-control" placeholder="e.g. Finals 2024">
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Period Duration (min)</label>
-                                <select id="periodDurationSelect" class="form-control">
-                                    <option value="8">8 Minutes</option>
-                                    <option value="10">10 Minutes</option>
-                                    <option value="12" selected>12 Minutes</option>
-                                    <option value="20">20 Minutes</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Period Type</label>
-                                <div style="display: flex; gap: 16px; margin-top: 8px;">
-                                    <label><input type="radio" name="periodType" value="quarter" checked> Quarters</label>
-                                    <label><input type="radio" name="periodType" value="half"> Halves</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="form-check">
-                                <input type="checkbox" id="shotClockToggle" checked>
-                                <label for="shotClockToggle">Enable Shot Clock (24s)</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card__body">
-                        <h3>3. Teams</h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Team A Name</label>
-                                <input id="teamAName" class="form-control" placeholder="Team A">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Color</label>
-                                <div class="color-picker-group">
-                                    <input id="teamAColor" type="color" class="color-input" value="#EA4335">
-                                    <div id="teamAColorPreview" class="color-preview" style="background: #EA4335;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">Team B Name</label>
-                                <input id="teamBName" class="form-control" placeholder="Team B">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Color</label>
-                                <div class="color-picker-group">
-                                    <input id="teamBColor" type="color" class="color-input" value="#4285F4">
-                                    <div id="teamBColorPreview" class="color-preview" style="background: #4285F4;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section-actions">
-                <button id="backToLanding" class="btn btn--outline">Back</button>
-                <button id="proceedToSetup" class="btn btn--primary">Next Step</button>
-            </div>
-        </div>
-    </section>
-
-    <section id="setup-view" class="view hidden">
-        <div class="container">
-            <header class="section-header">
-                <div>
-                    <h2>Roster Setup</h2>
-                    <p>Add players for tracking stats</p>
-                </div>
-                <div class="game-code-display">
-                    <span class="status status--info">Code: <span id="setupGameCode">...</span></span>
-                    <button id="copySetupCode" class="btn btn--outline btn--sm">Copy</button>
-                </div>
-            </header>
-
-            <div class="setup-grid">
-                <div class="card team-setup-card">
-                    <div class="card__body">
-                        <h3 id="teamASetupTitle" style="border-bottom: 2px solid currentColor; padding-bottom: 8px; margin-bottom: 16px;">Team A</h3>
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 1;">
-                                <input id="teamAPlayerNumber" type="number" class="form-control" placeholder="#">
-                            </div>
-                            <div class="form-group" style="flex: 3;">
-                                <input id="teamAPlayerName" class="form-control" placeholder="Player Name">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 2;">
-                                <select id="teamAPlayerPosition" class="form-control">
-                                    <option value="">Position (Opt)</option>
-                                    <option value="G">Guard</option>
-                                    <option value="F">Forward</option>
-                                    <option value="C">Center</option>
-                                </select>
-                            </div>
-                            <button id="addTeamAPlayer" class="btn btn--primary" style="flex: 1;">Add</button>
-                        </div>
-                        <div id="teamARoster" class="roster-list" style="max-height: 300px; overflow-y: auto; margin-top: 16px;">
-                            </div>
-                        <div class="roster-counter">Players: <span id="teamACount">0</span></div>
-                    </div>
-                </div>
-
-                <div class="card team-setup-card">
-                    <div class="card__body">
-                        <h3 id="teamBSetupTitle" style="border-bottom: 2px solid currentColor; padding-bottom: 8px; margin-bottom: 16px;">Team B</h3>
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 1;">
-                                <input id="teamBPlayerNumber" type="number" class="form-control" placeholder="#">
-                            </div>
-                            <div class="form-group" style="flex: 3;">
-                                <input id="teamBPlayerName" class="form-control" placeholder="Player Name">
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 2;">
-                                <select id="teamBPlayerPosition" class="form-control">
-                                    <option value="">Position (Opt)</option>
-                                    <option value="G">Guard</option>
-                                    <option value="F">Forward</option>
-                                    <option value="C">Center</option>
-                                </select>
-                            </div>
-                            <button id="addTeamBPlayer" class="btn btn--primary" style="flex: 1;">Add</button>
-                        </div>
-                        <div id="teamBRoster" class="roster-list" style="max-height: 300px; overflow-y: auto; margin-top: 16px;">
-                            </div>
-                        <div class="roster-counter">Players: <span id="teamBCount">0</span></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="section-actions">
-                <button id="backToConfig" class="btn btn--outline">Back</button>
-                <div style="display: flex; gap: 12px;">
-                    <button id="skipRosterSetup" class="btn btn--secondary">Skip (Friendly Mode)</button>
-                    <button id="startGame" class="btn btn--success" disabled>Start Match</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="pre-game-view" class="view hidden">
-        <div class="container" style="text-align: center; padding-top: 100px;">
-             <div class="card" style="max-width: 500px; margin: 0 auto;">
-                <div class="card__body">
-                    <div style="font-size: 4rem; margin-bottom: 20px;">🚀</div>
-                    <h2>Game Ready!</h2>
-                    <p>Configuration complete. You are about to enter the control dashboard.</p>
-                    <button id="startControlViewBtn" class="btn btn--primary btn--lg btn--full-width">Open Dashboard</button>
-                </div>
-             </div>
-        </div>
-    </section>
-
-    <section id="control-view" class="view hidden">
-        <div class="container-fluid">
-            <header class="control-header">
-                <div class="control-title">
-                    <h2 id="gameNameDisplay">Basketball Game</h2>
-                    <div class="game-code-display">
-                        <span class="status status--info">Code: <span id="controlGameCode">...</span></span>
-                        <button id="copyControlCode" class="btn btn--outline btn--sm">Copy</button>
-                    </div>
-                </div>
-                <div class="control-actions">
-                    <button id="undoBtn" class="btn btn--outline" disabled>Undo (Z)</button>
-                    <button id="helpBtn" class="btn btn--outline">Help (H)</button>
-                    <button id="shareGameBtn" class="btn btn--outline">Share Viewer</button>
-                    <button id="exportGame" class="btn btn--secondary">Export</button>
-                    <button id="finalizeGameBtn" class="btn btn--danger">End Game</button>
-                </div>
-            </header>
-
-            <div class="scoreboard">
-                <div class="team-score">
-                    <h3 id="teamAName">Team A</h3>
-                    <div class="score-display" id="teamAScore">0</div>
-                    <div class="score-controls">
-                        <button class="btn btn--sm score-btn" data-team="teamA" data-points="1">+1</button>
-                        <button class="btn btn--sm score-btn" data-team="teamA" data-points="2">+2</button>
-                        <button class="btn btn--sm score-btn" data-team="teamA" data-points="3">+3</button>
-                        <button class="btn btn--sm score-btn btn--score-minus" data-team="teamA" data-points="-1">-1</button>
-                    </div>
-                    <div class="game-info-grid" style="margin-top: 16px;">
-                        <div class="team-info">
-                            <div class="info-item">
-                                <span>Fouls:</span>
-                                <div class="counter-controls">
-                                    <span id="teamAFouls">0</span>
-                                    <button class="btn btn--sm btn--outline" data-action="foul-plus" data-team="teamA">+</button>
-                                    <button class="btn btn--sm btn--outline" data-action="foul-minus" data-team="teamA">-</button>
-                                </div>
-                            </div>
-                            <div class="info-item">
-                                <span>Timeouts:</span>
-                                <div class="counter-controls">
-                                    <span id="teamATimeouts">0</span>
-                                    <button class="btn btn--sm btn--outline" data-action="timeout-plus" data-team="teamA">+</button>
-                                    <button class="btn btn--sm btn--outline" data-action="timeout-minus" data-team="teamA">-</button>
-                                </div>
-                            </div>
-                            <div id="teamATopScorer" class="top-scorer"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="clock-section">
-                    <div class="clock-display" id="gameClockDisplay" title="Click to edit">12:00</div>
-                    <div class="period-display"><span id="quarterHalfLabel">Quarter</span> <span id="periodDisplay">1</span></div>
-                    
-                    <div class="master-clock-controls">
-                        <button id="startGameBtn" class="btn btn--primary master-start-btn">START (Space)</button>
-                        <div class="clock-control-row">
-                            <button id="editGameClock" class="btn btn--secondary btn--sm">Edit Time</button>
-                            <button id="nextPeriod" class="btn btn--secondary btn--sm">Next Period</button>
-                            <button id="resetAllBtn" class="btn btn--danger btn--sm">Reset All</button>
-                        </div>
-                    </div>
-
-                    <div id="shotClockSection" class="shot-clock-section">
-                        <div class="shot-clock-display" id="shotClockDisplay" title="Click to edit">24</div>
-                        <div class="shot-clock-label">Shot Clock</div>
-                        <div class="shot-clock-actions">
-                            <button id="resetShotClock14" class="btn btn--secondary" title="Reset to 14s (r)">14s</button>
-                            <button id="resetShotClockFull" class="btn btn--warning" title="Reset to 24s (R)">24s</button>
-                            <button id="startShotClock" class="btn btn--success" title="Start Shot Clock (s)">Start</button>
-                            <button id="editShotClock" class="btn btn--outline">Edit</button>
-                        </div>
-                    </div>
-
-                    <div class="card" style="width: 100%; margin-top: 16px;">
-                        <div class="card__body" style="padding: 12px;">
-                            <h4 style="font-size: 14px; margin-bottom: 8px; text-align: center;">Possession (P)</h4>
-                            <div class="possession-controls">
-                                <button id="possessionTeamA" class="btn btn--outline possession-btn">Team A</button>
-                                <button id="possessionTeamB" class="btn btn--outline possession-btn">Team B</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="team-score">
-                    <h3 id="teamBName">Team B</h3>
-                    <div class="score-display" id="teamBScore">0</div>
-                    <div class="score-controls">
-                        <button class="btn btn--sm score-btn" data-team="teamB" data-points="1">+1</button>
-                        <button class="btn btn--sm score-btn" data-team="teamB" data-points="2">+2</button>
-                        <button class="btn btn--sm score-btn" data-team="teamB" data-points="3">+3</button>
-                        <button class="btn btn--sm score-btn btn--score-minus" data-team="teamB" data-points="-1">-1</button>
-                    </div>
-                    <div class="game-info-grid" style="margin-top: 16px;">
-                        <div class="team-info">
-                            <div class="info-item">
-                                <span>Fouls:</span>
-                                <div class="counter-controls">
-                                    <span id="teamBFouls">0</span>
-                                    <button class="btn btn--sm btn--outline" data-action="foul-plus" data-team="teamB">+</button>
-                                    <button class="btn btn--sm btn--outline" data-action="foul-minus" data-team="teamB">-</button>
-                                </div>
-                            </div>
-                            <div class="info-item">
-                                <span>Timeouts:</span>
-                                <div class="counter-controls">
-                                    <span id="teamBTimeouts">0</span>
-                                    <button class="btn btn--sm btn--outline" data-action="timeout-plus" data-team="teamB">+</button>
-                                    <button class="btn btn--sm btn--outline" data-action="timeout-minus" data-team="teamB">-</button>
-                                </div>
-                            </div>
-                             <div id="teamBTopScorer" class="top-scorer"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="statsSection" class="stats-section">
-                <div class="card">
-                    <div class="card__header stats-header">
-                        <h4>Player Stats</h4>
-                        <div class="stats-controls">
-                            <select id="statTeamSelect" class="form-control" style="width: 150px;">
-                                <option value="teamA">Team A</option>
-                                <option value="teamB">Team B</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="card__body">
-                        <div id="playerScoringGrid" class="player-scoring-grid">
-                            </div>
-
-                        <div class="quick-stats-actions">
-                            <h5>Quick Add Stat</h5>
-                            <div class="quick-stat-grid">
-                                <select id="quickStatPlayer" class="form-control">
-                                    <option value="">Select Player</option>
-                                </select>
-                                <div class="stat-buttons">
-                                    <button class="btn stat-btn" data-stat="assists">AST</button>
-                                    <button class="btn stat-btn" data-stat="steals">STL</button>
-                                    <button class="btn stat-btn" data-stat="blocks">BLK</button>
-                                    <button class="btn stat-btn" data-stat="turnovers">TO</button>
-                                    <button class="btn stat-btn" data-stat="fouls">PF</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="comprehensive-stats-section">
-                            <h5>Full Box Score</h5>
-                            <div class="stats-table-container">
-                                <table class="comprehensive-stats-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="sticky-col">#</th>
-                                            <th class="sticky-col">Name</th>
-                                            <th>PTS</th>
-                                            <th>FT</th>
-                                            <th>2P</th>
-                                            <th>3P</th>
-                                            <th>ORB</th>
-                                            <th>DRB</th>
-                                            <th>REB</th>
-                                            <th>AST</th>
-                                            <th>STL</th>
-                                            <th>BLK</th>
-                                            <th>TO</th>
-                                            <th>PF</th>
-                                            <th>MIN</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="comprehensiveStatsTableBody">
-                                        </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="viewer-view-pro" class="view hidden">
-         <div class="container-fluid" style="height: 100vh; display: flex; flex-direction: column;">
-            <header class="viewer-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px;">
-                <h2 id="viewerGameName" class="viewer-game-name" style="font-size: 1.5rem; margin: 0;">Game Name</h2>
-                <button id="toggleViewClassic" class="btn btn--outline btn--sm">Settings / Switch View</button>
-            </header>
-
-            <div class="viewer-main-scoreboard" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-                
-                <div class="viewer-scoreboard" style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 2vw; align-items: center; padding: 2vw;">
-                    <div class="viewer-team-panel" style="text-align: center;">
-                        <h1 id="viewerTeamAName" class="viewer-team-name" style="font-size: 4vw; line-height: 1; margin-bottom: 1vh;">TEAM A</h1>
-                        <div id="viewerTeamAScore" class="viewer-team-score" style="font-size: 12vw; font-weight: bold; line-height: 1;">0</div>
-                        <div class="viewer-stats-row" style="display: flex; justify-content: center; gap: 2vw; margin-top: 2vh;">
-                            <div class="viewer-stat-box">
-                                <div class="viewer-stat-label" style="font-size: 1vw; text-transform: uppercase;">Fouls</div>
-                                <div id="viewerTeamAFouls" class="viewer-stat-value" style="font-size: 2.5vw; font-weight: bold;">0</div>
-                            </div>
-                            <div class="viewer-stat-box">
-                                <div class="viewer-stat-label" style="font-size: 1vw; text-transform: uppercase;">Timeouts</div>
-                                <div id="viewerTeamATimeouts" class="viewer-stat-value" style="font-size: 2.5vw; font-weight: bold;">0</div>
-                            </div>
-                        </div>
-                        <div id="viewerTeamATopScorer" class="viewer-top-scorer-small" style="margin-top: 1vh; font-size: 1.2vw; color: #888;"></div>
-                    </div>
-
-                    <div class="viewer-center-panel" style="display: flex; flex-direction: column; align-items: center; gap: 2vh;">
-                        <div class="viewer-clock-box" style="text-align: center;">
-                             <div id="viewerGameClock" class="viewer-game-clock" style="font-size: 6vw; font-weight: bold; font-family: monospace; background: #222; padding: 1vw 2vw; border-radius: 1vw; border: 2px solid #444; color: #fff;">12:00</div>
-                        </div>
-                        
-                        <div class="viewer-period-box" style="text-align: center;">
-                            <div id="viewerQuarterHalfLabel" class="viewer-qtr-label" style="font-size: 1.5vw; color: #888; text-transform: uppercase;">Quarter</div>
-                            <div id="viewerPeriod" class="viewer-quarter" style="font-size: 3vw; font-weight: bold;">1</div>
-                        </div>
-
-                        <div class="viewer-possession" style="background: #333; padding: 0.5vw 1.5vw; border-radius: 2vw; display: flex; align-items: center; gap: 1vw;">
-                             <span style="color: #aaa; font-size: 1.2vw;">POSS</span>
-                             <div class="possession-dot" style="width: 1.5vw; height: 1.5vw; border-radius: 50%; background: #555; transition: background 0.3s;"></div>
-                             <span id="viewerPossessionTeamName" style="font-weight: bold; font-size: 1.2vw;">-</span>
-                        </div>
-
-                        <div id="viewerShotClockBox" class="viewer-shot-clock-container" style="margin-top: 2vh;">
-                             <div class="viewer-sc-label" style="font-size: 1.2vw; color: #aaa; text-align: center;">SHOT CLOCK</div>
-                             <div id="viewerShotClock" class="viewer-shot-clock" style="font-size: 4vw; font-weight: bold; color: #ffcc00; text-align: center;">24</div>
-                        </div>
-                    </div>
-
-                    <div class="viewer-team-panel" style="text-align: center;">
-                        <h1 id="viewerTeamBName" class="viewer-team-name" style="font-size: 4vw; line-height: 1; margin-bottom: 1vh;">TEAM B</h1>
-                        <div id="viewerTeamBScore" class="viewer-team-score" style="font-size: 12vw; font-weight: bold; line-height: 1;">0</div>
-                        <div class="viewer-stats-row" style="display: flex; justify-content: center; gap: 2vw; margin-top: 2vh;">
-                             <div class="viewer-stat-box">
-                                <div class="viewer-stat-label" style="font-size: 1vw; text-transform: uppercase;">Fouls</div>
-                                <div id="viewerTeamBFouls" class="viewer-stat-value" style="font-size: 2.5vw; font-weight: bold;">0</div>
-                            </div>
-                            <div class="viewer-stat-box">
-                                <div class="viewer-stat-label" style="font-size: 1vw; text-transform: uppercase;">Timeouts</div>
-                                <div id="viewerTeamBTimeouts" class="viewer-stat-value" style="font-size: 2.5vw; font-weight: bold;">0</div>
-                            </div>
-                        </div>
-                        <div id="viewerTeamBTopScorer" class="viewer-top-scorer-small" style="margin-top: 1vh; font-size: 1.2vw; color: #888;"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="viewer-footer" style="text-align: center; padding: 10px; color: #555; font-size: 0.8rem;">
-                Powered by BOX Scoreboard
-            </div>
-         </div>
-    </section>
-
-    <section id="viewer-view-classic" class="view hidden">
-        <div class="container-fluid" style="padding: 40px;">
-             <header style="display: flex; justify-content: space-between; margin-bottom: 40px;">
-                <h2 id="classicViewerGameName" style="font-size: 2rem;">Game</h2>
-                <button id="toggleViewPro" class="btn btn--outline">Settings / Switch View</button>
-             </header>
-
-             <div class="viewer-scoreboard" style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 40px; text-align: center;">
-                <div>
-                    <h1 id="classicViewerTeamAName" style="font-size: 3rem; margin-bottom: 10px;">Team A</h1>
-                    <div id="classicViewerTeamAScore" style="font-size: 8rem; font-weight: bold;">0</div>
-                    <div id="classicViewerTeamATopScorer" style="margin-top: 20px; font-size: 1.5rem; color: #666;"></div>
-                </div>
-
-                <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                    <div id="classicViewerGameClock" style="font-size: 5rem; font-family: monospace; font-weight: bold; margin-bottom: 20px;">12:00</div>
-                    <div style="font-size: 1.5rem; text-transform: uppercase; color: #666;">
-                        <span id="classicQuarterHalfLabel">Quarter</span> <span id="classicViewerPeriod">1</span>
-                    </div>
-                    <div id="classicViewerShotClock" style="font-size: 4rem; font-weight: bold; color: #e67e22; margin-top: 30px;">24</div>
-                    <div style="margin-top: 30px; font-size: 1.5rem;">Possession: <span id="classicViewerPossession" style="font-weight: bold;">-</span></div>
-                </div>
-
-                <div>
-                    <h1 id="classicViewerTeamBName" style="font-size: 3rem; margin-bottom: 10px;">Team B</h1>
-                    <div id="classicViewerTeamBScore" style="font-size: 8rem; font-weight: bold;">0</div>
-                    <div id="classicViewerTeamBTopScorer" style="margin-top: 20px; font-size: 1.5rem; color: #666;"></div>
-                </div>
-             </div>
-        </div>
-    </section>
-
-    <div id="resetAllModal" class="modal hidden">
-        <div class="modal-content">
-            <h3>Reset Everything?</h3>
-            <p>This will reset scores, clocks, fouls, and timeouts to the start of the game.</p>
-            <div class="modal-actions">
-                <button id="cancelResetAll" class="btn btn--outline">Cancel</button>
-                <button id="confirmResetAll" class="btn btn--danger">Reset</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="editClockModal" class="modal hidden">
-        <div class="modal-content">
-            <h3>Edit Game Clock</h3>
-            <div class="form-group">
-                <label>Minutes</label>
-                <input id="editMinutes" type="number" class="form-control">
-            </div>
-            <div class="form-group">
-                <label>Seconds</label>
-                <input id="editSeconds" type="number" class="form-control">
-            </div>
-            <div class="modal-actions">
-                <button id="cancelClockEdit" class="btn btn--outline">Cancel</button>
-                <button id="saveClockEdit" class="btn btn--primary">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="editShotClockModal" class="modal hidden">
-        <div class="modal-content">
-            <h3>Edit Shot Clock</h3>
-            <div class="form-group">
-                <label>Seconds</label>
-                <input id="editShotClockSeconds" type="number" class="form-control">
-            </div>
-            <div class="modal-actions">
-                <button id="cancelShotClockEdit" class="btn btn--outline">Cancel</button>
-                <button id="saveShotClockEdit" class="btn btn--primary">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="finalizeGameModal" class="modal hidden">
-        <div class="modal-content">
-            <h3>End Game?</h3>
-            <p>This will mark the game as Final and stop all tracking. You can still view stats.</p>
-            <div class="modal-actions">
-                <button id="cancelFinalize" class="btn btn--outline">Cancel</button>
-                <button id="confirmFinalize" class="btn btn--danger">Finalize</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="guestHostModal" class="modal hidden">
-        <div class="modal-content">
-            <h3>Guest Mode</h3>
-            <p>You are hosting as a guest. <b>Data will NOT be saved</b> if you close the browser. Sign in to save games.</p>
-            <div class="modal-actions">
-                <button id="confirmGuestHost" class="btn btn--primary">I Understand</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="undoModal" class="modal hidden">
-        <div class="modal-content">
-            <h3>Undo Action</h3>
-            <p id="undoMessage">Are you sure?</p>
-            <div class="modal-actions">
-                <button id="cancelUndo" class="btn btn--outline">Cancel</button>
-                <button id="confirmUndo" class="btn btn--primary">Undo</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="helpModal" class="modal hidden">
-        <div class="modal-content">
-            <h3>Keyboard Shortcuts</h3>
-            <ul style="list-style: none; padding: 0; line-height: 2;">
-                <li><b>Space</b> : Start/Stop Game Clock</li>
-                <li><b>Enter</b> : Reset Shot Clock & Start</li>
-                <li><b>S</b> : Start Shot Clock Only</li>
-                <li><b>R</b> : Reset Shot Clock (24s)</li>
-                <li><b>r</b> : Reset Shot Clock (14s)</li>
-                <li><b>P</b> : Toggle Possession</li>
-                <li><b>Z</b> : Undo Last Action</li>
-            </ul>
-            <div style="margin-top: 16px; text-align: center;">
-                 <button id="detailedHelpBtn" class="btn btn--secondary btn--sm">View Detailed Guide</button>
-            </div>
-            <div class="modal-actions">
-                <button id="closeHelpModal" class="btn btn--primary">Close</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="detailedHelpModal" class="modal hidden">
-        <div class="modal-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
-            <h3>Detailed Host Guide</h3>
-            <div style="text-align: left; font-size: 0.9rem; line-height: 1.6;">
-                <h4>1. Clocks</h4>
-                <p>The Game Clock and Shot Clock run independently but can be synced. Pressing <b>Space</b> stops everything. Pressing <b>Enter</b> resets the shot clock and starts everything (common after a basket).</p>
-                
-                <h4>2. Scoring</h4>
-                <p>Click +1, +2, +3 to add points. This automatically updates player stats if you selected a player. Use the Undo button (Z) if you make a mistake.</p>
-                
-                <h4>3. Player Stats (Full Mode)</h4>
-                <p>Select a team from the dropdown, then click the buttons on a player's card. You can also use the "Quick Add" section to add rebounds, fouls, etc. without finding the player card first.</p>
-                
-                <h4>4. Exporting</h4>
-                <p>Use the "Export" button to download an Excel file of the box score.</p>
-            </div>
-            <div class="modal-actions">
-                <button id="closeDetailedHelpModal" class="btn btn--primary">Back</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="viewerSettingsModal" class="modal hidden">
-        <div class="modal-content">
-            <h3>Viewer Settings</h3>
-            <p>Select a theme for the public scoreboard:</p>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0;">
-                <button class="btn btn--secondary viewer-theme-btn" data-theme="system" style="display: flex; flex-direction: column; align-items: center; padding: 15px;">
-                    <span style="font-size: 24px;">💻</span>
-                    <span>System</span>
-                </button>
-                <button class="btn btn--secondary viewer-theme-btn" data-theme="light" style="display: flex; flex-direction: column; align-items: center; padding: 15px;">
-                    <span style="font-size: 24px;">☀️</span>
-                    <span>Light</span>
-                </button>
-                 <button class="btn btn--secondary viewer-theme-btn" data-theme="professional" style="display: flex; flex-direction: column; align-items: center; padding: 15px;">
-                    <span style="font-size: 24px;">🏟️</span>
-                    <span>Pro LED</span>
-                </button>
-            </div>
-
-            <div style="margin-top: 10px; text-align: center;">
-                <p style="font-size: 0.9rem; color: #888;">Switch Layout:</p>
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                     <button onclick="localStorage.setItem('spectatorMode', 'pro'); location.reload();" class="btn btn--sm btn--outline">Pro View</button>
-                     <button onclick="localStorage.setItem('spectatorMode', 'classic'); location.reload();" class="btn btn--sm btn--outline">Classic View</button>
-                </div>
-            </div>
-
-            <div class="modal-actions">
-                <button id="closeViewerSettingsModal" class="btn btn--primary">Close</button>
-            </div>
-        </div>
-    </div>
-    `;
-}
 
 // ================== MODULE-SPECIFIC STATE ==================
 
@@ -716,8 +27,749 @@ const state = {
     actionHistory: [], // For the Undo feature
     clockEditing: false,
     firestoreListener: null,
+    // --- NEW: Theme state for viewer ---
     viewerTheme: localStorage.getItem('viewerTheme') || 'system', // 'system', 'light', 'dark', 'professional'
 };
+
+// ================== HTML BUILDER ==================
+function buildHtml() {
+    return `
+    <section id="landing-view" class="view">
+        <div class="container" style="max-width: 840px; padding-top: 50px;">
+            <header class="landing-header" style="margin-bottom: 24px;">
+                <div class="basketball-icon">🏀</div>
+                <h1 class="main-title">Basketball Scoreboard</h1>
+            </header>
+
+            <div class="setup-grid">
+                <div class="card landing-card">
+                    <div class="card__body">
+                        <div class="card-icon">👁️</div>
+                        <h3>Watch Game</h3>
+                        <p>Enter a 6-digit code to spectate.</p>
+                        <div class="form-group" style="margin-top: 16px;">
+                            <label for="watchCodeInput" class="form-label">Game Code</label>
+                            <input id="watchCodeInput" class="form-control" placeholder="e.g., 123456" maxlength="6">
+                        </div>
+                        <div id="watchCodeValidation" class="validation-message hidden"></div>
+                        <button id="watchGameBtn" class="btn btn--primary btn--full-width" disabled>Watch Game</button>
+                    </div>
+                </div>
+
+                <div class="card landing-card">
+                    <div class="card__body">
+                        <div class="card-icon">🎯</div>
+                        <h3>Host Game</h3>
+                        <p>Enter a code to resume, or leave blank for new.</p>
+                        <div class="form-group" style="margin-top: 16px;">
+                            <label for="hostCodeInput" class="form-label">Game Code (Optional)</label>
+                            <input id="hostCodeInput" class="form-control" placeholder="Leave empty for random code" maxlength="6">
+                        </div>
+                        <div id="hostCodeValidation" class="validation-message hidden"></div>
+                        <button id="hostGameBtn" class="btn btn--primary btn--full-width">Host/Resume Game</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="config-view" class="view hidden">
+        <div class="container">
+            <header class="section-header">
+                <div>
+                    <h2>Game Configuration</h2>
+                    <p>Set up your game parameters</p>
+                </div>
+                 <div class="game-code-display">
+                    <span class="status status--info">
+                        Game Code: <span id="configGameCode">...</span>
+                    </span>
+                    <button id="copyConfigCode" class="btn btn--outline btn--sm">Copy</button>
+                </div>
+            </header>
+            <div class="config-grid">
+                <div class="card">
+                    <div class="card__body">
+                        <h3>1. Game Type</h3>
+                        <div class="game-type-selection">
+                            <label class="game-type-option">
+                                <input type="radio" name="gameType" value="friendly" checked>
+                                <div class="game-type-card">
+                                    <div class="game-type-icon">🤝</div>
+                                    <h4>Friendly Game</h4>
+                                    <p>Quick game without player rosters</p>
+                                </div>
+                            </label>
+                            <label class="game-type-option">
+                                <input type="radio" name="gameType" value="full">
+                                <div class="game-type-card">
+                                    <div class="game-type-icon">📊</div>
+                                    <h4>Full Game with Stats</h4>
+                                    <p>Complete game with player statistics</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card__body">
+                        <h3>2. Game Settings</h3>
+                        <div class="form-group">
+                            <label class="form-label" for="gameNameInput">Game Name</label>
+                            <input id="gameNameInput" class="form-control" placeholder="Championship Final" maxlength="50">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Game Format</label>
+                                <div style="display: flex; gap: 16px; margin-top: 8px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 16px;">
+                                        <input type="radio" name="periodType" value="quarter" checked> Quarters (4)
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 16px;">
+                                        <input type="radio" name="periodType" value="half"> Halves (2)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Duration (Mins)</label>
+                                <select id="periodDurationSelect" class="form-control">
+                                    <option value="8">8 minutes</option>
+                                    <option value="10">10 minutes</option>
+                                    <option value="12" selected>12 minutes</option>
+                                    <option value="15">15 minutes</option>
+                                    <option value="20">20 minutes</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Shot Clock (Defaults to 24s)</label>
+                            <div class="theme-switch-container">
+                                <span>Off</span>
+                                <label class="theme-switch">
+                                    <input type="checkbox" id="shotClockToggle" checked>
+                                    <span class="theme-slider"></span>
+                                </label>
+                                <span>On</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card__body">
+                        <h3>3. Team Configuration</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="teamAName">Team A Name</label>
+                                <input id="teamAName" class="form-control" placeholder="Home Team" maxlength="20">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="teamAColor">Team A Color</label>
+                                <div class="color-picker-group">
+                                    <input id="teamAColor" class="form-control color-input" type="color" value="#EA4335">
+                                    <div class="color-preview" id="teamAColorPreview"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="teamBName">Team B Name</label>
+                                <input id="teamBName" class="form-control" placeholder="Away Team" maxlength="20">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="teamBColor">Team B Color</label>
+                                <div class="color-picker-group">
+                                    <input id="teamBColor" class="form-control color-input" type="color" value="#4285F4">
+                                    <div class="color-preview" id="teamBColorPreview"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="section-actions">
+                <button id="backToLanding" class="btn btn--outline">← Back</button>
+                <button id="proceedToSetup" class="btn btn--primary">Continue</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="setup-view" class="view hidden">
+        <div class="container">
+            <header class="section-header">
+                <div>
+                    <h2>Team Setup</h2>
+                    <p>Add players to both teams</p>
+                </div>
+                <div class="game-code-display">
+                    <span class="status status--info">
+                        Game Code: <span id="setupGameCode">...</span>
+                    </span>
+                    <button id="copySetupCode" class="btn btn--outline btn--sm">Copy</button>
+                </div>
+            </header>
+            <div class="setup-grid">
+                <div class="card team-setup-card">
+                    <div class="card__body">
+                        <h3 id="teamASetupTitle">Team A</h3>
+                        <div class="player-form">
+                            <div class="form-row" style="grid-template-columns: 1fr 90px 100px auto; gap: 8px; align-items: flex-end;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Player Name</label>
+                                    <input id="teamAPlayerName" class="form-control" placeholder="Name" maxlength="30">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Jersey #</label>
+                                    <input id="teamAPlayerNumber" class="form-control" type="number" min="0" max="99" placeholder="#">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Position</label>
+                                    <select id="teamAPlayerPosition" class="form-control">
+                                        <option value="">Pos</option>
+                                        <option value="PG">PG</option>
+                                        <option value="SG">SG</option>
+                                        <option value="SF">SF</option>
+                                        <option value="PF">PF</option>
+                                        <option value="C">C</option>
+                                    </select>
+                                </div>
+                                <button id="addTeamAPlayer" class="btn btn--primary">Add</button>
+                            </div>
+                        </div>
+                        <div id="teamARoster" class="roster-list" style="padding: 16px 0 0 0;"></div>
+                        <div class="card__body">
+                            <div class="roster-counter">
+                                Players: <span id="teamACount">0</span>/15
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card team-setup-card">
+                    <div class="card__body">
+                        <h3 id="teamBSetupTitle">Team B</h3>
+                        <div class="player-form">
+                             <div class="form-row" style="grid-template-columns: 1fr 90px 100px auto; gap: 8px; align-items: flex-end;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Player Name</label>
+                                    <input id="teamBPlayerName" class="form-control" placeholder="Name" maxlength="30">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Jersey #</label>
+                                    <input id="teamBPlayerNumber" class="form-control" type="number" min="0" max="99" placeholder="#">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label class="form-label" style="font-size: 11px; margin-bottom: 4px;">Position</label>
+                                    <select id="teamBPlayerPosition" class="form-control">
+                                        <option value="">Pos</option>
+                                        <option value="PG">PG</option>
+                                        <option value="SG">SG</option>
+                                        <option value="SF">SF</option>
+                                        <option value="PF">PF</option>
+                                        <option value="C">C</option>
+                                    </select>
+                                </div>
+                                <button id="addTeamBPlayer" class="btn btn--primary">Add</button>
+                            </div>
+                        </div>
+                        <div id="teamBRoster" class="roster-list" style="padding: 16px 0 0 0;"></div>
+                        <div class="card__body">
+                            <div class="roster-counter">
+                                Players: <span id="teamBCount">0</span>/15
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="section-actions">
+                <button id="backToConfig" class="btn btn--outline">← Back to Configuration</button>
+                <button id="skipRosterSetup" class="btn btn--secondary">Skip & Start Game</button>
+                <button id="startGame" class="btn btn--primary" disabled>Start Game</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="pre-game-view" class="view hidden">
+        <div class="container" style="max-width: 600px; padding-top: 50px; text-align: center;">
+            <header class="landing-header">
+                <h1 class="main-title">Game Ready!</h1>
+                <p class="hero-subtitle">The game is set up. Review the shortcuts below.</p>
+            </header>
+            
+            <div class="card">
+                <div class="card__body">
+                    <h3 style="text-align: center;">Keyboard Shortcuts</h3>
+                    <table class="comprehensive-stats-table" style="font-size: 14px; table-layout: auto; margin-top: 16px;">
+                        <thead>
+                            <tr style="background: none;">
+                                <th style="text-align: left; background: var(--color-secondary);">Key</th>
+                                <th style="text-align: left; background: var(--color-secondary);">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="border: 1px solid var(--color-border);">
+                            <tr><td style="font-weight: 600;">Spacebar</td><td>Start / Pause Game Clock</td></tr>
+                            <tr><td style="font-weight: 600;">Enter</td><td>Reset Shot Clock to Full & START</td></tr>
+                            <tr><td style="font-weight: 600;">R (Shift+r)</td><td>Reset Shot Clock to Full (No Start)</td></tr>
+                            <tr><td style="font-weight: 600;">r</td><td>Reset Shot Clock to 14s (No Start)</td></tr>
+                            <tr><td style="font-weight: 600;">s</td><td>Start Shot Clock Only</td></tr>
+                            <tr><td style="font-weight: 600;">p</td><td>Toggle Possession</td></tr>
+                            <tr><td style="font-weight: 600;">z</td><td>Undo Last Action</td></tr>
+                            <tr><td style="font-weight: 600;">h</td><td>Show Help Menu</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section-actions" style="justify-content: center; margin-top: 24px;">
+                <button id="startControlViewBtn" class="btn btn--primary btn--lg">START GAME</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="control-view" class="view hidden">
+        <div class="container-fluid">
+            <header class="control-header">
+                <div class="control-title">
+                    <h2 id="gameNameDisplay">Basketball Game</h2>
+                    <div class="game-code-display">
+                        <span class="status status--info">
+                            Game Code: <span id="controlGameCode">...</span>
+                        </span>
+                        <button id="copyControlCode" class="btn btn--outline btn--sm">Copy</button>
+                    </div>
+                </div>
+                <div class="control-actions">
+                    <button id="helpBtn" class="btn btn--outline">Help (h)</button>
+                    <button id="undoBtn" class="btn btn--secondary" disabled>Undo (z)</button>
+                    <button id="shareGameBtn" class="btn btn--outline">Share</button>
+                    <button id="exportGame" class="btn btn--outline">Export</button>
+                    <button id="finalizeGameBtn" class="btn btn--danger">End Game</button>
+                </div>
+            </header>
+            <div class="control-grid">
+                <div class="scoreboard-section">
+                    <div class="card">
+                        <div class="card__body">
+                            <div class="scoreboard">
+                                <div class="team-score" id="teamAScoreSection">
+                                    <h3 id="teamAName">Team A</h3>
+                                    <div class="score-display" id="teamAScore">0</div>
+                                    <div class="top-scorer" id="teamATopScorer">No scorer yet</div>
+                                    <div class="score-controls">
+                                        <button class="btn btn--sm score-btn btn--score-1" data-team="teamA" data-points="1">+1</button>
+                                        <button class="btn btn--sm score-btn btn--score-2" data-team="teamA" data-points="2">+2</button>
+                                        <button class="btn btn--sm score-btn btn--score-3" data-team="teamA" data-points="3">+3</button>
+                                        <button class="btn btn--sm score-btn btn--score-minus" data-team="teamA" data-points="-1">-1</button>
+                                    </div>
+                                </div>
+                                <div class="clock-section">
+                                    <div class="clock-display game-clock" id="gameClockDisplay" title="Click to edit">12:00</div>
+                                    <div class="period-display"><span id="quarterHalfLabel">Quarter</span> <span id="periodDisplay">1</span></div>
+                                    <div class="master-clock-controls">
+                                        <button id="startGameBtn" class="btn btn--primary master-start-btn">START (Space)</button>
+                                        <div class="clock-control-row">
+                                            <button id="resetAllBtn" class="btn btn--outline btn--sm">Reset All</button>
+                                            <button id="editGameClock" class="btn btn--secondary btn--sm">Edit Time</button>
+                                            <button id="nextPeriod" class="btn btn--secondary btn--sm">Next</button>
+                                        </div>
+                                    </div>
+                                    <div class="shot-clock-section" id="shotClockSection">
+                                        <div class="shot-clock-display" id="shotClockDisplay" title="Click to edit">24</div>
+                                        <div class="shot-clock-label">Shot Clock</div>
+                                        <div class="shot-clock-actions">
+                                            <button id="resetShotClock14" class="btn btn--warning btn--sm">14s</button>
+                                            <button id="resetShotClockFull" class="btn btn--warning btn--sm">Full</button>
+                                            <button id="editShotClock" class="btn btn--secondary btn--sm">Edit</button>
+                                            <button id="startShotClock" class="btn btn--success btn--sm">Start</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="team-score" id="teamBScoreSection">
+                                    <h3 id="teamBName">Team B</h3>
+                                    <div class="score-display" id="teamBScore">0</div>
+                                    <div class="top-scorer" id="teamBTopScorer">No scorer yet</div>
+                                    <div class="score-controls">
+                                        <button class="btn btn--sm score-btn btn--score-1" data-team="teamB" data-points="1">+1</button>
+                                        <button class="btn btn--sm score-btn btn--score-2" data-team="teamB" data-points="2">+2</button>
+                                        <button class="btn btn--sm score-btn btn--score-3" data-team="teamB" data-points="3">+3</button>
+                                        <button class="btn btn--sm score-btn btn--score-minus" data-team="teamB" data-points="-1">-1</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="game-info-grid">
+                        <div class="card">
+                            <div class="card__body">
+                                <h4>Team A Info</h4>
+                                <div class="team-info">
+                                    <div class="info-item">
+                                        <span>Timeouts:</span>
+                                        <div class="counter-controls">
+                                            <button class="btn btn--sm" data-action="timeout-minus" data-team="teamA">-</button>
+                                            <span id="teamATimeouts">7</span>
+                                            <button class="btn btn--sm" data-action="timeout-plus" data-team="teamA">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="info-item">
+                                        <span>Team Fouls:</span>
+                                        <div class="counter-controls">
+                                            <button class="btn btn--sm" data-action="foul-minus" data-team="teamA">-</button>
+                                            <span id="teamAFouls">0</span>
+                                            <button class="btn btn--sm" data-action="foul-plus" data-team="teamA">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card__body">
+                                <h4>Possession (p)</h4>
+                                <div class="possession-controls">
+                                    <button id="possessionTeamA" class="btn btn--outline possession-btn active">Team A</button>
+                                    <button id="possessionTeamB" class="btn btn--outline possession-btn">Team B</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card__body">
+                                <h4>Team B Info</h4>
+                                <div class="team-info">
+                                    <div class="info-item">
+                                        <span>Timeouts:</span>
+                                        <div class="counter-controls">
+                                            <button class="btn btn--sm" data-action="timeout-minus" data-team="teamB">-</button>
+                                            <span id="teamBTimeouts">7</span>
+                                            <button class="btn btn--sm" data-action="timeout-plus" data-team="teamB">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="info-item">
+                                        <span>Team Fouls:</span>
+                                        <div class="counter-controls">
+                                            <button class="btn btn--sm" data-action="foul-minus" data-team="teamB">-</button>
+                                            <span id="teamBFouls">0</span>
+                                            <button class="btn btn--sm" data-action="foul-plus" data-team="teamB">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="stats-section" id="statsSection">
+                    <div class="card">
+                        <div class="card__body">
+                            <div class="stats-header">
+                                <h4>Comprehensive Player Statistics</h4>
+                                <div class="stats-controls">
+                                    <select id="statTeamSelect" class="form-control">
+                                        <option value="teamA">Team A</option>
+                                        <option value="teamB">Team B</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="player-scoring-grid" id="playerScoringGrid"></div>
+                            <div class="comprehensive-stats-section">
+                                <h5>Full Statistics Table</h5>
+                                <div class="stats-table-container">
+                                    <table class="comprehensive-stats-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="sticky-col">#</th>
+                                                <th class="sticky-col">Name</th>
+                                                <th>PTS</th>
+                                                <th>FT</th>
+                                                <th>2PT</th>
+                                                <th>3PT</th>
+                                                <th>ORB</th>
+                                                <th>DRB</th>
+                                                <th>REB</th>
+                                                <th>AST</th>
+                                                <th>STL</th>
+                                                <th>BLK</th>
+                                                <th>TO</th>
+                                                <th>PF</th>
+                                                <th>MIN</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="comprehensiveStatsTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="quick-stats-actions">
+                                <h5>Quick Stat Entry</h5>
+                                <div class="quick-stat-grid">
+                                    <select id="quickStatPlayer" class="form-control">
+                                        <option value="">Select Player</option>
+                                    </select>
+                                    <div class="stat-buttons">
+                                        <button class="btn btn--sm stat-btn" data-stat="offensiveRebounds">+ORB</button>
+                                        <button class="btn btn--sm stat-btn" data-stat="defensiveRebounds">+DRB</button>
+                                        <button class="btn btn--sm stat-btn" data-stat="assists">+AST</button>
+                                        <button class="btn btn--sm stat-btn" data-stat="steals">+STL</button>
+                                        <button class="btn btn--sm stat-btn" data-stat="blocks">+BLK</button>
+                                        <button class="btn btn--sm stat-btn" data-stat="turnovers">+TO</button>
+                                        <button class="btn btn--sm stat-btn" data-stat="fouls">+PF</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="viewer-view-pro" class="view hidden">
+        <header class="viewer-header">
+            <div id="viewerGameName" class="viewer-game-name">Basketball Game</div>
+            <button id="toggleViewPro" class="viewer-settings-btn">⚙️</button>
+            <div id="viewerPossession" class="viewer-possession">
+                <span class="possession-dot"></span>
+                <span id="viewerPossessionTeamName">Team A</span>
+            </div>
+        </header>
+
+        <main class="viewer-main-scoreboard">
+            <div class="viewer-team-panel left" id="viewerTeamA">
+                <div id="viewerTeamAName" class="viewer-team-name">TEAM A</div>
+                <div id="viewerTeamAScore" class="viewer-team-score">0</div>
+            </div>
+
+            <div class="viewer-center-panel">
+                <div class="viewer-qtr-box">
+                    <div id="viewerQuarterHalfLabel" class="viewer-qtr-label">QUARTER</div>
+                    <div id="viewerPeriod" class="viewer-quarter">1</div>
+                </div>
+                <div id="viewerGameClock" class="viewer-game-clock">12:00</div>
+                <div class="viewer-sc-box" id="viewerShotClockBox">
+                    <div class="viewer-sc-label">SHOT</div>
+                    <div id="viewerShotClock" class="viewer-shot-clock">24</div>
+                </div>
+            </div>
+
+            <div class="viewer-team-panel right" id="viewerTeamB">
+                <div id="viewerTeamBName" class="viewer-team-name">TEAM B</div>
+                <div id="viewerTeamBScore" class="viewer-team-score">0</div>
+            </div>
+        </main>
+
+        <footer class="viewer-footer">
+            <div class="viewer-stat-box" id="viewerTeamAFoulsBox">
+                <div class="viewer-stat-label">FOULS</div>
+                <div id="viewerTeamAFouls" class="viewer-stat-value">0</div>
+            </div>
+            <div class="viewer-stat-box" id="viewerTeamATimeoutsBox">
+                <div class="viewer-stat-label">TIMEOUTS</div>
+                <div id="viewerTeamATimeouts" class="viewer-stat-value">7</div>
+            </div>
+            <div id="viewerTeamATopScorer" class="viewer-top-scorer-small" style="text-align: right;">
+            </div>
+            <div id="viewerTeamBTopScorer" class="viewer-top-scorer-small" style="text-align: left;">
+            </div>
+            <div class="viewer-stat-box" id="viewerTeamBTimeoutsBox">
+                <div class="viewer-stat-label">TIMEOUTS</div>
+                <div id="viewerTeamBTimeouts" class="viewer-stat-value">7</div>
+            </div>
+            <div class="viewer-stat-box" id="viewerTeamBFoulsBox">
+                <div class="viewer-stat-label">FOULS</div>
+                <div id="viewerTeamBFouls" class="viewer-stat-value">0</div>
+            </div>
+        </footer>
+    </section>
+
+    <section id="viewer-view-classic" class="view hidden">
+        <div class="container-fluid" style="padding-top: 20px;">
+            <div class="viewer-info" style="margin-bottom: 20px; position: relative;">
+                <div id="classicViewerGameName" class="game-name">Basketball Game</div>
+                <button id="toggleViewClassic" class="btn btn--outline" style="font-size: 24px; padding: 4px 10px; position: absolute; right: 20px; top: 50%; transform: translateY(-50%);">⚙️</button>
+                <div class="possession-indicator">
+                    <span>Possession:</span>
+                    <span id="classicViewerPossession">Team A</span>
+                </div>
+            </div>
+            <div class="viewer-scoreboard">
+                <div class="viewer-team" id="classicViewerTeamA">
+                    <h2 id="classicViewerTeamAName">Team A</h2>
+                    <div id="classicViewerTeamAScore" class="viewer-score">0</div>
+                    <div id="classicViewerTeamATopScorer" class="viewer-top-scorer">No scorer yet</div>
+                </div>
+                <div class="viewer-center">
+                    <div id="classicViewerGameClock" class="viewer-clock">12:00</div>
+                    <div class="viewer-period"><span id="classicQuarterHalfLabel">Quarter</span> <span id="classicViewerPeriod">1</span></div>
+                    <div id="classicViewerShotClock" class="viewer-shot-clock" style="display: none;">24</div>
+                </div>
+                <div class="viewer-team" id="classicViewerTeamB">
+                    <h2 id="classicViewerTeamBName">Team B</h2>
+                    <div id="classicViewerTeamBScore" class="viewer-score">0</div>
+                    <div id="classicViewerTeamBTopScorer" class="viewer-top-scorer">No scorer yet</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <div id="guestHostModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Guest Host Mode</h3>
+            <p style="color: var(--color-text-secondary); margin: 16px 0;">
+                You are hosting as a guest. This game will be **publicly viewable** by anyone with the code, but it **will not be saved to a profile**.
+            </p>
+            <div class="modal-actions">
+                <button id="confirmGuestHost" class="btn btn--primary">I Understand, Continue</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="finalizeGameModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Finalize Game</h3>
+            <p style="color: var(--color-text-secondary); margin: 16px 0;">
+                Are you sure you want to end this game? This action cannot be undone.
+            </p>
+            <div class="modal-actions">
+                <button id="cancelFinalize" class="btn btn--outline">Cancel</button>
+                <button id="confirmFinalize" class="btn btn--danger">End Game</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resetAllModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Reset All Clocks</h3>
+            <p style="color: var(--color-text-secondary); margin: 16px 0;">
+                Are you sure you want to reset the Game Clock and Shot Clock?
+            </p>
+            <div class="modal-actions">
+                <button id="cancelResetAll" class="btn btn--outline">Cancel</button>
+                <button id="confirmResetAll" class="btn btn--danger">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="undoModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Undo Last Action</h3>
+            <p style="color: var(--color-text-secondary); margin: 16px 0;">
+                Are you sure you want to undo this action?
+            </p>
+            <p id="undoMessage" style="font-weight: 600; text-align: center; color: var(--color-warning);"></p>
+            <div class="modal-actions">
+                <button id="cancelUndo" class="btn btn--outline">Cancel</button>
+                <button id="confirmUndo" class="btn btn--danger">Undo</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="helpModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px;">
+            <h3>Keyboard Shortcuts</h3>
+            <p style="color: var(--color-text-secondary); margin: 16px 0;">
+                Use these keys to control the game when not editing text.
+            </p>
+            <table class="comprehensive-stats-table" style="font-size: 14px; table-layout: auto;">
+                <thead>
+                    <tr style="background: none;">
+                        <th style="text-align: left; background: var(--color-secondary);">Key</th>
+                        <th style="text-align: left; background: var(--color-secondary);">Action</th>
+                    </tr>
+                </thead>
+                <tbody style="border: 1px solid var(--color-border);">
+                    <tr><td style="font-weight: 600;">Spacebar</td><td>Start / Pause Game Clock</td></tr>
+                    <tr><td style="font-weight: 600;">Enter</td><td>Reset Shot Clock to Full & START</td></tr>
+                    <tr><td style="font-weight: 600;">R (Shift+r)</td><td>Reset Shot Clock to Full (No Start)</td></tr>
+                    <tr><td style="font-weight: 600;">r</td><td>Reset Shot Clock to 14s (No Start)</td></tr>
+                    <tr><td style="font-weight: 600;">s</td><td>Start Shot Clock Only</td></tr>
+                    <tr><td style="font-weight: 600;">p</td><td>Toggle Possession</td></tr>
+                    <tr><td style="font-weight: 600;">z</td><td>Undo Last Action</td></tr>
+                    <tr><td style="font-weight: 600;">h</td><td>Show this Help Menu</td></tr>
+                </tbody>
+            </table>
+            <div class="modal-actions" style="justify-content: space-between; margin-top: 20px;">
+                <button id="detailedHelpBtn" class="btn btn--outline">Detailed Explanations</button>
+                <button id="closeHelpModal" class="btn btn--primary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="detailedHelpModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 500px; text-align: left;">
+            <h3>Detailed Explanations</h3>
+            
+            <h5 style="margin-top: 16px;">Clock Controls</h5>
+            <ul style="font-size: 14px; color: var(--color-text-secondary); margin-left: 20px; line-height: 1.6;">
+                <li><b>Start/Pause (Space):</b> Toggles the main game clock. This will also pause the shot clock.</li>
+                <li><b>Reset Full & Start (Enter):</b> This is for a new possession after a score. It resets the shot clock to its full time (e.g., 24s) and starts it instantly.</li>
+                <li><b>Reset Full (R):</b> Resets the shot clock to full but does NOT start it. Useful for setting up before a play.</li>
+                <li><b>Reset 14s (r):</b> Resets the shot clock to 14s (or the offensive rebound time) and does NOT start it. Use this after an offensive rebound.</li>
+                <li><b>Start Shot Clock (s):</b> Starts *only* the shot clock. The game clock remains paused. Use this for inbounding at the start of a period.</li>
+            </ul>
+
+            <h5 style="margin-top: 16px;">Game Management</h5>
+            <ul style="font-size: 14px; color: var(--color-text-secondary); margin-left: 20px; line-height: 1.6;">
+                <li><b>Undo (z):</b> Reverts the last major action (e.g., score, clock edit, foul). A confirmation is required.</li>
+                <li><b>Toggle Possession (p):</b> Manually switches the possession arrow.</li>
+                <li><b>Friendly vs. Full Game:</b> "Friendly" is for quick games with no player stats. "Full Game" enables player rosters and tracking of individual stats (PTS, REB, AST, etc.).</li>
+            </ul>
+
+            <div class="modal-actions">
+                <button id="closeDetailedHelpModal" class="btn btn--primary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editClockModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Edit Game Clock</h3>
+            <div class="form-group">
+                <label for="editMinutes">Minutes:</label>
+                <input id="editMinutes" type="number" min="0" max="99" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="editSeconds">Seconds:</label>
+                <input id="editSeconds" type="number" min="0" max="59" class="form-control">
+            </div>
+            <div class="modal-actions">
+                <button id="cancelClockEdit" class="btn btn--outline">Cancel</button>
+                <button id="saveClockEdit" class="btn btn--primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editShotClockModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Edit Shot Clock</h3>
+            <div class="form-group">
+                <label for="editShotClockSeconds">Seconds:</label>
+                <input id="editShotClockSeconds" type="number" min="0" max="60" class="form-control">
+            </div>
+            <div class="modal-actions">
+                <button id="cancelShotClockEdit" class="btn btn--outline">Cancel</button>
+                <button id="saveShotClockEdit" class="btn btn--primary">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewerSettingsModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 300px;">
+            <h3>Viewer Settings</h3>
+            <p style="color: var(--color-text-secondary); margin-bottom: 20px;">
+                Choose your preferred display theme:
+            </p>
+            <div class="theme-selection-grid" style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="system">System Default</button>
+                <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="light">Light Mode</button>
+                <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="dark">Dark Mode</button>
+                <button class="btn btn--primary btn--full-width viewer-theme-btn" data-theme="professional">Professional Black</button>
+            </div>
+            <div class="modal-actions" style="justify-content: center; margin-top: 20px;">
+                <button id="closeViewerSettingsModal" class="btn btn--outline">Close</button>
+            </div>
+        </div>
+    </div>
+    `;
+}
 
 // ================== ALL BASKETBALL FUNCTIONS ==================
 
@@ -824,7 +876,7 @@ function showView(viewName) {
         // Reset global theme to system/saved for non-viewer pages
         document.documentElement.removeAttribute('data-color-scheme');
         const rootContainer = $('root-container');
-        if (rootContainer) rootContainer.classList.remove('viewer-theme-professional');
+        if (rootContainer) rootContainer.classList.remove('viewer-theme-pro-mode');
     }
 
     if (viewName === 'landing-view' || viewName === 'config-view') {
@@ -1188,14 +1240,9 @@ function showViewerSettingsModal() {
     $$('.viewer-theme-btn').forEach(btn => {
         btn.classList.remove('btn--primary');
         btn.classList.add('btn--secondary');
-        
-        // Reset border styles for clarity
-        btn.style.border = "1px solid var(--color-border)";
-        
         if (btn.dataset.theme === state.viewerTheme) {
             btn.classList.add('btn--primary');
             btn.classList.remove('btn--secondary');
-            btn.style.border = "2px solid var(--color-primary)";
         }
     });
 
@@ -1218,33 +1265,30 @@ function setViewerTheme(theme) {
     const html = document.documentElement;
     const rootContainer = $('root-container');
     
-    // Reset base states
-    html.removeAttribute('data-color-scheme');
-    if (rootContainer) {
-        rootContainer.classList.remove('viewer-theme-professional');
-    }
-    
-    // 1. Handle Light Theme
+    // 1. Handle Global Theme (Light/Dark/System)
     if (theme === 'light') {
         html.setAttribute('data-color-scheme', 'light');
-    } 
-    // 2. Handle Professional LED Theme
-    else if (theme === 'professional') {
-        // Force dark mode base so the rest of the UI (modals etc) looks correct
+        html.style.backgroundColor = '';
+    } else if (theme === 'dark' || theme === 'professional') {
+        // Professional mode also forces dark mode globally for body/background consistency
         html.setAttribute('data-color-scheme', 'dark');
-        
-        // Add the special class to the container
-        if (rootContainer) {
-            rootContainer.classList.add('viewer-theme-professional');
-        }
-    }
-    // 3. System/Normal (Default)
-    else {
-        // Do nothing, let system preference or theme-loader.js handle it
+    } else {
+        // System default (theme-loader handles this on load)
+        html.removeAttribute('data-color-scheme'); 
     }
     
-    // Force update the scoreboard values so colors/fonts redraw immediately
-    updateSpectatorView();
+    // 2. Handle Professional/Viewer Specific Theme Override
+    if (rootContainer) {
+        rootContainer.classList.remove('viewer-theme-pro-mode');
+        rootContainer.classList.remove('viewer-theme-classic-mode');
+
+        if (state.view === 'viewer-view-pro' && theme === 'professional') {
+            rootContainer.classList.add('viewer-theme-pro-mode');
+        }
+        
+        // Ensure the scoreboard is updated to reflect any color changes
+        updateSpectatorView();
+    }
 }
 
 
@@ -2476,19 +2520,6 @@ function playerStatsToArray(player, stats) {
 }
 // --- END EXPORT FUNCTIONS ---
 
-// --- NEW UTILITY: Convert hex to RGB for CSS variables ---
-function hexToRgb(hex) {
-    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-        return r + r + g + g + b + b;
-    });
-
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255, 255, 255';
-}
-// --- END NEW UTILITY ---
-
 // --- UPDATED: Now updates BOTH spectator views ---
 function updateSpectatorView() {
     if (!state.game) return;
@@ -2503,13 +2534,10 @@ function updateSpectatorView() {
     
     // --- BEGIN Professional Theme Color Handling (for viewer-pro only) ---
     const rootContainer = $('root-container');
-    if (rootContainer && rootContainer.classList.contains('viewer-theme-professional')) {
+    if (rootContainer && rootContainer.classList.contains('viewer-theme-pro-mode')) {
         // Apply team colors as CSS variables for the Pro theme to use
         rootContainer.style.setProperty('--viewer-team-a-color', state.game.teamA.color);
         rootContainer.style.setProperty('--viewer-team-b-color', state.game.teamB.color);
-        // NEW: Pass RGB values for shadows and team panel highlights
-        rootContainer.style.setProperty('--viewer-team-a-color-rgb', hexToRgb(state.game.teamA.color));
-        rootContainer.style.setProperty('--viewer-team-b-color-rgb', hexToRgb(state.game.teamB.color));
     }
     // --- END Professional Theme Color Handling ---
 
@@ -2518,11 +2546,10 @@ function updateSpectatorView() {
     $('viewerGameName').textContent = state.game.settings.gameName;
     $('viewerTeamAName').textContent = state.game.teamA.name.toUpperCase();
     // Only set inline color if NOT in professional mode
-    if (!rootContainer || !rootContainer.classList.contains('viewer-theme-professional')) {
+    if (!rootContainer || !rootContainer.classList.contains('viewer-theme-pro-mode')) {
         $('viewerTeamAName').style.color = state.game.teamA.color;
         $('viewerTeamBName').style.color = state.game.teamB.color;
     } else {
-        // Set name colors to their default pro mode styles when in pro mode
         $('viewerTeamAName').style.color = '';
         $('viewerTeamBName').style.color = '';
     }
@@ -2543,14 +2570,9 @@ function updateSpectatorView() {
     // Classic View
     $('classicViewerGameName').textContent = state.game.settings.gameName;
     $('classicViewerTeamAName').textContent = state.game.teamA.name;
-    const classicTeamAScore = $('classicViewerTeamAScore');
-    const classicTeamBScore = $('classicViewerTeamBScore');
-    classicTeamAScore.textContent = state.game.teamA.score;
-    classicTeamAScore.style.color = state.game.teamA.color;
+    $('classicViewerTeamAScore').textContent = state.game.teamA.score;
     $('classicViewerTeamBName').textContent = state.game.teamB.name;
-    classicTeamBScore.textContent = state.game.teamB.score;
-    classicTeamBScore.style.color = state.game.teamB.color;
-
+    $('classicViewerTeamBScore').textContent = state.game.teamB.score;
     $('classicViewerGameClock').textContent = gameTime;
     $('classicQuarterHalfLabel').textContent = periodLabel;
     $('classicViewerPeriod').textContent = periodNum;
