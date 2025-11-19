@@ -758,10 +758,9 @@ function buildHtml() {
                 Choose your preferred display theme:
             </p>
             <div class="theme-selection-grid" style="display: flex; flex-direction: column; gap: 8px;">
-                <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="system">System Default</button>
-                <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="light">Light Mode</button>
+                <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="system">Normal / System Default</button>
                 <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="dark">Dark Mode</button>
-                <button class="btn btn--primary btn--full-width viewer-theme-btn" data-theme="professional">Professional Black</button>
+                <button class="btn btn--primary btn--full-width viewer-theme-btn" data-theme="professional">Professional Scoreboard</button>
             </div>
             <div class="modal-actions" style="justify-content: center; margin-top: 20px;">
                 <button id="closeViewerSettingsModal" class="btn btn--outline">Close</button>
@@ -1282,7 +1281,7 @@ function setViewerTheme(theme) {
         rootContainer.classList.remove('viewer-theme-pro-mode');
         rootContainer.classList.remove('viewer-theme-classic-mode');
 
-        if (state.view === 'viewer-view-pro' && theme === 'professional') {
+        if (state.view.startsWith('viewer') && theme === 'professional') {
             rootContainer.classList.add('viewer-theme-pro-mode');
         }
         
@@ -2648,79 +2647,4 @@ function setupKeyboardShortcuts() {
 /**
  * @param {object} utils - The global utilities from main.js
  * @param {firebase.User | null} user - The authenticated user (or null)
- * @param {URLSearchParams} urlParams - The URL parameters
- */
-function init(utils, user, urlParams) {
-    console.log('Basketball module initializing...');
-    
-    // 1. Set up all utilities
-    $ = utils.$;
-    $$ = utils.$$;
-    showToast = utils.showToast;
-    copyToClipboard = utils.copyToClipboard;
-    state.user = user; // Set user state
-
-    // 2. Add global event listeners
-    setupKeyboardShortcuts(); 
-
-    // 3. Read the mode from the URL
-    const watchCode = urlParams.get('watch');
-    const hostMode = urlParams.get('host'); // 'true' (logged in) or 'free'
-    const resumeCode = urlParams.get('code'); // Check if resuming a game (from sports.html)
-
-    if (watchCode) {
-        // This is a spectator
-        state.isHost = false;
-        joinSpectatorMode(watchCode); // This will showView('viewer')
-    
-    } else if (hostMode === 'true' || hostMode === 'free') {
-        // This is a LOGGED-IN HOST or a GUEST HOST
-        state.isHost = true;
-        
-        if (resumeCode) {
-            // User clicked "Resume Game" on sports.html
-            console.log('Resuming game with code:', resumeCode);
-            state.gameCode = resumeCode; // Set the code from URL
-            
-            // Need to load the game data first
-            loadGameState(resumeCode).then(gameData => {
-                if (gameData) {
-                    state.game = gameData;
-                    state.gameType = gameData.gameType;
-                    
-                    if (gameData.status === 'final') {
-                        showToast('This game is finalized. Viewing stats.', 'info', 2000);
-                        joinSpectatorMode(resumeCode);
-                        return;
-                    }
-                    
-                    showView('pre-game-view'); // Go to pre-game screen
-                } else {
-                    showToast(`Game ${resumeCode} not found.`, 'error', 3000);
-                    showView('landing-view'); // Fallback to landing
-                    setupLandingHandlers();
-                }
-            });
-
-        } else {
-            // This is a new game, show the landing page
-            showView('landing-view'); 
-            setupLandingHandlers();
-        }
-
-    } else {
-        // Fallback (e.g., someone types scoreboard.html?sport=basketball)
-        // Show the landing page
-        showView('landing-view');
-        setupLandingHandlers();
-    }
-    
-    console.log('✓ Basketball module ready!');
-}
-
-// ================== EXPORT ==================
-export default {
-    sportName: "Basketball",
-    buildHtml,
-    init
-};
+ *

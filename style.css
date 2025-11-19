@@ -83,6 +83,7 @@
   --viewer-team-a-color: #ff6347; /* Default fallback Tomato Red */
   --viewer-team-b-color: #4682b4; /* Default fallback Steel Blue */
 
+
   /* Typography */
   --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -1593,7 +1594,7 @@ select.form-control {
 .stats-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: var(--space-16);
   flex-wrap: wrap;
   gap: var(--space-12);
@@ -1793,1105 +1794,267 @@ select.form-control {
 }
 
 /* ================== ENHANCED SPECTATOR VIEW ================== */
-.viewer-scoreboard {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-24);
-  align-items: center;
-  padding: var(--space-32);
-  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg-1) 100%);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--space-32);
-  border: 3px solid var(--color-primary);
-  box-shadow: 0 12px 48px rgba(33, 128, 141, 0.2);
-}
-
-@media (min-width: 768px) {
-  .viewer-scoreboard {
-    grid-template-columns: 1fr auto 1fr;
-    gap: var(--space-32);
-  }
-}
-
-.viewer-team {
-  text-align: center;
-}
-
-.viewer-team h2 {
-  margin-bottom: var(--space-16);
-  font-size: var(--font-size-3xl);
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-teal-400) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.viewer-score {
-  font-size: 6rem;
-  font-weight: var(--font-weight-bold);
-  font-family: var(--font-family-mono);
-  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  line-height: 1;
-  text-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-@media (max-width: 768px) {
-  .viewer-score {
-    font-size: 4rem;
-  }
-}
-
-.viewer-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-16);
-  background: linear-gradient(135deg, var(--color-bg-6) 0%, var(--color-bg-7) 100%);
-  padding: var(--space-32);
-  border-radius: var(--radius-lg);
-  border: 2px solid var(--color-primary);
-  order: -1;
-}
-
-@media (min-width: 768px) {
-  .viewer-center {
-    order: 0;
-  }
-}
-
-.viewer-clock {
-  font-size: 4rem;
-  font-family: var(--font-family-mono);
-  font-weight: var(--font-weight-bold);
-  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  border: 3px solid var(--color-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--space-24) var(--space-32);
-  background-color: rgba(var(--color-teal-500-rgb), 0.05);
-}
-
-@media (max-width: 768px) {
-  .viewer-clock {
-    font-size: 2.5rem;
-    padding: var(--space-16) var(--space-20);
-  }
-}
-
-.viewer-period {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text);
-}
-
-.viewer-shot-clock {
-  font-size: 2rem;
-  font-family: var(--font-family-mono);
-  font-weight: var(--font-weight-bold);
-  background: rgba(230, 129, 97, 0.1);
-  border: 2px solid var(--color-warning);
-  border-radius: var(--radius-base);
-  padding: var(--space-12) var(--space-16);
-  color: var(--color-warning);
-  box-shadow: 0 4px 16px rgba(230, 129, 97, 0.2);
-}
-
-.viewer-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-20);
-  background: linear-gradient(135deg, var(--color-bg-1) 0%, var(--color-bg-2) 100%);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  flex-wrap: wrap;
-  gap: var(--space-16);
-}
-
-.game-name {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text);
-}
-
-.possession-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-  font-weight: var(--font-weight-medium);
-}
-
-/* ================== ENHANCED ANIMATIONS ================== */
-.score-animation {
-  position: fixed;
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  pointer-events: none;
-  z-index: 1500;
-  animation: enhancedScoreFloat 1.5s ease-out forwards;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes enhancedScoreFloat {
-  0% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-30px) scale(1.3);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-60px) scale(0.8);
-  }
-}
-
-/* ================== LAYOUT & STRUCTURE ================== */
-.section-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: var(--space-32);
-  flex-wrap: wrap;
-  gap: var(--space-16);
-  padding: var(--space-20);
-  background: linear-gradient(135deg, var(--color-bg-1) 0%, var(--color-bg-2) 100%);
-  border-radius: var(--radius-base);
-  border: 1px solid var(--color-card-border);
-}
-
-.control-actions {
-  display: flex;
-  gap: var(--space-12);
-  flex-wrap: wrap;
-}
-
-/* ================== ENHANCED FORM ELEMENTS ================== */
-.form-control:focus {
-  border-color: var(--color-primary);
-  outline: var(--focus-outline);
-  box-shadow: 0 0 0 3px rgba(var(--color-teal-500-rgb), 0.1);
-}
-
-/* ================== VALIDATION STATES ================== */
-.validation-message {
-  margin-top: var(--space-8);
-  padding: var(--space-8) var(--space-12);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
-  text-align: center;
-  font-weight: var(--font-weight-medium);
-}
-
-.validation-message.success {
-  background: linear-gradient(135deg, rgba(var(--color-success-rgb), 0.1) 0%, rgba(var(--color-success-rgb), 0.15) 100%);
-  color: var(--color-success);
-  border: 1px solid rgba(var(--color-success-rgb), 0.3);
-}
-
-.validation-message.error {
-  background: linear-gradient(135deg, rgba(var(--color-error-rgb), 0.1) 0%, rgba(var(--color-error-rgb), 0.15) 100%);
-  color: var(--color-error);
-  border: 1px solid rgba(var(--color-error-rgb), 0.3);
-}
-
-/* ================== ENHANCED GAME INFO ================== */
-.game-info-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-16);
-}
-
-@media (min-width: 768px) {
-  .game-info-grid {
-    grid-template-columns: 1fr auto 1fr;
-  }
-}
-
-.team-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-12);
-}
-
-.possession-controls {
-  display: flex;
-  gap: var(--space-8);
-  justify-content: center;
-}
-
-.possession-btn {
-  flex: 1;
-  transition: all var(--duration-fast) var(--ease-standard);
-  background: var(--color-secondary);
-}
-
-.possession-btn.active {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-teal-400) 100%);
-  color: var(--color-btn-primary-text);
-  border-color: var(--color-primary);
-  box-shadow: 0 4px 16px rgba(33, 128, 141, 0.3);
-}
-
-.counter-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--space-8);
-}
-
-.counter-controls span {
-  font-weight: var(--font-weight-bold);
-  font-family: var(--font-family-mono);
-  min-width: 30px;
-  text-align: center;
-  background: var(--color-bg-2);
-  padding: var(--space-4) var(--space-8);
-  border-radius: var(--radius-sm);
-}
-
-/* ================== ENHANCED MODALS ================== */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal.hidden {
-  display: none;
-}
-
-.modal-content {
-  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg-1) 100%);
-  border-radius: var(--radius-lg);
-  padding: var(--space-32);
-  max-width: 400px;
-  width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--color-card-border);
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-12);
-  margin-top: var(--space-20);
-}
-
-/* ================== RESPONSIVE ENHANCEMENTS ================== */
-@media (max-width: 768px) {
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-  
-  .control-header {
-    text-align: center;
-  }
-  
-  .section-header {
-    text-align: center;
-  }
-  
-  .player-scoring-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .comprehensive-stats-table {
-    font-size: 10px;
-  }
-  
-  .comprehensive-stats-table th,
-  .comprehensive-stats-table td {
-    padding: var(--space-4) var(--space-2);
-  }
-}
-
-/* ================== ACCESSIBILITY ENHANCEMENTS ================== */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  
-  .basketball-icon {
-    animation: none;
-  }
-  
-  .score-animation {
-    animation: none;
-    opacity: 0;
-  }
-}
-
-/* ================== PRINT STYLES ================== */
-@media print {
-  .control-header,
-  .section-actions,
-  .master-clock-controls,
-  .shot-clock-actions,
-  .score-controls {
-    display: none;
-  }
-}
-
-/* ================== NEW HOMEPAGE STYLES ================== */
-.homepage-container {
+/* General Viewer Header/Footer/Info */
+.viewer-header,
+.viewer-footer {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-}
-
-.homepage-header {
-    text-align: center;
-    margin-bottom: var(--space-32);
-    padding: var(--space-32) 0;
-}
-
-.homepage-header .basketball-icon {
-    font-size: 4rem;
-    margin-bottom: var(--space-16);
-    animation: none; /* Turn off basketball bounce */
-}
-
-.sport-selection {
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.sport-selection h2 {
-    text-align: center;
-    font-size: var(--font-size-3xl);
-    margin-bottom: var(--space-32);
-    color: var(--color-text);
-}
-
-.sport-selection-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--space-24);
-}
-
-.sport-card-link {
-    text-decoration: none;
-}
-
-.sport-card {
-    height: 100%;
-    transition: all var(--duration-normal) var(--ease-standard);
-    border: 1px solid var(--color-card-border);
-    background: var(--color-surface);
-}
-
-.sport-card:hover {
-    transform: translateY(-6px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--color-primary);
-}
-
-.sport-card .card-icon {
-    font-size: 3rem;
-    margin-bottom: var(--space-16);
-    text-align: left;
-}
-
-.sport-card h3 {
-    text-align: left;
-    color: var(--color-text);
-    font-size: var(--font-size-xl);
-    margin-bottom: var(--space-8);
-}
-
-.sport-card p {
-    text-align: left;
-    color: var(--color-text-secondary);
-    margin-bottom: 0;
-}
-
-.sport-card.disabled {
-    opacity: 0.6;
-    filter: grayscale(80%);
-}
-
-.sport-card.disabled:hover {
-    transform: none;
-    box-shadow: none;
-    border-color: var(--color-card-border);
-}
-/* ================== NEW AUTH CHOICE STYLES ================== */
-.auth-choice-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-8);
-    margin-top: var(--space-16);
-}
-
-/* ================== NEW AUTH STYLES ================== */
-.auth-buttons {
-    display: flex;
-    gap: var(--space-8);
-}
-
-.auth-buttons .btn {
-    flex: 1;
-}
-
-.auth-choice-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-8);
-}
-
-.btn--link {
-    background: none;
-    border: none;
-    color: var(--color-primary);
-    padding: var(--space-8) 0;
-    margin-top: var(--space-8);
-    width: 100%;
-    text-align: center;
-    cursor: pointer;
-}
-.btn--link:hover {
-    text-decoration: underline;
-}
-
-.btn--google {
-    background: var(--color-white);
-    color: #444;
-    border: 1px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-12);
-}
-.btn--google:hover {
-    background: var(--color-gray-200);
-}
-.btn--google svg {
-    display: block;
-}
-
-/* Dark mode specific Google Button */
-[data-color-scheme="dark"] .btn--google {
+    padding: var(--space-12) var(--space-24);
     background: var(--color-surface);
     color: var(--color-text);
-    border-color: var(--color-border-secondary);
-}
-[data-color-scheme="dark"] .btn--google:hover {
-    background: var(--color-background);
-}
-
-.form-separator {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-sm);
-    margin: var(--space-20) 0;
-}
-.form-separator::before,
-.form-separator::after {
-    content: '';
-    flex: 1;
     border-bottom: 1px solid var(--color-border);
 }
-.form-separator:not(:empty)::before {
-    margin-right: var(--space-8);
+.viewer-footer {
+    border-top: 1px solid var(--color-border);
+    border-bottom: none;
 }
-.form-separator:not(:empty)::after {
-    margin-left: var(--space-8);
+.viewer-game-name {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
 }
-
-/* ================== SYMMETRY & FORGOT PASSWORD STYLES ================== */
-
-/* This forces both cards in the .landing-cards container to be the same height */
-.landing-cards .card {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.landing-cards .card .card__body {
-    flex-grow: 1; /* Makes the card body fill the space */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Pushes buttons to the bottom */
-}
-
-/* This styles the new "Forgot Password?" link */
-.btn--forgot {
+.viewer-settings-btn {
     background: none;
     border: none;
-    color: var(--color-text-secondary);
-    padding: var(--space-4) 0;
-    margin-top: var(--space-8);
-    width: 100%;
-    text-align: right;
+    font-size: 1.5rem;
     cursor: pointer;
-    font-size: var(--font-size-sm);
-}
-.btn--forgot:hover {
-    color: var(--color-primary);
-    text-decoration: underline;
-}
-
-/* ================== NEW AUTH/WATCH PAGE LAYOUT (index.html) ================== */
-.auth-grid-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    gap: var(--space-24);
-    align-items: start;
-}
-
-.auth-grid-watch {
-    grid-column: 1 / 2;
-    grid-row: 1 / 2;
-}
-
-.auth-grid-host {
-    grid-column: 2 / 3;
-    grid-row: 1 / 3; /* Span both rows */
-}
-
-.auth-grid-free {
-    grid-column: 1 / 2;
-    grid-row: 2 / 3;
-}
-
-/* Make text centered in the new boxes */
-.auth-grid-container .card__body h3 {
-    text-align: center;
-}
-
-.auth-grid-container .card__body .form-label {
-    font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
 }
-/* Specific centering for the host/free boxes */
-.auth-grid-host .form-label,
-.auth-grid-free .form-label {
-    text-align: center;
-}
-/* Keep watch label left-aligned */
-.auth-grid-watch .form-label {
-    text-align: left;
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
-    font-weight: var(--font-weight-medium);
-}
-
-
-/* Responsive layout for smaller screens */
-@media (max-width: 768px) {
-    .auth-grid-container {
-        grid-template-columns: 1fr; /* Stack all items */
-        grid-template-rows: auto;
-    }
-    
-    .auth-grid-watch {
-        grid-column: 1 / 2;
-        grid-row: 1 / 2;
-    }
-
-    .auth-grid-host {
-        grid-column: 1 / 2;
-        grid-row: 2 / 3; /* No more spanning */
-    }
-
-    .auth-grid-free {
-        grid-column: 1 / 2;
-        grid-row: 3 / 4;
-    }
-}
-
-/* ================== NEW AUTH HUB (index.html) ================== */
-.auth-hub-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-24);
-}
-
-@media (min-width: 800px) {
-    .auth-hub-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-.auth-hub-card {
+.viewer-possession {
     display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.auth-hub-card .card__body {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    text-align: center;
-}
-
-.auth-hub-icon {
-    font-size: 3rem;
-    margin-bottom: var(--space-12);
-}
-
-.auth-hub-subtitle {
+    align-items: center;
+    gap: var(--space-8);
     font-size: var(--font-size-lg);
-    color: var(--color-text-secondary);
-    margin: 0;
-    flex-grow: 1;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
 }
-
-/* ================== AUTH TABS (For Host Card) ================== */
-.auth-tabs {
-    display: flex;
-    margin-top: var(--space-24);
-    border-radius: var(--radius-base);
-    background: var(--color-secondary);
-    padding: var(--space-4);
-}
-
-.auth-tab-btn {
-    flex: 1;
-    padding: var(--space-10) var(--space-12);
-    border: none;
-    background: transparent;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-secondary);
+.possession-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-primary);
     transition: all var(--duration-fast) var(--ease-standard);
 }
 
-.auth-tab-btn.active {
-    background: var(--color-surface);
-    color: var(--color-text);
-    box-shadow: var(--shadow-sm);
+/* Viewer Scoreboard - PRO MODE */
+.viewer-main-scoreboard {
+    display: grid;
+    grid-template-columns: 1fr 400px 1fr; /* Fixed width for center clock area */
+    gap: 0;
+    min-height: 400px;
+    align-items: stretch;
+    background: linear-gradient(135deg, var(--color-background) 0%, var(--color-bg-1) 100%);
 }
 
-.auth-form-content {
-    text-align: left;
-}
-/* ================== COOL DESIGN STYLES (NEW) ================== */
-
-/* Subtle Body Gradient */
-body {
-    background: linear-gradient(180deg, var(--color-background) 0%, var(--color-bg-1) 100%);
+.viewer-team-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    padding: var(--space-24) 0;
 }
 
-/* Cool Title */
-.cool-title {
+.viewer-team-name {
+    font-size: var(--font-size-4xl);
     font-weight: 700;
-    background: linear-gradient(45deg, var(--color-teal-400) 0%, var(--color-primary) 100%);
+    margin-bottom: var(--space-16);
+}
+
+.viewer-team-score {
+    font-size: 8rem; /* 128px */
+    font-weight: 900;
+    font-family: var(--font-family-mono);
+    line-height: 1;
+    background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-shadow: 0 4px 12px rgba(var(--color-teal-500-rgb), 0.1);
+    text-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
-/* Card Glow Effects */
-.card.landing-card {
-    border: 1px solid var(--color-card-border);
-    transition: all var(--duration-normal) var(--ease-standard);
-    /* A subtle glow by default */
-    box-shadow: 0 0 15px rgba(var(--color-teal-500-rgb), 0.05);
+.viewer-center-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-24);
+    background: var(--color-surface);
+    padding: var(--space-24) var(--space-32);
+    border-left: 2px solid var(--color-border);
+    border-right: 2px solid var(--color-border);
 }
 
-.card.landing-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(var(--color-teal-500-rgb), 0.5);
-    /* A more prominent glow on hover */
-    box-shadow: 0 4px 25px rgba(var(--color-teal-500-rgb), 0.2);
+.viewer-game-clock {
+    font-size: 5rem;
+    font-family: var(--font-family-mono);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
 }
 
-/* Input Focus Glow */
-.form-control:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(var(--color-teal-500-rgb), 0.3);
-    outline: none;
-}
-
-/* ================== AUTH HUB (SHARED) ================== */
-/* These styles are for the content *inside* the cards */
-
-.auth-hub-icon {
-    font-size: 3rem;
-    margin-bottom: var(--space-12);
+.viewer-qtr-box {
     text-align: center;
 }
-
-.auth-hub-subtitle {
-    font-size: var(--font-size-lg);
+.viewer-qtr-label {
+    font-size: var(--font-size-xl);
     color: var(--color-text-secondary);
-    margin: 0;
-    flex-grow: 1;
-}
-
-/* ================== AUTH TABS (For Host Card) ================== */
-.auth-tabs {
-    display: flex;
-    margin-top: var(--space-24);
-    border-radius: var(--radius-base);
-    background: var(--color-secondary);
-    padding: var(--space-4);
-}
-
-.auth-tab-btn {
-    flex: 1;
-    padding: var(--space-10) var(--space-12);
-    border: none;
-    background: transparent;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-secondary);
-    transition: all var(--duration-fast) var(--ease-standard);
-}
-
-.auth-tab-btn.active {
-    background: var(--color-surface);
-    color: var(--color-text);
-    box-shadow: var(--shadow-sm);
-}
-
-.auth-form-content {
-    text-align: left;
-}
-
-/* ================== COOL DESIGN STYLES (ADDITION) ================== */
-
-/* Cool Subtitle */
-.cool-subtitle {
-    font-size: 1.5rem;
     font-weight: 500;
-    color: var(--color-text-secondary);
-    letter-spacing: 0.5px;
 }
-
-/* ================== NEW APP HEADER (sports.html) ================== */
-.app-header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
-    box-shadow: var(--shadow-md);
-    z-index: 100;
-    padding: 0 var(--space-16);
-}
-
-.header-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 60px;
-    max-width: var(--container-xl);
-    margin: 0 auto;
-}
-
-.header-btn {
-    background: none;
-    border: none;
-    color: var(--color-text-secondary);
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: var(--space-8) var(--space-12);
-    border-radius: var(--radius-base);
-    transition: all var(--duration-fast) var(--ease-standard);
-}
-
-.header-btn:hover {
-    background: var(--color-secondary);
+.viewer-quarter {
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
     color: var(--color-text);
 }
 
-.header-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--color-text);
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: var(--space-8);
-}
-
-/* ================== DROPDOWN MENUS (sports.html) ================== */
-.dropdown-menu {
-    position: fixed;
-    top: 70px; /* Below header */
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    z-index: 110;
-    min-width: 220px;
-    padding: var(--space-8);
+.viewer-sc-box {
     display: flex;
     flex-direction: column;
-}
-
-.dropdown-menu.hidden {
-    display: none;
-}
-
-.dropdown-menu-right {
-    right: var(--space-16);
-}
-
-.dropdown-menu-left {
-    left: var(--space-16);
-}
-
-.menu-item {
-    display: block;
-    background: none;
-    border: none;
-    text-align: left;
-    padding: var(--space-10) var(--space-12);
-    border-radius: var(--radius-sm);
-    color: var(--color-text);
-    text-decoration: none;
-    font-size: var(--font-size-base);
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.menu-item:hover {
-    background: var(--color-secondary);
-    color: var(--color-primary);
-}
-
-.menu-item.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: none;
-    color: var(--color-text-secondary);
-}
-
-.menu-divider {
-    height: 1px;
-    background: var(--color-border);
-    margin: var(--space-8);
-}
-
-.menu-user-info {
-    padding: var(--space-10) var(--space-12);
-    display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: var(--space-4);
+    background: var(--color-secondary-hover);
+    padding: var(--space-12) var(--space-20);
+    border-radius: var(--radius-base);
 }
-
-#menu-user-name {
-    font-weight: 600;
-    color: var(--color-text);
-}
-
-#menu-user-email {
+.viewer-sc-label {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
-    word-break: break-all;
+}
+.viewer-shot-clock {
+    font-size: 3rem;
+    font-family: var(--font-family-mono);
+    font-weight: 700;
+    color: var(--color-warning);
+}
+.viewer-shot-clock.warning {
+    color: var(--color-error);
 }
 
-/* ================== PREVIOUS GAMES (sports.html) ================== */
-.previous-games-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--space-24);
+.viewer-stat-box {
+    text-align: center;
 }
-/* ================== LOADING SPINNER (sports.html) ================== */
-.loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid var(--color-secondary);
-    border-left-color: var(--color-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 32px auto;
+.viewer-stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
 }
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* ================== THEME TOGGLE (sports.html) ================== */
-.theme-toggle-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.theme-toggle-item:hover {
-    background: none; /* Don't highlight this row on hover */
+.viewer-stat-value {
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
     color: var(--color-text);
 }
-
-.theme-switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 26px;
+.viewer-top-scorer-small {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    padding: var(--space-8);
 }
 
-.theme-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
+
+/* Viewer Scoreboard - CLASSIC MODE (for tablet/mobile default) */
+.viewer-scoreboard {
+    /* Preserve the responsive grid but make the scores massive */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: var(--space-32);
+    align-items: center;
+    padding: var(--space-32);
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg-1) 100%);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-32);
+    border: 3px solid var(--color-primary);
+    box-shadow: 0 12px 48px rgba(33, 128, 141, 0.2);
 }
 
-.theme-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--color-border);
-    transition: .4s;
-    border-radius: 34px;
+.viewer-team h2 {
+    font-size: var(--font-size-3xl);
+    margin-bottom: var(--space-16);
 }
 
-.theme-slider:before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
+.viewer-score {
+    font-size: 8rem; /* BIGGER SCORE */
+    font-weight: 900;
 }
 
-input:checked + .theme-slider {
-    background-color: var(--color-primary);
+.viewer-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-16);
+    background: linear-gradient(135deg, var(--color-bg-6) 0%, var(--color-bg-7) 100%);
+    padding: var(--space-32);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--color-primary);
+    order: 0; /* Keep it central on all screen sizes in classic mode */
+}
+.viewer-clock {
+    font-size: 4rem;
+}
+.viewer-period {
+    font-size: var(--font-size-2xl);
 }
 
-input:checked + .theme-slider:before {
-    transform: translateX(24px);
-}
-
-/* ================== FINAL, CLEANED BUTTON STYLES (basketball.js) ================== */
-
-/* === MAIN SCORE CONTROLS (Harmonious Colors) === */
-.score-controls .score-btn {
-    background: var(--color-primary); /* Teal for all + buttons */
-    color: var(--color-btn-primary-text);
-    border-color: var(--color-primary-hover);
-}
-.score-controls .btn--score-minus {
-    background: var(--color-error); /* Red for - button */
-    color: var(--color-white);
-    border-color: var(--color-error);
-}
-.score-controls .score-btn:hover {
-    filter: brightness(1.15);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
-}
-
-/* === PLAYER STAT BUTTONS (Harmonious Colors) === */
-.player-scoring-buttons .btn--score-pts {
-    background: var(--color-primary); /* Teal for all points */
-    color: var(--color-btn-primary-text);
-    border: 1px solid var(--color-primary-hover);
-}
-.player-scoring-buttons .btn--score-reb {
-    background: #4285F4; /* Blue for rebound */
-    color: var(--color-white);
-    border: 1px solid #4285F4;
-}
-.player-scoring-buttons .btn--score-to {
-    background: #FBBC05; /* Orange/Yellow for turnover */
-    color: var(--color-slate-900);
-    border: 1px solid #FBBC05;
-}
-
-/* Make sure hover is strong on player buttons */
-.player-scoring-buttons .btn:hover {
-    filter: brightness(1.15);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-/* === TOP SCORER (Polished) === */
-.top-scorer {
-  font-size: var(--font-size-sm); /* Slightly larger */
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-12);
-  padding: var(--space-8) var(--space-12); /* More padding */
-  background: var(--color-bg-1);
-  border-radius: var(--radius-base); /* Match other elements */
-  border: 1px solid var(--color-border);
-  min-height: 36px; /* A bit taller */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  line-height: 1.3;
-}
-/* =========================================
-   MOBILE OVERRIDES (CSS variable fix applied)
-   ========================================= */
-@media only screen and (max-width: 768px) {
-
-    /* 1. FIX THE LAYOUT */
-    .scoreboard-container, .main-wrapper {
-        display: flex;
-        flex-direction: column; /* Stacks items vertically instead of side-by-side */
+/* Mobile Overrides (Keep the large screen layout as much as possible) */
+@media (max-width: 900px) {
+    /* For smaller tablets/mobile in classic mode, let it be 1fr */
+    .viewer-main-scoreboard {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr 1fr;
+        min-height: auto;
+    }
+    .viewer-team-panel {
+        padding: var(--space-20) 0;
+    }
+    .viewer-center-panel {
+        order: -1;
+        padding: var(--space-20);
+    }
+    .viewer-team-score {
+        font-size: 15vw;
+    }
+    .viewer-game-clock {
+        font-size: 12vw;
+    }
+    .viewer-shot-clock {
+        font-size: 8vw;
+    }
+    .viewer-qtr-box {
+        position: static;
         width: 100%;
     }
-
-    /* 2. REMOVED HARDCODED COLORS */
     
-    /* 3. MAKE BUTTONS TAP-FRIENDLY */
+    .viewer-scoreboard {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+    }
+    .viewer-center {
+        order: 0;
+    }
+    
+    .viewer-info {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+@media (max-width: 768px) {
+    /* Ensure old overrides do not break the new viewer styles */
+    .scoreboard-container, .main-wrapper {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
     button {
-        padding: 15px 20px; /* Fatter buttons for fingers */
+        padding: 15px 20px;
         margin: 5px;
-        width: 100%; /* Full width buttons are easier to hit */
+        width: 100%;
     }
 }
 
 
-/* ================== PROFESSIONAL BLACK THEME OVERRIDE (NEW) ================== */
+/* ================== PROFESSIONAL BLACK THEME OVERRIDE (FINAL) ================== */
 
 /* Define variables needed for the pro theme */
 .viewer-theme-pro-mode {
-    /* Pass team colors from JS into CSS variables */
-    --viewer-team-a-color: var(--viewer-team-a-color);
-    --viewer-team-b-color: var(--viewer-team-b-color);
     /* Set the container background to deep black */
     background: #000 !important;
     background-image: none !important;
@@ -2901,255 +2064,143 @@ input:checked + .theme-slider:before {
     display: none !important; /* Hide gradient/noise */
 }
 
-/* Override the main scoreboard background */
+/* Viewer Header/Footer (Top Dashboard) */
+.viewer-theme-pro-mode .viewer-header {
+    background: #111 !important; /* Dark grey for the dashboard */
+    border-bottom: 2px solid #333 !important;
+    padding: var(--space-16) var(--space-24);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+.viewer-theme-pro-mode .viewer-footer {
+    background: #111 !important;
+    border-top: 2px solid #333 !important;
+    color: #FFF !important; /* White text for labels */
+}
+.viewer-theme-pro-mode .viewer-game-name,
+.viewer-theme-pro-mode .viewer-possession {
+    color: #FFF !important;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+/* Main Scoreboard Layout and Colors */
 .viewer-theme-pro-mode .viewer-main-scoreboard {
     background: #000 !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
+    grid-template-columns: 1fr 400px 1fr; /* Maintain fixed clock width */
+    max-width: 100%;
+    margin: 0 auto;
+    /* This layout ensures a consistent horizontal look on TV screens */
+}
+@media (max-width: 900px) {
+    .viewer-theme-pro-mode .viewer-main-scoreboard {
+        grid-template-columns: 1fr;
+    }
 }
 
-/* Make team panels match the background but with team color highlights */
-.viewer-theme-pro-mode .viewer-team-panel {
-    background: #000 !important;
-}
 
-/* Ensure Team Names and Scores are high contrast */
+/* Team Names (Top Center) */
 .viewer-theme-pro-mode .viewer-team-name {
-    color: var(--viewer-team-color) !important; /* This is a placeholder for team color */
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    -webkit-text-fill-color: var(--viewer-team-color) !important;
+    font-size: 5vw !important; 
+    font-weight: 800 !important;
+    color: #FFC000 !important; /* AMBER/YELLOW for Team Names */
+    -webkit-text-fill-color: #FFC000 !important;
+    text-shadow: 0 0 10px rgba(255, 192, 0, 0.5);
+    padding-top: var(--space-24);
 }
 
-/* Score and Clock Digital Effect */
-@font-face {
-    font-family: 'Digital-7';
-    /* Using monospace as a safe fallback */
-    src: local('monospace');
-    font-weight: 800;
-}
-
+/* Score Display (Primary Digital Element) */
 .viewer-theme-pro-mode .viewer-team-score {
-    font-size: 15vw !important; /* Very large score */
+    font-size: 15vw !important;
     font-weight: 800 !important;
     font-family: 'Digital-7', monospace !important;
     background: none !important;
-    color: var(--color-white) !important; 
-    -webkit-text-fill-color: var(--color-white) !important;
-    text-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 10px #fff;
+    color: #FF0000 !important; /* SCORE RED */
+    -webkit-text-fill-color: #FF0000 !important;
+    text-shadow: 0 0 30px rgba(255, 0, 0, 0.8), 0 0 10px #FF0000;
 }
 
+/* Center Clock Panel */
 .viewer-theme-pro-mode .viewer-center-panel {
     background: #000 !important;
-    border: none !important;
+    border: 2px solid #333 !important;
 }
 
-.viewer-theme-pro-mode .viewer-game-clock,
-.viewer-theme-pro-mode .viewer-shot-clock {
-    font-size: 8vw !important; /* Super large size */
+/* Game Clock (Main Timer) */
+.viewer-theme-pro-mode .viewer-game-clock {
+    font-size: 8vw !important; 
     font-weight: 800 !important;
     font-family: 'Digital-7', monospace !important;
-    background: #000 !important;
-    color: #00FF00 !important; /* Classic digital green */
-    border-color: #333 !important;
-    -webkit-text-fill-color: #00FF00 !important;
-    text-shadow: 0 0 20px rgba(0, 255, 0, 0.8), 0 0 4px #00FF00; /* Digital green glow */
-    border: 3px solid #333 !important;
-    padding: 1rem 1.5rem !important;
-    box-shadow: none !important;
+    background: none !important;
+    color: #FFC000 !important; /* AMBER/YELLOW for Game Clock */
+    -webkit-text-fill-color: #FFC000 !important;
+    text-shadow: 0 0 20px rgba(255, 192, 0, 0.8), 0 0 4px #FFC000;
+    border: none !important;
+    padding: 0 !important;
 }
 
-.viewer-theme-pro-mode .viewer-shot-clock.warning {
-    color: #FF0000 !important; /* Digital Red */
-    -webkit-text-fill-color: #FF0000 !important;
-    text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 4px #FF0000;
+/* Period/Quarter (Top Center Info) */
+.viewer-theme-pro-mode .viewer-qtr-box {
+    order: -1; /* Move Period to the very top */
 }
-
-/* Period/Quarter display */
-.viewer-theme-pro-mode .viewer-qtr-label,
-.viewer-theme-pro-mode .viewer-quarter {
-    color: #777 !important;
-    font-size: 3vw !important;
+.viewer-theme-pro-mode .viewer-qtr-label {
+    color: #AAA !important; /* Grey label */
+    font-size: 2.5vw !important; 
     font-weight: 500 !important;
 }
 .viewer-theme-pro-mode .viewer-quarter {
+    color: #FFF !important; /* White number for period */
+    font-size: 3vw !important;
     font-weight: 700 !important;
 }
 
-/* Footer/Stats area */
-.viewer-theme-pro-mode .viewer-footer {
-    background: #111 !important;
-    color: #AAA !important;
-    border-top: 1px solid #333 !important;
-    padding: 10px 0 !important;
+/* Shot Clock */
+.viewer-theme-pro-mode .viewer-shot-clock {
+    font-size: 8vw !important; 
+    font-weight: 800 !important;
+    font-family: 'Digital-7', monospace !important;
+    background: none !important;
+    color: #00FF00 !important; /* SHOT CLOCK GREEN */
+    -webkit-text-fill-color: #00FF00 !important;
+    text-shadow: 0 0 20px rgba(0, 255, 0, 0.8), 0 0 4px #00FF00;
+    margin-top: var(--space-24); /* Separate it from the game clock */
 }
-
-.viewer-theme-pro-mode .viewer-stat-box {
+.viewer-theme-pro-mode .viewer-shot-clock.warning {
+    color: #FFC000 !important; /* Amber for low shot clock */
+    -webkit-text-fill-color: #FFC000 !important;
+    text-shadow: 0 0 20px rgba(255, 192, 0, 0.8);
+}
+.viewer-theme-pro-mode .viewer-sc-label {
     color: #FFF !important;
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    font-size: 2.5vw !important;
 }
 
+
+/* Footer Stats (FOULS & TIMEOUTS) */
+.viewer-theme-pro-mode .viewer-stat-value {
+    color: #4682b4 !important; /* DIGITAL BLUE for Foul/Timeout numbers */
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(70, 130, 180, 0.7);
+    font-size: 3vw !important;
+}
 .viewer-theme-pro-mode .viewer-stat-label {
-    color: #AAA !important;
-}
-
-.viewer-theme-pro-mode .viewer-top-scorer-small {
     color: #FFF !important;
-    font-weight: 400 !important;
+    font-size: 1.5vw !important;
+}
+.viewer-theme-pro-mode .viewer-stat-box {
+    /* Set specific widths to maintain the appearance of two numbers */
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* Remove gradient backgrounds from all viewer sections */
-.viewer-theme-pro-mode .viewer-scoreboard,
-.viewer-theme-pro-mode .viewer-center,
-.viewer-theme-pro-mode .viewer-info {
-    background: #000 !important;
-    border-color: #333 !important;
-    box-shadow: none !important;
-}
-
-/* Possession Dot for Pro Mode */
-.viewer-theme-pro-mode .viewer-possession {
-    background: #111 !important;
-    border-color: #333 !important;
-    border-radius: 0 !important;
-    color: #FFF !important;
-    font-weight: 600 !important;
-}
+/* Possession Dot */
 .viewer-theme-pro-mode .possession-dot {
-    /* Use CSS variables for specific team colors defined in JS */
-    border: 2px solid #FFF;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    background: #FFF;
+    box-shadow: 0 0 10px #FFF;
 }
-/* ================== PROFESSIONAL LED THEME (NEW) ================== */
-
-/* 1. Import Digital Font */
-@import url('https://fonts.cdnfonts.com/css/digital-7-mono');
-
-/* 2. Professional Theme Scope */
-/* This class triggers the LED Board look */
-.viewer-theme-professional {
-    background-color: #000000 !important;
-    background-image: none !important;
-    --color-text: #ffffff;
-    --color-text-secondary: #aaaaaa;
-}
-
-/* Remove background noise/gradients */
-.viewer-theme-professional .app-container::before {
-    display: none !important;
-}
-
-/* Main Board Container - The "Physical" Board */
-.viewer-theme-professional .viewer-scoreboard {
-    background: #000000 !important;
-    border: 8px solid #222 !important; /* Dark Bezel */
-    border-radius: 4px !important;
-    box-shadow: 0 0 0 2px #444, 0 10px 30px rgba(0,0,0,1) !important;
-    grid-gap: 0 !important; /* Tight packing */
-    padding: 10px !important;
-}
-
-/* Hide standard sections borders/backgrounds */
-.viewer-theme-professional .viewer-team-panel,
-.viewer-theme-professional .viewer-center-panel,
-.viewer-theme-professional .viewer-footer {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-
-/* --- TYPOGRAPHY & COLORS --- */
-
-/* LABELS (HOME, GUEST, PERIOD) - White Sans-Serif */
-.viewer-theme-professional .viewer-team-name,
-.viewer-theme-professional .viewer-qtr-label,
-.viewer-theme-professional .viewer-sc-label,
-.viewer-theme-professional .viewer-stat-label {
-    font-family: 'FKGroteskNeue', sans-serif !important;
-    font-weight: 700 !important;
-    text-transform: uppercase;
-    color: #ffffff !important;
-    letter-spacing: 1px;
-    text-shadow: none !important;
-    -webkit-text-fill-color: #ffffff !important;
-}
-
-/* DIGITAL NUMBERS COMMON STYLE */
-.viewer-theme-professional .viewer-team-score,
-.viewer-theme-professional .viewer-game-clock,
-.viewer-theme-professional .viewer-shot-clock,
-.viewer-theme-professional .viewer-stat-value,
-.viewer-theme-professional .viewer-quarter {
-    font-family: 'Digital-7 Mono', monospace !important;
-    background: transparent !important;
-    line-height: 1;
-}
-
-/* SCORES (Red Neon) */
-.viewer-theme-professional .viewer-team-score {
-    color: #ff0000 !important;
-    text-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 0 4px #ff0000 !important;
-    -webkit-text-fill-color: #ff0000 !important;
-    font-size: 6rem !important; /* Big */
-}
-
-/* GAME CLOCK (Amber/Gold Neon) */
-.viewer-theme-professional .viewer-game-clock {
-    color: #ffaa00 !important;
-    text-shadow: 0 0 20px rgba(255, 170, 0, 0.6), 0 0 4px #ffaa00 !important;
-    -webkit-text-fill-color: #ffaa00 !important;
-    border: none !important;
-    font-size: 4rem !important;
-}
-
-/* SHOT CLOCK (Green Neon) */
-.viewer-theme-professional .viewer-shot-clock {
-    color: #00ff00 !important;
-    text-shadow: 0 0 20px rgba(0, 255, 0, 0.6), 0 0 4px #00ff00 !important;
-    -webkit-text-fill-color: #00ff00 !important;
-    border: none !important;
-    box-shadow: none !important;
-    font-size: 3rem !important;
-}
-
-/* SHOT CLOCK WARNING (Red Neon) */
-.viewer-theme-professional .viewer-shot-clock.warning {
-    color: #ff0000 !important;
-    -webkit-text-fill-color: #ff0000 !important;
-    text-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 0 4px #ff0000 !important;
-}
-
-/* PERIOD (Amber Neon) */
-.viewer-theme-professional .viewer-quarter {
-    color: #ffaa00 !important;
-    -webkit-text-fill-color: #ffaa00 !important;
-    text-shadow: 0 0 10px rgba(255, 170, 0, 0.6) !important;
-    font-size: 2.5rem !important;
-}
-
-/* FOULS & TIMEOUTS (Blue Neon - as per reference image) */
-.viewer-theme-professional .viewer-stat-value {
-    color: #0088ff !important;
-    -webkit-text-fill-color: #0088ff !important;
-    text-shadow: 0 0 10px rgba(0, 136, 255, 0.6) !important;
-    font-size: 2.5rem !important;
-}
-
-/* Header Adjustments */
-.viewer-theme-professional .viewer-header {
-    background: #111 !important;
-    border-bottom: 1px solid #333;
-}
-.viewer-theme-professional .viewer-game-name {
-    color: #888 !important;
-}
-
-/* Possession Arrow */
-.viewer-theme-professional .viewer-possession {
-    background: transparent !important;
-    border: 1px solid #333 !important;
-    color: #fff !important;
-}
-.viewer-theme-professional .possession-dot {
-    box-shadow: 0 0 10px currentColor; /* Glow with team color */
+.viewer-theme-pro-mode .viewer-possession {
+    font-size: 2vw !important;
 }
