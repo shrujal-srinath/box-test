@@ -3020,3 +3020,136 @@ input:checked + .theme-slider:before {
     border: 2px solid #FFF;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
+/* ================== PROFESSIONAL LED THEME (NEW) ================== */
+
+/* 1. Import Digital Font */
+@import url('https://fonts.cdnfonts.com/css/digital-7-mono');
+
+/* 2. Professional Theme Scope */
+/* This class triggers the LED Board look */
+.viewer-theme-professional {
+    background-color: #000000 !important;
+    background-image: none !important;
+    --color-text: #ffffff;
+    --color-text-secondary: #aaaaaa;
+}
+
+/* Remove background noise/gradients */
+.viewer-theme-professional .app-container::before {
+    display: none !important;
+}
+
+/* Main Board Container - The "Physical" Board */
+.viewer-theme-professional .viewer-scoreboard {
+    background: #000000 !important;
+    border: 8px solid #222 !important; /* Dark Bezel */
+    border-radius: 4px !important;
+    box-shadow: 0 0 0 2px #444, 0 10px 30px rgba(0,0,0,1) !important;
+    grid-gap: 0 !important; /* Tight packing */
+    padding: 10px !important;
+}
+
+/* Hide standard sections borders/backgrounds */
+.viewer-theme-professional .viewer-team-panel,
+.viewer-theme-professional .viewer-center-panel,
+.viewer-theme-professional .viewer-footer {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* --- TYPOGRAPHY & COLORS --- */
+
+/* LABELS (HOME, GUEST, PERIOD) - White Sans-Serif */
+.viewer-theme-professional .viewer-team-name,
+.viewer-theme-professional .viewer-qtr-label,
+.viewer-theme-professional .viewer-sc-label,
+.viewer-theme-professional .viewer-stat-label {
+    font-family: 'FKGroteskNeue', sans-serif !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    color: #ffffff !important;
+    letter-spacing: 1px;
+    text-shadow: none !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+/* DIGITAL NUMBERS COMMON STYLE */
+.viewer-theme-professional .viewer-team-score,
+.viewer-theme-professional .viewer-game-clock,
+.viewer-theme-professional .viewer-shot-clock,
+.viewer-theme-professional .viewer-stat-value,
+.viewer-theme-professional .viewer-quarter {
+    font-family: 'Digital-7 Mono', monospace !important;
+    background: transparent !important;
+    line-height: 1;
+}
+
+/* SCORES (Red Neon) */
+.viewer-theme-professional .viewer-team-score {
+    color: #ff0000 !important;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 0 4px #ff0000 !important;
+    -webkit-text-fill-color: #ff0000 !important;
+    font-size: 6rem !important; /* Big */
+}
+
+/* GAME CLOCK (Amber/Gold Neon) */
+.viewer-theme-professional .viewer-game-clock {
+    color: #ffaa00 !important;
+    text-shadow: 0 0 20px rgba(255, 170, 0, 0.6), 0 0 4px #ffaa00 !important;
+    -webkit-text-fill-color: #ffaa00 !important;
+    border: none !important;
+    font-size: 4rem !important;
+}
+
+/* SHOT CLOCK (Green Neon) */
+.viewer-theme-professional .viewer-shot-clock {
+    color: #00ff00 !important;
+    text-shadow: 0 0 20px rgba(0, 255, 0, 0.6), 0 0 4px #00ff00 !important;
+    -webkit-text-fill-color: #00ff00 !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 3rem !important;
+}
+
+/* SHOT CLOCK WARNING (Red Neon) */
+.viewer-theme-professional .viewer-shot-clock.warning {
+    color: #ff0000 !important;
+    -webkit-text-fill-color: #ff0000 !important;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 0 4px #ff0000 !important;
+}
+
+/* PERIOD (Amber Neon) */
+.viewer-theme-professional .viewer-quarter {
+    color: #ffaa00 !important;
+    -webkit-text-fill-color: #ffaa00 !important;
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.6) !important;
+    font-size: 2.5rem !important;
+}
+
+/* FOULS & TIMEOUTS (Blue Neon - as per reference image) */
+.viewer-theme-professional .viewer-stat-value {
+    color: #0088ff !important;
+    -webkit-text-fill-color: #0088ff !important;
+    text-shadow: 0 0 10px rgba(0, 136, 255, 0.6) !important;
+    font-size: 2.5rem !important;
+}
+
+/* Header Adjustments */
+.viewer-theme-professional .viewer-header {
+    background: #111 !important;
+    border-bottom: 1px solid #333;
+}
+.viewer-theme-professional .viewer-game-name {
+    color: #888 !important;
+}
+
+/* Possession Arrow */
+.viewer-theme-professional .viewer-possession {
+    background: transparent !important;
+    border: 1px solid #333 !important;
+    color: #fff !important;
+}
+.viewer-theme-professional .possession-dot {
+    box-shadow: 0 0 10px currentColor; /* Glow with team color */
+}
