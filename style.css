@@ -3153,3 +3153,279 @@ input:checked + .theme-slider:before {
 .viewer-theme-professional .possession-dot {
     box-shadow: 0 0 10px currentColor; /* Glow with team color */
 }
+/* ADDED: Enforce Full Screen for Spectator Views (Addressing user request) */
+#viewer-view-pro,
+#viewer-view-classic,
+#viewer-view { 
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    padding: 0 !important; /* Crucial: Remove all padding */
+    margin: 0 !important;
+    z-index: 50; 
+    overflow: hidden;
+}
+
+/* Ensure the root container is also ready for a full-black background in professional mode */
+.viewer-theme-pro-mode {
+    background-color: #000 !important;
+}
+
+/* Ensure body in dark mode/professional mode is black for better immersion */
+html[data-color-scheme="dark"],
+.viewer-theme-pro-mode body {
+    background-color: #000 !important;
+}
+
+/* ================== PROFESSIONAL SCOREBOARD (REVISED) ================== */
+
+/* Define variables needed for the pro theme */
+.viewer-theme-pro-mode {
+    /* Pass team colors from JS into CSS variables */
+    --viewer-team-a-color: var(--viewer-team-a-color);
+    --viewer-team-b-color: var(--viewer-team-b-color);
+    /* Set the container background to deep black */
+    background: #000 !important;
+    background-image: none !important;
+}
+
+.viewer-theme-pro-mode .app-container::before {
+    display: none !important; /* Hide gradient/noise */
+}
+
+/* Ensure the HTML is ready for full screen */
+#viewer-view-pro {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.viewer-theme-pro-mode .viewer-header {
+    background: #111 !important;
+    border-bottom: 3px solid #000; /* Darker separation */
+    box-shadow: none;
+    padding: 10px 20px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.viewer-theme-pro-mode .viewer-game-name {
+    color: #AAA !important;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+.viewer-theme-pro-mode .viewer-settings-btn {
+    color: #FFF !important;
+    background: #222 !important;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}
+
+/* Possession Indicator (NEW PLACEMENT) */
+.viewer-theme-pro-mode .viewer-status-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+.viewer-theme-pro-mode .viewer-possession-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #FFF;
+    min-width: 100px;
+    text-align: right;
+}
+.viewer-theme-pro-mode .viewer-possession-arrow {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 10px var(--viewer-possession-color);
+    background: var(--viewer-possession-color);
+    transition: all 0.5s ease;
+    overflow: hidden;
+}
+
+/* Possession Arrow Head (CSS triangle for better detailing) */
+.viewer-theme-pro-mode .viewer-possession-arrow::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 0;
+    height: 0;
+    border-top: 15px solid transparent;
+    border-bottom: 15px solid transparent;
+    transition: all 0.5s ease;
+}
+/* Team A (Right Arrow) */
+.viewer-theme-pro-mode .viewer-possession-arrow.possession-teamA {
+    /* Arrow points right */
+}
+.viewer-theme-pro-mode .viewer-possession-arrow.possession-teamA::after {
+    border-left: 15px solid #000; /* Points right */
+    transform: translate(-30%, -50%);
+    right: 0;
+}
+/* Team B (Left Arrow) */
+.viewer-theme-pro-mode .viewer-possession-arrow.possession-teamB {
+    /* Arrow points left */
+}
+.viewer-theme-pro-mode .viewer-possession-arrow.possession-teamB::after {
+    border-right: 15px solid #000; /* Points left */
+    transform: translate(-70%, -50%);
+    left: 0;
+}
+
+
+/* Main Scoreboard Area */
+.viewer-theme-pro-mode .viewer-main-scoreboard {
+    flex-grow: 1; /* Take up all remaining height */
+    display: grid;
+    grid-template-columns: 1fr 300px 1fr; /* Team | Center | Team */
+    gap: 0;
+    background: #000 !important;
+    padding: 20px 20px 0 20px;
+}
+
+@media (max-width: 900px) {
+    .viewer-theme-pro-mode .viewer-main-scoreboard {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto 1fr;
+        gap: 20px;
+        padding-top: 50px;
+    }
+    .viewer-theme-pro-mode .viewer-center-panel {
+        grid-column: 1 / 3;
+        grid-row: 1 / 2;
+        order: -1;
+    }
+}
+
+/* Team Panels */
+.viewer-theme-pro-mode .viewer-team-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background: #000 !important;
+}
+
+/* Team Info Strip (Fouls/Timeouts) */
+.viewer-theme-pro-mode .viewer-team-info-strip {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.viewer-theme-pro-mode .viewer-team-panel.left .viewer-team-info-strip {
+    /* Aligning the strip to the score column */
+    justify-content: flex-end; 
+}
+.viewer-theme-pro-mode .viewer-team-panel.right .viewer-team-info-strip {
+    justify-content: flex-start;
+}
+
+/* Individual Stat Boxes (Fouls/Timeouts) */
+.viewer-theme-pro-mode .viewer-stat-box {
+    text-align: center;
+    color: #FFF;
+    min-width: 100px;
+}
+.viewer-theme-pro-mode .viewer-stat-label {
+    font-size: 0.8rem !important;
+    color: #AAA !important;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+.viewer-theme-pro-mode .viewer-stat-value {
+    font-size: 3rem !important; /* Larger stats */
+    font-weight: 800 !important;
+    font-family: 'Digital-7', monospace !important;
+    color: #0088ff !important; /* Blue Neon */
+    text-shadow: 0 0 15px rgba(0, 136, 255, 0.6) !important;
+    line-height: 1.1;
+    -webkit-text-fill-color: #0088ff !important;
+}
+
+
+/* Team Name & Score */
+.viewer-theme-pro-mode .viewer-team-name {
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+    color: var(--viewer-team-color) !important;
+    -webkit-text-fill-color: var(--viewer-team-color) !important;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(var(--viewer-team-color-rgb), 0.5); /* Use RGB for better shadow effect */
+}
+.viewer-theme-pro-mode .viewer-team-score {
+    font-size: 15vw !important; /* Keep large score */
+    line-height: 0.8;
+}
+
+/* Center Clock Panel */
+.viewer-theme-pro-mode .viewer-center-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    position: relative; /* For possession arrow */
+}
+
+/* Footer (Simplified for Top Scorer only) */
+.viewer-theme-pro-mode .viewer-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #111 !important;
+    border-top: 1px solid #333 !important;
+    padding: 10px 20px !important;
+    height: 40px;
+}
+.viewer-theme-pro-mode .viewer-top-scorer-small {
+    flex: 1;
+    color: #FFF !important;
+    font-size: 0.9rem !important;
+}
+.viewer-theme-pro-mode .viewer-team-panel.right .viewer-top-scorer-small {
+    text-align: left !important;
+}
+
+/* --- Digital Elements --- */
+.viewer-theme-pro-mode .viewer-team-score {
+    font-family: 'Digital-7 Mono', monospace !important;
+    color: #ff0000 !important;
+    -webkit-text-fill-color: #ff0000 !important;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 0 4px #ff0000 !important;
+}
+.viewer-theme-pro-mode .viewer-game-clock {
+    font-family: 'Digital-7 Mono', monospace !important;
+    color: #ffaa00 !important;
+    -webkit-text-fill-color: #ffaa00 !important;
+    text-shadow: 0 0 20px rgba(255, 170, 0, 0.6), 0 0 4px #ffaa00 !important;
+}
+.viewer-theme-pro-mode .viewer-shot-clock {
+    font-family: 'Digital-7 Mono', monospace !important;
+    color: #00ff00 !important;
+    -webkit-text-fill-color: #00ff00 !important;
+    text-shadow: 0 0 20px rgba(0, 255, 0, 0.6), 0 0 4px #00ff00 !important;
+}
+.viewer-theme-pro-mode .viewer-shot-clock.warning {
+    color: #ff0000 !important;
+    -webkit-text-fill-color: #ff0000 !important;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 0 4px #ff0000 !important;
+}
+.viewer-theme-pro-mode .viewer-quarter {
+    font-family: 'Digital-7 Mono', monospace !important;
+    color: #ffaa00 !important;
+    -webkit-text-fill-color: #ffaa00 !important;
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.6) !important;
+}
+/* END PROFESSIONAL SCOREBOARD REVISED */

@@ -29,6 +29,11 @@ const state = {
     firestoreListener: null,
     // --- NEW: Theme state for viewer ---
     viewerTheme: localStorage.getItem('viewerTheme') || 'professional', // 'system', 'light', 'dark', 'professional'
+    viewerSettings: { // NEW: Default settings for viewer elements
+        shotClock: localStorage.getItem('viewerShotClock') !== 'false',
+        fouls: localStorage.getItem('viewerFouls') !== 'false',
+        timeouts: localStorage.getItem('viewerTimeouts') !== 'false'
+    }
 };
 
 // ================== HTML BUILDER ==================
@@ -525,14 +530,24 @@ function buildHtml() {
         <header class="viewer-header">
             <div id="viewerGameName" class="viewer-game-name">Basketball Game</div>
             <button id="toggleViewPro" class="viewer-settings-btn">⚙️</button>
-            <div id="viewerPossession" class="viewer-possession">
-                <span class="possession-dot"></span>
-                <span id="viewerPossessionTeamName">Team A</span>
+            <div id="viewerStatusBox" class="viewer-status-box">
+                <span id="viewerPossessionTeamName" class="viewer-possession-name">Team A</span>
+                <div id="viewerPossession" class="viewer-possession-arrow"></div>
             </div>
         </header>
 
         <main class="viewer-main-scoreboard">
             <div class="viewer-team-panel left" id="viewerTeamA">
+                <div class="viewer-team-info-strip">
+                    <div class="viewer-stat-box" id="viewerTeamAFoulsBox">
+                        <div class="viewer-stat-label">FOULS</div>
+                        <div id="viewerTeamAFouls" class="viewer-stat-value">0</div>
+                    </div>
+                    <div class="viewer-stat-box" id="viewerTeamATimeoutsBox">
+                        <div class="viewer-stat-label">TIMEOUTS</div>
+                        <div id="viewerTeamATimeouts" class="viewer-stat-value">7</div>
+                    </div>
+                </div>
                 <div id="viewerTeamAName" class="viewer-team-name">TEAM A</div>
                 <div id="viewerTeamAScore" class="viewer-team-score">0</div>
             </div>
@@ -550,32 +565,24 @@ function buildHtml() {
             </div>
 
             <div class="viewer-team-panel right" id="viewerTeamB">
+                <div class="viewer-team-info-strip">
+                    <div class="viewer-stat-box" id="viewerTeamBFoulsBox">
+                        <div class="viewer-stat-label">FOULS</div>
+                        <div id="viewerTeamBFouls" class="viewer-stat-value">0</div>
+                    </div>
+                    <div class="viewer-stat-box" id="viewerTeamBTimeoutsBox">
+                        <div class="viewer-stat-label">TIMEOUTS</div>
+                        <div id="viewerTeamBTimeouts" class="viewer-stat-value">7</div>
+                    </div>
+                </div>
                 <div id="viewerTeamBName" class="viewer-team-name">TEAM B</div>
                 <div id="viewerTeamBScore" class="viewer-team-score">0</div>
             </div>
         </main>
 
         <footer class="viewer-footer">
-            <div class="viewer-stat-box" id="viewerTeamAFoulsBox">
-                <div class="viewer-stat-label">FOULS</div>
-                <div id="viewerTeamAFouls" class="viewer-stat-value">0</div>
-            </div>
-            <div class="viewer-stat-box" id="viewerTeamATimeoutsBox">
-                <div class="viewer-stat-label">TIMEOUTS</div>
-                <div id="viewerTeamATimeouts" class="viewer-stat-value">7</div>
-            </div>
-            <div id="viewerTeamATopScorer" class="viewer-top-scorer-small" style="text-align: right;">
-            </div>
-            <div id="viewerTeamBTopScorer" class="viewer-top-scorer-small" style="text-align: left;">
-            </div>
-            <div class="viewer-stat-box" id="viewerTeamBTimeoutsBox">
-                <div class="viewer-stat-label">TIMEOUTS</div>
-                <div id="viewerTeamBTimeouts" class="viewer-stat-value">7</div>
-            </div>
-            <div class="viewer-stat-box" id="viewerTeamBFoulsBox">
-                <div class="viewer-stat-label">FOULS</div>
-                <div id="viewerTeamBFouls" class="viewer-stat-value">0</div>
-            </div>
+            <div id="viewerTeamATopScorer" class="viewer-top-scorer-small"></div>
+            <div id="viewerTeamBTopScorer" class="viewer-top-scorer-small"></div>
         </footer>
     </section>
 
@@ -668,30 +675,30 @@ function buildHtml() {
             <p style="color: var(--color-text-secondary); margin: 16px 0;">
                 Use these keys to control the game when not editing text.
             </p>
-            <table class="comprehensive-stats-table" style="font-size: 14px; table-layout: auto;">
-                <thead>
-                    <tr style="background: none;">
-                        <th style="text-align: left; background: var(--color-secondary);">Key</th>
-                        <th style="text-align: left; background: var(--color-secondary);">Action</th>
-                    </tr>
-                </thead>
-                <tbody style="border: 1px solid var(--color-border);">
-                    <tr><td style="font-weight: 600;">Spacebar</td><td>Start / Pause Game Clock</td></tr>
-                    <tr><td style="font-weight: 600;">Enter</td><td>Reset Shot Clock to Full & START</td></tr>
-                    <tr><td style="font-weight: 600;">R (Shift+r)</td><td>Reset Shot Clock to Full (No Start)</td></tr>
-                    <tr><td style="font-weight: 600;">r</td><td>Reset Shot Clock to 14s (No Start)</td></tr>
-                    <tr><td style="font-weight: 600;">s</td><td>Start Shot Clock Only</td></tr>
-                    <tr><td style="font-weight: 600;">p</td><td>Toggle Possession</td></tr>
-                    <tr><td style="font-weight: 600;">z</td><td>Undo Last Action</td></tr>
-                    <tr><td style="font-weight: 600;">h</td><td>Show this Help Menu</td></tr>
-                </tbody>
-            </table>
+            <table class="comprehensive-stats-table" style="font-size: 14px; table-layout: auto; margin-top: 16px;">
+                        <thead>
+                            <tr style="background: none;">
+                                <th style="text-align: left; background: var(--color-secondary);">Key</th>
+                                <th style="text-align: left; background: var(--color-secondary);">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody style="border: 1px solid var(--color-border);">
+                            <tr><td style="font-weight: 600;">Spacebar</td><td>Start / Pause Game Clock</td></tr>
+                            <tr><td style="font-weight: 600;">Enter</td><td>Reset Shot Clock to Full & START</td></tr>
+                            <tr><td style="font-weight: 600;">R (Shift+r)</td><td>Reset Shot Clock to Full (No Start)</td></tr>
+                            <tr><td style="font-weight: 600;">r</td><td>Reset Shot Clock to 14s (No Start)</td></tr>
+                            <tr><td style="font-weight: 600;">s</td><td>Start Shot Clock Only</td></tr>
+                            <tr><td style="font-weight: 600;">p</td><td>Toggle Possession</td></tr>
+                            <tr><td style="font-weight: 600;">z</td><td>Undo Last Action</td></tr>
+                            <tr><td style="font-weight: 600;">h</td><td>Show Help Menu</td></tr>
+                        </tbody>
+                    </table>
             <div class="modal-actions" style="justify-content: space-between; margin-top: 20px;">
                 <button id="detailedHelpBtn" class="btn btn--outline">Detailed Explanations</button>
                 <button id="closeHelpModal" class="btn btn--primary">Close</button>
             </div>
         </div>
-    </div>
+    </section>
 
     <div id="detailedHelpModal" class="modal hidden">
         <div class="modal-content" style="max-width: 500px; text-align: left;">
@@ -754,14 +761,39 @@ function buildHtml() {
     <div id="viewerSettingsModal" class="modal hidden">
         <div class="modal-content" style="max-width: 300px;">
             <h3>Viewer Settings</h3>
-            <p style="color: var(--color-text-secondary); margin-bottom: 20px;">
-                Choose your preferred display theme:
-            </p>
+            
+            <h4 style="margin-top: 16px; margin-bottom: 12px; font-size: 1.1rem;">Display Theme</h4>
             <div class="theme-selection-grid" style="display: flex; flex-direction: column; gap: 8px;">
-                <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="system">Normal / System Default</button>
+                <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="system">System Default</button>
                 <button class="btn btn--secondary btn--full-width viewer-theme-btn" data-theme="dark">Dark Mode</button>
                 <button class="btn btn--primary btn--full-width viewer-theme-btn" data-theme="professional">Professional Scoreboard</button>
             </div>
+
+            <h4 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.1rem;">Element Visibility</h4>
+            <div class="form-group" style="margin-bottom: 0;">
+                <div class="form-check theme-toggle-item">
+                    <label for="toggleShotClock" style="flex: 1;">Show Shot Clock</label>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="toggleShotClock" data-setting="shotClock">
+                        <span class="theme-slider"></span>
+                    </label>
+                </div>
+                <div class="form-check theme-toggle-item">
+                    <label for="toggleFouls" style="flex: 1;">Show Team Fouls</label>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="toggleFouls" data-setting="fouls">
+                        <span class="theme-slider"></span>
+                    </label>
+                </div>
+                <div class="form-check theme-toggle-item">
+                    <label for="toggleTimeouts" style="flex: 1;">Show Timeouts</label>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="toggleTimeouts" data-setting="timeouts">
+                        <span class="theme-slider"></span>
+                    </label>
+                </div>
+            </div>
+
             <div class="modal-actions" style="justify-content: center; margin-top: 20px;">
                 <button id="closeViewerSettingsModal" class="btn btn--outline">Close</button>
             </div>
@@ -1245,6 +1277,27 @@ function showViewerSettingsModal() {
         }
     });
 
+    // Set initial state for visibility toggles
+    $('toggleShotClock').checked = state.viewerSettings.shotClock;
+    $('toggleFouls').checked = state.viewerSettings.fouls;
+    $('toggleTimeouts').checked = state.viewerSettings.timeouts;
+
+    // Save state on change for visibility toggles
+    $$('#viewerSettingsModal input[data-setting]').forEach(input => {
+        input.onchange = () => {
+            const setting = input.dataset.setting;
+            const isChecked = input.checked;
+            
+            // 1. Update state and localStorage
+            state.viewerSettings[setting] = isChecked;
+            localStorage.setItem(`viewer${setting.charAt(0).toUpperCase() + setting.slice(1)}`, isChecked);
+            
+            // 2. Immediately apply changes to the live scoreboard view
+            updateSpectatorView();
+            showToast('Viewer setting updated', 'info', 1500);
+        };
+    });
+
     // Attach click listeners to all theme buttons
     $$('.viewer-theme-btn').forEach(btn => {
         btn.onclick = () => {
@@ -1466,13 +1519,13 @@ function updateTopScorerDisplay() {
     const viewerTeamATopScorer = $('viewerTeamATopScorer');
     if (viewerTeamATopScorer) {
         viewerTeamATopScorer.innerHTML = (teamATopScorer && teamATopScorer.points > 0)
-            ? `<span style="color: #AAA; font-size: 1.2vw;">TOP SCORER:</span> ${teamATopScorer.name} (${teamATopScorer.points} PTS)`
+            ? `<span style="color: #AAA; font-size: 0.9rem;">TOP SCORER:</span> ${teamATopScorer.name} (${teamATopScorer.points} PTS)`
             : '';
     }
     const viewerTeamBTopScorer = $('viewerTeamBTopScorer');
     if (viewerTeamBTopScorer) {
         viewerTeamBTopScorer.innerHTML = (teamBTopScorer && teamBTopScorer.points > 0)
-            ? `<span style="color: #AAA; font-size: 1.2vw;">TOP SCORER:</span> ${teamBTopScorer.name} (${teamBTopScorer.points} PTS)`
+            ? `<span style="color: #AAA; font-size: 0.9rem;">TOP SCORER:</span> ${teamBTopScorer.name} (${teamBTopScorer.points} PTS)`
             : '';
     }
 
@@ -1639,8 +1692,16 @@ async function joinSpectatorMode(code) {
     state.gameType = savedGame.gameType || 'friendly';
     state.isHost = false; 
     
-    // Load and apply viewer theme immediately
-    state.viewerTheme = localStorage.getItem('viewerTheme') || 'professional'; // CHANGED: Default is now 'professional'
+    // Load and apply viewer theme immediately, defaulting to professional
+    state.viewerTheme = localStorage.getItem('viewerTheme') || 'professional'; 
+    
+    // Also load visibility settings from localStorage
+    state.viewerSettings = {
+        shotClock: localStorage.getItem('viewerShotClock') !== 'false',
+        fouls: localStorage.getItem('viewerFouls') !== 'false',
+        timeouts: localStorage.getItem('viewerTimeouts') !== 'false'
+    };
+
     setViewerTheme(state.viewerTheme);
     
     showSpectatorView(); // This function now handles which view (pro/classic) to show
@@ -2442,13 +2503,24 @@ function updatePossessionDisplay() {
         btnB.textContent = state.game.teamB.name;
     }
     
-    // Pro Viewer
-    const possDot = document.querySelector('.possession-dot');
-    const possName = $('viewerPossessionTeamName');
-    if (possName && state.game) {
+    // Pro Viewer (UPDATED)
+    const viewerPossession = $('viewerPossession'); // The arrow container
+    const possName = $('viewerPossessionTeamName'); // The name in the header
+    if (viewerPossession && possName && state.game) {
         const isTeamA = state.game.gameState.possession === 'teamA';
         possName.textContent = isTeamA ? state.game.teamA.name.toUpperCase() : state.game.teamB.name.toUpperCase();
-        if(possDot) possDot.style.background = isTeamA ? state.game.teamA.color : state.game.teamB.color;
+        
+        // Remove existing classes
+        viewerPossession.classList.remove('possession-teamA', 'possession-teamB');
+        
+        // Add new class and set color variable for the arrow
+        if (isTeamA) {
+            viewerPossession.classList.add('possession-teamA');
+            viewerPossession.style.setProperty('--viewer-possession-color', state.game.teamA.color);
+        } else {
+            viewerPossession.classList.add('possession-teamB');
+            viewerPossession.style.setProperty('--viewer-possession-color', state.game.teamB.color);
+        }
     }
     
     // Classic Viewer
@@ -2541,9 +2613,37 @@ function updateSpectatorView() {
     // --- END Professional Theme Color Handling ---
 
     
-    // Pro View
+    // 1. Apply Visibility Settings
+    const shotClockBox = $('viewerShotClockBox');
+    const teamAFoulsBox = $('viewerTeamAFoulsBox');
+    const teamATimeoutsBox = $('viewerTeamATimeoutsBox');
+    const teamBFoulsBox = $('viewerTeamBFoulsBox');
+    const teamBTimeoutsBox = $('viewerTeamBTimeoutsBox');
+    
+    // SHOT CLOCK (Must be checked against settings AND if game settings enable it)
+    if (shotClockBox) {
+        shotClockBox.style.display = (shotClockOn && state.viewerSettings.shotClock) ? 'block' : 'none';
+    }
+    
+    // FOULS
+    if (teamAFoulsBox && teamBFoulsBox) {
+        const displayFouls = state.viewerSettings.fouls ? 'block' : 'none';
+        teamAFoulsBox.style.display = displayFouls;
+        teamBFoulsBox.style.display = displayFouls;
+    }
+    
+    // TIMEOUTS
+    if (teamATimeoutsBox && teamBTimeoutsBox) {
+        const displayTimeouts = state.viewerSettings.timeouts ? 'block' : 'none';
+        teamATimeoutsBox.style.display = displayTimeouts;
+        teamBTimeoutsBox.style.display = displayTimeouts;
+    }
+
+
+    // Pro View (New Fouls/Timeouts/Possession placement)
     $('viewerGameName').textContent = state.game.settings.gameName;
     $('viewerTeamAName').textContent = state.game.teamA.name.toUpperCase();
+    
     // Only set inline color if NOT in professional mode
     if (!rootContainer || !rootContainer.classList.contains('viewer-theme-pro-mode')) {
         $('viewerTeamAName').style.color = state.game.teamA.color;
@@ -2558,9 +2658,10 @@ function updateSpectatorView() {
     $('viewerGameClock').textContent = gameTime;
     $('viewerQuarterHalfLabel').textContent = periodLabel;
     $('viewerPeriod').textContent = periodNum;
-    $('viewerShotClockBox').style.display = shotClockOn ? 'block' : 'none';
     $('viewerShotClock').textContent = shotClockVal;
     $('viewerShotClock').classList.toggle('warning', shotClockWarning);
+    
+    // Update New Stat Locations
     $('viewerTeamAFouls').textContent = state.game.teamA.fouls;
     $('viewerTeamATimeouts').textContent = state.game.teamA.timeouts;
     $('viewerTeamBFouls').textContent = state.game.teamB.fouls;
