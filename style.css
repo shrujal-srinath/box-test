@@ -2889,7 +2889,8 @@ input:checked + .theme-slider:before {
 #viewer-view-pro,
 #viewer-view-classic,
 #viewer-view { 
-    position: fixed; 
+    /* CRITICAL FIX: Removed 'position: fixed' from the high-specificity ID selectors.
+       This resolves the conflict with the .hidden class. */
     top: 0;
     left: 0;
     width: 100vw;
@@ -2898,6 +2899,14 @@ input:checked + .theme-slider:before {
     margin: 0 !important;
     z-index: 50; 
     overflow: hidden;
+    display: none; /* Force hidden by default to prevent flashing */
+}
+
+/* NEW CRITICAL RULE: Only apply fixed positioning and force display when NOT hidden. */
+#viewer-view-pro:not(.hidden),
+#viewer-view-classic:not(.hidden) {
+    position: fixed;
+    display: flex; /* Assuming these full-screen views use flexbox as their root display */
 }
 
 /* Ensure the root container is also ready for a full-black background in professional mode */
@@ -3202,19 +3211,4 @@ html[data-color-scheme="dark"],
     text-shadow: 0 0 10px rgba(255, 170, 0, 0.6) !important;
 }
 /* END PROFESSIONAL SCOREBOARD (FINAL, DETAILED) */
---- shrujal-srinath/box-by-bmsce-/BOX-BY-BMSCE--e8dc58d1aed43d136f74277995c55f5d1021174b/style.css
-+++ shrujal-srinath/box-by-bmsce-/BOX-BY-BMSCE--e8dc58d1aed43d136f74277995c55f5d1021174b/style.css
-@@ -1015,4 +1015,13 @@
- }
- /* END PROFESSIONAL SCOREBOARD (FINAL, DETAILED) */
- }
-+
-+/* =========================================
-+   CRITICAL FIX: Overlapping Viewer Views
-+   ========================================= */
-+/* Forces the fixed-position viewer views to be completely hidden when the .hidden class is applied, 
-+   resolving conflicts with fixed positioning and high z-index when loading other views. */
-+#viewer-view-pro.hidden,
-+#viewer-view-classic.hidden { 
-+    display: none !important;
-+}
+}
