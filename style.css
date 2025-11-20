@@ -3210,11 +3210,11 @@ html[data-color-scheme="dark"],
  }
 +
 +/* =========================================
-+   FIX: Spectator View Override Issue
++   CRITICAL FIX: Overlapping Viewer Views
 +   ========================================= */
-+/* Ensures the fixed spectator views are completely hidden when the .hidden class is applied. */
++/* Forces the fixed-position viewer views to be completely hidden when the .hidden class is applied, 
++   resolving conflicts with fixed positioning and high z-index when loading other views. */
 +#viewer-view-pro.hidden,
-+#viewer-view-classic.hidden,
-+#viewer-view.hidden { 
++#viewer-view-classic.hidden { 
 +    display: none !important;
 +}
