@@ -1643,9 +1643,9 @@ select.form-control {
   color: var(--color-btn-primary-text);
   padding: var(--space-6) var(--space-10);
   border-radius: var(--radius-sm);
-  min-width: 40px;
+  min-width: 44px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(33, 128, 141, 0.2);
+  box-shadow: 0 2px 8px rgba(33, 128, 141, 0.3);
 }
 
 .player-name {
@@ -1792,8 +1792,8 @@ select.form-control {
   transform: translateY(-1px);
 }
 
-/* ================== ENHANCED SPECTATOR VIEW ================== */
-.viewer-scoreboard {
+/* ================== ENHANCED SPECTATOR VIEW (CLASSIC/DEFAULT) ================== */
+.viewer-scoreboard.standard-layout { /* Applied to classic view's container */
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-24);
@@ -1807,8 +1807,8 @@ select.form-control {
 }
 
 @media (min-width: 768px) {
-  .viewer-scoreboard {
-    grid-template-columns: 1fr auto 1fr;
+  .viewer-scoreboard.standard-layout {
+    grid-template-columns: 1fr auto 1fr; /* <--- ENFORCES HORIZONTAL LAYOUT */
     gap: var(--space-32);
   }
 }
@@ -1828,7 +1828,7 @@ select.form-control {
 
 .viewer-score {
   font-size: 6rem;
-  font-weight: var(--font-weight-bold);
+  font-weight: 800;
   font-family: var(--font-family-mono);
   background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 100%);
   -webkit-background-clip: text;
@@ -1844,7 +1844,7 @@ select.form-control {
   }
 }
 
-.viewer-center {
+.viewer-center.standard-layout { /* Applied to classic view's center */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1857,12 +1857,12 @@ select.form-control {
 }
 
 @media (min-width: 768px) {
-  .viewer-center {
+  .viewer-center.standard-layout {
     order: 0;
   }
 }
 
-.viewer-clock {
+.viewer-clock.standard-layout { /* Applied to classic view's clock */
   font-size: 4rem;
   font-family: var(--font-family-mono);
   font-weight: var(--font-weight-bold);
@@ -1877,7 +1877,7 @@ select.form-control {
 }
 
 @media (max-width: 768px) {
-  .viewer-clock {
+  .viewer-clock.standard-layout {
     font-size: 2.5rem;
     padding: var(--space-16) var(--space-20);
   }
@@ -1889,7 +1889,7 @@ select.form-control {
   color: var(--color-text);
 }
 
-.viewer-shot-clock {
+.viewer-shot-clock.standard-layout { /* Applied to classic view's shot clock */
   font-size: 2rem;
   font-family: var(--font-family-mono);
   font-weight: var(--font-weight-bold);
@@ -2289,11 +2289,6 @@ select.form-control {
 .btn--google:hover {
     background: var(--color-gray-200);
 }
-.btn--google svg {
-    display: block;
-}
-
-/* Dark mode specific Google Button */
 [data-color-scheme="dark"] .btn--google {
     background: var(--color-surface);
     color: var(--color-text);
@@ -3118,7 +3113,8 @@ html[data-color-scheme="dark"],
     transition: color 0.5s;
 }
 .viewer-theme-pro-mode .viewer-team-score {
-    font-size: 15vw !important; /* Keep large score */
+    /* CRITICAL CLOCK SIZE INCREASE */
+    font-size: 18vw !important; /* Huge scores */
     line-height: 0.8;
 }
 
@@ -3140,14 +3136,28 @@ html[data-color-scheme="dark"],
 }
 
 /* Digital Display Styling - Add Digital Background for better contrast */
-.viewer-theme-pro-mode .viewer-game-clock,
-.viewer-theme-pro-mode .viewer-shot-clock {
-    /* Existing glow and color remain */
-    background-color: #1a1a1a !important; /* Dark digital segment background */
+.viewer-theme-pro-mode .viewer-game-clock {
+    /* CRITICAL CLOCK SIZE INCREASE */
+    font-size: 8rem !important; 
+    padding: 1rem 2rem !important;
+    margin-bottom: 10px; /* Reduced gap to shot clock/period */
+    
+    /* Glow/Look */
+    background-color: #1a1a1a !important; 
     border: none !important;
-    padding: 1rem 1.5rem !important;
     border-radius: 4px;
-    margin-bottom: 20px;
+}
+.viewer-theme-pro-mode .viewer-sc-box {
+    margin-top: 10px;
+}
+
+.viewer-theme-pro-mode .viewer-shot-clock {
+    /* CRITICAL SHOT CLOCK SIZE INCREASE */
+    font-size: 4rem !important; 
+    padding: 0.5rem 1.5rem !important; 
+    background-color: #1a1a1a !important; 
+    border: none !important;
+    border-radius: 4px;
 }
 
 /* Score Display Styling - Add a subtle background behind the large scores */
@@ -3160,30 +3170,81 @@ html[data-color-scheme="dark"],
     border-radius: 4px;
 }
 
-/* Footer (Simplified for Top Scorer only) */
+/* Quarter/Period Styling */
+.viewer-theme-pro-mode .viewer-qtr-box {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.viewer-theme-pro-mode .viewer-qtr-label {
+    font-size: 1rem !important;
+    color: #AAA !important;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+.viewer-theme-pro-mode .viewer-quarter {
+    font-size: 3rem !important;
+    line-height: 1;
+}
+
+
+/* Footer (Top Scorer) */
 .viewer-theme-pro-mode .viewer-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #0d0d0d !important; /* Slightly lighter than main body for bezel contrast */
+    background: #0d0d0d !important;
     padding: 10px 20px !important;
-    border-top: 3px solid #1a1a1a !important; /* Stronger separation line */
+    border-top: 3px solid #1a1a1a !important;
     height: 40px;
 }
 .viewer-theme-pro-mode .viewer-top-scorer-small {
     flex: 1;
     color: #FFF !important;
     font-size: 0.9rem !important;
+    /* Hide Top Scorer when setting is disabled */
+    display: var(--viewer-top-scorer-display, block); 
 }
 .viewer-theme-pro-mode .viewer-team-panel.right .viewer-top-scorer-small {
     text-align: left !important;
 }
 
-/* --- Digital Elements --- */
-/* Digital Font is defined globally earlier in the file, but re-defining for clarity/guarantee */
+/* --- Digital Elements (Glow & Font) --- */
 @font-face {
     font-family: 'Digital-7 Mono';
     src: local('monospace');
     font-weight: 800;
 }
+
+.viewer-theme-pro-mode .viewer-team-score {
+    font-family: 'Digital-7 Mono', monospace !important;
+    color: #ff0000 !important;
+    -webkit-text-fill-color: #ff0000 !important;
+    text-shadow: 0 0 30px rgba(255, 0, 0, 0.8), 0 0 10px #ff0000 !important; /* Stronger Red Glow */
+}
+.viewer-theme-pro-mode .viewer-game-clock,
+.viewer-theme-pro-mode .viewer-quarter {
+    font-family: 'Digital-7 Mono', monospace !important;
+    color: #ffaa00 !important;
+    -webkit-text-fill-color: #ffaa00 !important;
+    text-shadow: 0 0 25px rgba(255, 170, 0, 0.7), 0 0 8px #ffaa00 !important; /* Stronger Amber Glow */
+}
+.viewer-theme-pro-mode .viewer-shot-clock {
+    font-family: 'Digital-7 Mono', monospace !important;
+    color: #00ff00 !important;
+    -webkit-text-fill-color: #00ff00 !important;
+    text-shadow: 0 0 25px rgba(0, 255, 0, 0.7), 0 0 8px #00ff00 !important; /* Stronger Green Glow */
+}
+.viewer-theme-pro-mode .viewer-shot-clock.warning {
+    color: #ff0000 !important;
+    -webkit-text-fill-color: #ff0000 !important;
+    text-shadow: 0 0 25px rgba(255, 0, 0, 0.7), 0 0 8px #ff0000 !important;
+}
+
+/* --- HIDE TOP SCORER ELEMENTS WHEN DISABLED --- */
+.viewer-top-scorer-small {
+    /* Base style, overridden by JS based on user setting */
+    display: flex; 
+    align-items: center;
+}
+/* This is controlled primarily by JS setting the CSS variable --viewer-top-scorer-display */
 /* END PROFESSIONAL SCOREBOARD (FINAL, DETAILED) */

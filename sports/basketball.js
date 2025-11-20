@@ -29,10 +29,11 @@ const state = {
     firestoreListener: null,
     // --- NEW: Theme state for viewer ---
     viewerTheme: localStorage.getItem('viewerTheme') || 'professional', // 'system', 'light', 'dark', 'professional'
-    viewerSettings: { // NEW: Default settings for viewer elements
+    viewerSettings: { // UPDATED: Added topScorer setting
         shotClock: localStorage.getItem('viewerShotClock') !== 'false',
         fouls: localStorage.getItem('viewerFouls') !== 'false',
-        timeouts: localStorage.getItem('viewerTimeouts') !== 'false'
+        timeouts: localStorage.getItem('viewerTimeouts') !== 'false',
+        topScorer: localStorage.getItem('viewerTopScorer') !== 'false' // <--- ADDED
     }
 };
 
@@ -596,16 +597,16 @@ function buildHtml() {
                     <span id="classicViewerPossession">Team A</span>
                 </div>
             </div>
-            <div class="viewer-scoreboard">
+            <div class="viewer-scoreboard standard-layout">
                 <div class="viewer-team" id="classicViewerTeamA">
                     <h2 id="classicViewerTeamAName">Team A</h2>
                     <div id="classicViewerTeamAScore" class="viewer-score">0</div>
                     <div id="classicViewerTeamATopScorer" class="viewer-top-scorer">No scorer yet</div>
                 </div>
-                <div class="viewer-center">
-                    <div id="classicViewerGameClock" class="viewer-clock">12:00</div>
+                <div class="viewer-center standard-layout">
+                    <div id="classicViewerGameClock" class="viewer-clock standard-layout">12:00</div>
                     <div class="viewer-period"><span id="classicQuarterHalfLabel">Quarter</span> <span id="classicViewerPeriod">1</span></div>
-                    <div id="classicViewerShotClock" class="viewer-shot-clock" style="display: none;">24</div>
+                    <div id="classicViewerShotClock" class="viewer-shot-clock standard-layout" style="display: none;">24</div>
                 </div>
                 <div class="viewer-team" id="classicViewerTeamB">
                     <h2 id="classicViewerTeamBName">Team B</h2>
@@ -792,7 +793,13 @@ function buildHtml() {
                         <span class="theme-slider"></span>
                     </label>
                 </div>
-            </div>
+                <div class="form-check theme-toggle-item">
+                    <label for="toggleTopScorer" style="flex: 1;">Show Top Scorer</label>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="toggleTopScorer" data-setting="topScorer">
+                        <span class="theme-slider"></span>
+                    </label>
+                </div> </div>
 
             <div class="modal-actions" style="justify-content: center; margin-top: 20px;">
                 <button id="closeViewerSettingsModal" class="btn btn--outline">Close</button>
@@ -1283,6 +1290,7 @@ function showViewerSettingsModal() {
     $('toggleShotClock').checked = state.viewerSettings.shotClock;
     $('toggleFouls').checked = state.viewerSettings.fouls;
     $('toggleTimeouts').checked = state.viewerSettings.timeouts;
+    $('toggleTopScorer').checked = state.viewerSettings.topScorer; // <--- INIT NEW TOGGLE
 
     // Save state on change for visibility toggles
     $$('#viewerSettingsModal input[data-setting]').forEach(input => {
@@ -1292,7 +1300,8 @@ function showViewerSettingsModal() {
             
             // 1. Update state and localStorage
             state.viewerSettings[setting] = isChecked;
-            localStorage.setItem(`viewer${setting.charAt(0).toUpperCase() + setting.slice(1)}`, isChecked);
+            // The localStorage key logic is: viewer + setting (ShotClock, Fouls, Timeouts, TopScorer)
+            localStorage.setItem(`viewer${setting.charAt(0).toUpperCase() + setting.slice(1)}`, isChecked); 
             
             // 2. Immediately apply changes to the live scoreboard view
             updateSpectatorView();
@@ -1701,7 +1710,8 @@ async function joinSpectatorMode(code) {
     state.viewerSettings = {
         shotClock: localStorage.getItem('viewerShotClock') !== 'false',
         fouls: localStorage.getItem('viewerFouls') !== 'false',
-        timeouts: localStorage.getItem('viewerTimeouts') !== 'false'
+        timeouts: localStorage.getItem('viewerTimeouts') !== 'false',
+        topScorer: localStorage.getItem('viewerTopScorer') !== 'false' // <--- LOAD NEW SETTING
     };
 
     setViewerTheme(state.viewerTheme);
@@ -2224,7 +2234,6 @@ function addPlayerScore(team, playerNumber, statType, points) {
     setupPlayerScoringGrid();
     updateControlDisplay();
     updateTopScorerDisplay();
-    updateComprehensiveStatsTable();
     saveGameState();
     
     const statDisplay = statType === 'freeThrows' ? 'Free Throw' : 
@@ -2616,6 +2625,12 @@ function updateSpectatorView() {
 
     
     // 1. Apply Visibility Settings
+    const viewerFooter = document.querySelector('.viewer-footer');
+    if (viewerFooter) {
+        // <--- NEW: CONTROL FOOTER VISIBILITY BASED ON SETTING --->
+        viewerFooter.style.display = state.viewerSettings.topScorer ? 'flex' : 'none';
+    }
+
     const shotClockBox = $('viewerShotClockBox');
     const teamAFoulsBox = $('viewerTeamAFoulsBox');
     const teamATimeoutsBox = $('viewerTeamATimeoutsBox');
