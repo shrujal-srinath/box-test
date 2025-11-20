@@ -28,7 +28,7 @@ const state = {
     clockEditing: false,
     firestoreListener: null,
     // --- NEW: Theme state for viewer ---
-    viewerTheme: localStorage.getItem('viewerTheme') || 'system', // 'system', 'light', 'dark', 'professional'
+    viewerTheme: localStorage.getItem('viewerTheme') || 'professional', // 'system', 'light', 'dark', 'professional'
 };
 
 // ================== HTML BUILDER ==================
@@ -1640,7 +1640,7 @@ async function joinSpectatorMode(code) {
     state.isHost = false; 
     
     // Load and apply viewer theme immediately
-    state.viewerTheme = localStorage.getItem('viewerTheme') || 'system';
+    state.viewerTheme = localStorage.getItem('viewerTheme') || 'professional'; // CHANGED: Default is now 'professional'
     setViewerTheme(state.viewerTheme);
     
     showSpectatorView(); // This function now handles which view (pro/classic) to show
