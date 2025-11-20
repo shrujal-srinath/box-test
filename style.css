@@ -2964,6 +2964,9 @@ html[data-color-scheme="dark"],
     border-radius: 50%;
     width: 40px;
     height: 40px;
+    border: none; /* Ensure clean button look */
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 /* Possession Indicator (NEW PLACEMENT) */
@@ -2979,6 +2982,7 @@ html[data-color-scheme="dark"],
     color: #FFF;
     min-width: 100px;
     text-align: right;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.2); /* Subtle glow */
 }
 .viewer-theme-pro-mode .viewer-possession-arrow {
     /* Using CSS variables for possession arrow color from JS */
@@ -3095,7 +3099,7 @@ html[data-color-scheme="dark"],
     font-size: 3rem !important; /* Larger stats */
     font-weight: 800 !important;
     font-family: 'Digital-7', monospace !important;
-    color: #0088ff !important; /* Blue Neon */
+    color: #0088ff !important; /* Blue Neon for stats */
     text-shadow: 0 0 15px rgba(0, 136, 255, 0.6) !important;
     line-height: 1.1;
     -webkit-text-fill-color: #0088ff !important;
@@ -3110,7 +3114,8 @@ html[data-color-scheme="dark"],
     -webkit-text-fill-color: var(--viewer-team-color) !important;
     margin-bottom: 20px;
     /* Use CSS variable shadow */
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2); 
+    text-shadow: 0 0 10px var(--viewer-team-color), 0 0 5px rgba(255, 255, 255, 0.3); /* Enhanced color glow */
+    transition: color 0.5s;
 }
 .viewer-theme-pro-mode .viewer-team-score {
     font-size: 15vw !important; /* Keep large score */
@@ -3129,8 +3134,9 @@ html[data-color-scheme="dark"],
     /* NEW: Add a dark panel background for contrast */
     background-color: #0d0d0d !important; 
     border-radius: 4px;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    box-shadow: 0 0 20px rgba(0,0,0,0.8), inset 0 0 10px rgba(0,0,0,0.5); /* Enhanced panel shadow */
     margin: 0 10px; /* Space from the scores */
+    max-height: 90vh; /* Prevent overflow on vertical screens */
 }
 
 /* Digital Display Styling - Add Digital Background for better contrast */
@@ -3180,35 +3186,4 @@ html[data-color-scheme="dark"],
     src: local('monospace');
     font-weight: 800;
 }
-
-.viewer-theme-pro-mode .viewer-team-score {
-    font-family: 'Digital-7 Mono', monospace !important;
-    color: #ff0000 !important;
-    -webkit-text-fill-color: #ff0000 !important;
-    text-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 0 4px #ff0000 !important;
-}
-.viewer-theme-pro-mode .viewer-game-clock {
-    font-family: 'Digital-7 Mono', monospace !important;
-    color: #ffaa00 !important;
-    -webkit-text-fill-color: #ffaa00 !important;
-    text-shadow: 0 0 20px rgba(255, 170, 0, 0.6), 0 0 4px #ffaa00 !important;
-}
-.viewer-theme-pro-mode .viewer-shot-clock {
-    font-family: 'Digital-7 Mono', monospace !important;
-    color: #00ff00 !important;
-    -webkit-text-fill-color: #00ff00 !important;
-    text-shadow: 0 0 20px rgba(0, 255, 0, 0.6), 0 0 4px #00ff00 !important;
-}
-.viewer-theme-pro-mode .viewer-shot-clock.warning {
-    color: #ff0000 !important;
-    -webkit-text-fill-color: #ff0000 !important;
-    text-shadow: 0 0 20px rgba(255, 0, 0, 0.6), 0 0 4px #ff0000 !important;
-}
-.viewer-theme-pro-mode .viewer-quarter {
-    font-family: 'Digital-7 Mono', monospace !important;
-    color: #ffaa00 !important;
-    -webkit-text-fill-color: #ffaa00 !important;
-    text-shadow: 0 0 10px rgba(255, 170, 0, 0.6) !important;
-}
 /* END PROFESSIONAL SCOREBOARD (FINAL, DETAILED) */
-}

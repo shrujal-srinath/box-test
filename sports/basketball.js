@@ -698,7 +698,7 @@ function buildHtml() {
                 <button id="closeHelpModal" class="btn btn--primary">Close</button>
             </div>
         </div>
-    </section>
+    </div>
 
     <div id="detailedHelpModal" class="modal hidden">
         <div class="modal-content" style="max-width: 500px; text-align: left;">
@@ -1002,23 +1002,25 @@ function startMasterTimer() {
             }
             
             // --- SHOT CLOCK LOGIC ---
-            if (state.game.gameState.shotClockRunning && state.game.settings.shotClockDuration > 0) {
-                if (state.game.gameState.shotClock > 0) {
-                    state.game.gameState.shotClock = Math.max(0, state.game.gameState.shotClock - secondsPassed);
-                    updated = true;
-                    
-                    if (state.game.gameState.shotClock <= 5) {
-                        $('shotClockDisplay')?.classList.add('warning');
-                        $('viewerShotClock')?.classList.add('warning');
-                        $('classicViewerShotClock')?.classList.add('warning');
-                    }
-                } else {
-                    if (state.isHost) {
-                        handleShotClockViolation();
+            if (state.game.settings.shotClockDuration > 0) { // Only run if shot clock is enabled in settings
+                if (state.game.gameState.shotClockRunning) {
+                    if (state.game.gameState.shotClock > 0) {
+                        state.game.gameState.shotClock = Math.max(0, state.game.gameState.shotClock - secondsPassed);
+                        updated = true;
+                        
+                        if (state.game.gameState.shotClock <= 5) {
+                            $('shotClockDisplay')?.classList.add('warning');
+                            $('viewerShotClock')?.classList.add('warning');
+                            $('classicViewerShotClock')?.classList.add('warning');
+                        }
                     } else {
-                        state.game.gameState.shotClockRunning = false;
+                        if (state.isHost) {
+                            handleShotClockViolation();
+                        } else {
+                            state.game.gameState.shotClockRunning = false;
+                        }
+                        updated = true;
                     }
-                    updated = true;
                 }
             }
 
