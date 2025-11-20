@@ -2647,4 +2647,78 @@ function setupKeyboardShortcuts() {
 /**
  * @param {object} utils - The global utilities from main.js
  * @param {firebase.User | null} user - The authenticated user (or null)
- *
+ * @param {URLSearchParams} urlParams - The URL parameters
+ */
+async function init(utils, user, urlParams) {
+    console.log('Basketball module initializing...');
+    
+    // Set up utility references
+    $ = utils.$;
+    $$ = utils.$$;
+    showToast = utils.showToast;
+    copyToClipboard = utils.copyToClipboard;
+    state.user = user;
+
+    // Determine the user's mode
+    const watchCode = urlParams.get('watch');
+    const hostMode = urlParams.get('host');
+    const resumeCode = urlParams.get('code'); // Check for resume code
+    
+    // If watching, join spectator mode
+    if (watchCode) {
+        state.isHost = false;
+        await joinSpectatorMode(watchCode);
+        
+    // If hosting, go to landing/config
+    } else if (hostMode) {
+        // If coming from the dashboard to host an existing game:
+        if (resumeCode) {
+             const existingGame = await loadGameState(resumeCode);
+             if (existingGame && (existingGame.hostId === state.user?.uid || !existingGame.hostId)) {
+                state.isHost = true;
+                state.game = existingGame;
+                state.gameCode = resumeCode;
+                state.gameType = existingGame.gameType;
+                showToast(`Resuming game: ${state.gameCode}`, 'success');
+                
+                if (state.game.status === 'final') {
+                    // If finalized, view stats
+                    await joinSpectatorMode(resumeCode);
+                } else {
+                    // Otherwise, go to control view
+                    showControlView();
+                }
+                
+             } else {
+                // Should not happen, but fallback to landing if the resume code is invalid
+                showToast(`Game ${resumeCode} not found or invalid.`, 'error');
+                showView('landing-view');
+             }
+        } else {
+            // New game path: Go to the landing view to choose code or resume
+            state.isHost = true;
+            showView('landing-view');
+        }
+        
+    // If no mode is set, redirect home
+    } else {
+        window.location.href = 'index.html';
+        return;
+    }
+    
+    // Setup universal handlers (like keypresses) once
+    if (state.isHost) {
+        setupLandingHandlers(); // Only needed on the landing view
+        setupKeyboardShortcuts();
+    }
+
+    console.log(`✓ Basketball module ready! Mode: ${state.isHost ? 'Host' : 'Watcher'}`);
+}
+
+
+// ================== EXPORT ==================
+export default {
+    sportName: "Basketball",
+    buildHtml,
+    init
+};
