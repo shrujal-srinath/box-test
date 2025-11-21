@@ -1341,7 +1341,7 @@ select.form-control {
 .control-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: var(--space-20) var(--space-24);
   background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg-5) 100%);
   border-bottom: 3px solid var(--color-primary);
