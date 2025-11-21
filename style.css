@@ -265,6 +265,7 @@
   --color-error-rgb: var(--color-red-400-rgb);
   --color-warning-rgb: var(--color-orange-400-rgb);
   --color-info-rgb: var(--color-gray-300-rgb);
+  }
 }
 
 [data-color-scheme="light"] {
@@ -1542,7 +1543,6 @@ select.form-control {
   text-align: center;
   box-shadow: 0 4px 16px rgba(230, 129, 97, 0.2);
   transition: all var(--duration-fast) var(--ease-standard);
-  cursor: pointer;
 }
 
 .shot-clock-display:hover {
@@ -1815,6 +1815,9 @@ select.form-control {
 
 .viewer-team {
   text-align: center;
+  /* Add padding to the top of the team panels in classic view */
+  padding-top: var(--space-16); 
+  padding-bottom: var(--space-16); 
 }
 
 .viewer-team h2 {
@@ -1827,7 +1830,8 @@ select.form-control {
 }
 
 .viewer-score {
-  font-size: 6rem;
+  /* Enlarge scores in classic view for better readability */
+  font-size: 7rem; 
   font-weight: 800;
   font-family: var(--font-family-mono);
   background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 100%);
@@ -1840,7 +1844,7 @@ select.form-control {
 
 @media (max-width: 768px) {
   .viewer-score {
-    font-size: 4rem;
+    font-size: 5rem;
   }
 }
 
