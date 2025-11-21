@@ -2214,6 +2214,10 @@ select.form-control {
     border-color: var(--color-primary);
 }
 
+.sport-card .card__body {
+    padding: var(--space-16);
+}
+
 .sport-card .card-icon {
     font-size: 3rem;
     margin-bottom: var(--space-16);
@@ -2888,24 +2892,38 @@ input:checked + .theme-slider:before {
 #viewer-view-pro,
 #viewer-view-classic,
 #viewer-view { 
-    /* CRITICAL FIX: Removed 'position: fixed' from the high-specificity ID selectors.
-       This resolves the conflict with the .hidden class. */
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    padding: 0 !important; /* Crucial: Remove all padding */
     margin: 0 !important;
     z-index: 50; 
-    overflow: hidden;
+    /* The issue was here: removing padding: 0 !important from the universal block */
+    overflow-y: auto !important; /* Allow scrolling for classic view content */
     display: none; /* Force hidden by default to prevent flashing */
+    background: var(--color-background); /* Use the standard theme background */
+    padding: 0 !important;
 }
 
 /* NEW CRITICAL RULE: Only apply fixed positioning and force display when NOT hidden. */
 #viewer-view-pro:not(.hidden),
 #viewer-view-classic:not(.hidden) {
     position: fixed;
-    display: flex; /* Assuming these full-screen views use flexbox as their root display */
+    /* Use block as default display to accommodate classic view's scrolling content */
+    display: block; 
+}
+
+/* Specific fix for Classic View: Re-introduce top padding since the main body no longer scrolls */
+#viewer-view-classic:not(.hidden) {
+    padding-top: 20px !important; 
+    overflow-y: auto !important;
+}
+
+/* Professional Mode Overrides (Full Black, No Padding) - Overrides the block/padding settings above */
+#viewer-view-pro:not(.hidden) {
+    display: flex !important; /* Re-enable flex for pro-grid layout */
+    padding: 0 !important; /* Professional View requires NO padding */
+    overflow: hidden !important; /* No scrolling in pro view */
 }
 
 /* Ensure the root container is also ready for a full-black background in professional mode */
@@ -3252,3 +3270,14 @@ html[data-color-scheme="dark"],
 }
 /* This is controlled primarily by JS setting the CSS variable --viewer-top-scorer-display */
 /* END PROFESSIONAL SCOREBOARD (FINAL, DETAILED) */
+
+/* NEW: General Host Control Visibility Class */
+.hidden-host {
+    display: none !important;
+}
+/* Ensure host controls appear correctly when the class is removed */
+.host-control {
+    /* We intentionally leave this without a fixed display property (like 'flex' or 'block') 
+       to allow the browser's default to take over for the element type, 
+       matching how the inline styles were removed originally. */
+}
