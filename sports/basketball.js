@@ -348,8 +348,8 @@ function buildHtml() {
                     <button id="helpBtn" class="btn btn--outline">Help (h)</button>
                     <button id="undoBtn" class="btn btn--secondary" disabled>Undo (z)</button>
                     <button id="shareGameBtn" class="btn btn--outline">Share</button>
-                    <button id="exportGame" class="btn btn--outline">Export</button>
-                    <button id="finalizeGameBtn" class="btn btn--danger">End Game</button>
+                    <button id="exportGame" class="btn btn--outline host-control hidden-host">Export</button>
+                    <button id="finalizeGameBtn" class="btn btn--danger host-control hidden-host">End Game</button>
                 </div>
             </header>
             <div class="control-grid">
@@ -361,7 +361,7 @@ function buildHtml() {
                                     <h3 id="teamAName">Team A</h3>
                                     <div class="score-display" id="teamAScore">0</div>
                                     <div class="top-scorer" id="teamATopScorer">No scorer yet</div>
-                                    <div class="score-controls">
+                                    <div class="score-controls host-control hidden-host">
                                         <button class="btn btn--sm score-btn btn--score-1" data-team="teamA" data-points="1">+1</button>
                                         <button class="btn btn--sm score-btn btn--score-2" data-team="teamA" data-points="2">+2</button>
                                         <button class="btn btn--sm score-btn btn--score-3" data-team="teamA" data-points="3">+3</button>
@@ -371,7 +371,7 @@ function buildHtml() {
                                 <div class="clock-section">
                                     <div class="clock-display game-clock" id="gameClockDisplay" title="Click to edit">12:00</div>
                                     <div class="period-display"><span id="quarterHalfLabel">Quarter</span> <span id="periodDisplay">1</span></div>
-                                    <div class="master-clock-controls">
+                                    <div class="master-clock-controls host-control hidden-host">
                                         <button id="startGameBtn" class="btn btn--primary master-start-btn">START (Space)</button>
                                         <div class="clock-control-row">
                                             <button id="resetAllBtn" class="btn btn--outline btn--sm">Reset All</button>
@@ -382,7 +382,7 @@ function buildHtml() {
                                     <div class="shot-clock-section" id="shotClockSection">
                                         <div class="shot-clock-display" id="shotClockDisplay" title="Click to edit">24</div>
                                         <div class="shot-clock-label">Shot Clock</div>
-                                        <div class="shot-clock-actions">
+                                        <div class="shot-clock-actions host-control hidden-host">
                                             <button id="resetShotClock14" class="btn btn--warning btn--sm">14s</button>
                                             <button id="resetShotClockFull" class="btn btn--warning btn--sm">Full</button>
                                             <button id="editShotClock" class="btn btn--secondary btn--sm">Edit</button>
@@ -394,7 +394,7 @@ function buildHtml() {
                                     <h3 id="teamBName">Team B</h3>
                                     <div class="score-display" id="teamBScore">0</div>
                                     <div class="top-scorer" id="teamBTopScorer">No scorer yet</div>
-                                    <div class="score-controls">
+                                    <div class="score-controls host-control hidden-host">
                                         <button class="btn btn--sm score-btn btn--score-1" data-team="teamB" data-points="1">+1</button>
                                         <button class="btn btn--sm score-btn btn--score-2" data-team="teamB" data-points="2">+2</button>
                                         <button class="btn btn--sm score-btn btn--score-3" data-team="teamB" data-points="3">+3</button>
@@ -411,7 +411,7 @@ function buildHtml() {
                                 <div class="team-info">
                                     <div class="info-item">
                                         <span>Timeouts:</span>
-                                        <div class="counter-controls">
+                                        <div class="counter-controls host-control hidden-host">
                                             <button class="btn btn--sm" data-action="timeout-minus" data-team="teamA">-</button>
                                             <span id="teamATimeouts">7</span>
                                             <button class="btn btn--sm" data-action="timeout-plus" data-team="teamA">+</button>
@@ -419,7 +419,7 @@ function buildHtml() {
                                     </div>
                                     <div class="info-item">
                                         <span>Team Fouls:</span>
-                                        <div class="counter-controls">
+                                        <div class="counter-controls host-control hidden-host">
                                             <button class="btn btn--sm" data-action="foul-minus" data-team="teamA">-</button>
                                             <span id="teamAFouls">0</span>
                                             <button class="btn btn--sm" data-action="foul-plus" data-team="teamA">+</button>
@@ -431,7 +431,7 @@ function buildHtml() {
                         <div class="card">
                             <div class="card__body">
                                 <h4>Possession (p)</h4>
-                                <div class="possession-controls">
+                                <div class="possession-controls host-control hidden-host">
                                     <button id="possessionTeamA" class="btn btn--outline possession-btn active">Team A</button>
                                     <button id="possessionTeamB" class="btn btn--outline possession-btn">Team B</button>
                                 </div>
@@ -443,7 +443,7 @@ function buildHtml() {
                                 <div class="team-info">
                                     <div class="info-item">
                                         <span>Timeouts:</span>
-                                        <div class="counter-controls">
+                                        <div class="counter-controls host-control hidden-host">
                                             <button class="btn btn--sm" data-action="timeout-minus" data-team="teamB">-</button>
                                             <span id="teamBTimeouts">7</span>
                                             <button class="btn btn--sm" data-action="timeout-plus" data-team="teamB">+</button>
@@ -451,7 +451,7 @@ function buildHtml() {
                                     </div>
                                     <div class="info-item">
                                         <span>Team Fouls:</span>
-                                        <div class="counter-controls">
+                                        <div class="counter-controls host-control hidden-host">
                                             <button class="btn btn--sm" data-action="foul-minus" data-team="teamB">-</button>
                                             <span id="teamBFouls">0</span>
                                             <button class="btn btn--sm" data-action="foul-plus" data-team="teamB">+</button>
@@ -2081,16 +2081,17 @@ function showControlView() {
         }
     }
     
+    // --- HOST CONTROL VISIBILITY TOGGLE ---
+    if (!state.user || state.game.hostId !== state.user.uid) { // Check if guest OR not the original host
+        $$('.host-control').forEach(el => el.classList.add('hidden-host'));
+    } else {
+        $$('.host-control').forEach(el => el.classList.remove('hidden-host'));
+    }
+    
     setupControlHandlers();
     updateControlDisplay();
     updateMasterStartButton();
     setupAutoSave();
-
-    // Hide finalize/export for guests, but show share
-    if (!state.user) {
-        $('finalizeGameBtn').classList.add('hidden');
-        $('exportGame').classList.add('hidden');
-    }
 
     if (db && state.isHost) { // Listen for both guests and logged-in hosts
         if (state.firestoreListener) state.firestoreListener();
@@ -2693,9 +2694,15 @@ function updateSpectatorView() {
     $('classicViewerGameClock').textContent = gameTime;
     $('classicQuarterHalfLabel').textContent = periodLabel;
     $('classicViewerPeriod').textContent = periodNum;
-    $('classicViewerShotClock').style.display = shotClockOn ? 'block' : 'none';
-    $('classicViewerShotClock').textContent = shotClockVal;
-    $('classicViewerShotClock').classList.toggle('warning', shotClockWarning);
+    
+    const classicShotClock = $('classicViewerShotClock');
+    if (classicShotClock) {
+         // SHOT CLOCK for classic view visibility
+        classicShotClock.style.display = (shotClockOn && state.viewerSettings.shotClock) ? 'block' : 'none';
+        classicShotClock.textContent = shotClockVal;
+        classicShotClock.classList.toggle('warning', shotClockWarning);
+    }
+
 
     // Update shared data
     updatePossessionDisplay();

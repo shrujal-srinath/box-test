@@ -2898,7 +2898,6 @@ input:checked + .theme-slider:before {
     height: 100vh;
     margin: 0 !important;
     z-index: 50; 
-    /* The issue was here: removing padding: 0 !important from the universal block */
     overflow-y: auto !important; /* Allow scrolling for classic view content */
     display: none; /* Force hidden by default to prevent flashing */
     background: var(--color-background); /* Use the standard theme background */
