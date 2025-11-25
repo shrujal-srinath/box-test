@@ -1625,6 +1625,11 @@ async function checkCodeAndProceed(code) {
                 state.game = existingGame;
                 state.gameCode = code;
                 state.gameType = existingGame.gameType;
+                
+                // --- FIX 2: Update URL on resume to maintain persistence ---
+                const newUrl = `${window.location.origin}${window.location.pathname}?host=true&sport=basketball&code=${code}`;
+                window.history.replaceState({ path: newUrl }, '', newUrl);
+                // --- END FIX 2 ---
 
                 if (state.game.status === 'final') {
                     showToast('This game is finalized. Viewing stats.', 'info', 2000);
@@ -1644,6 +1649,12 @@ async function checkCodeAndProceed(code) {
             // Logged in host + new code = OK
             validationMsg.classList.add('hidden');
             state.gameCode = code;
+            
+            // --- FIX 2: Update URL on new game setup to maintain persistence ---
+            const newUrl = `${window.location.origin}${window.location.pathname}?host=true&sport=basketball&code=${code}`;
+            window.history.replaceState({ path: newUrl }, '', newUrl);
+            // --- END FIX 2 ---
+            
             showConfigurationView();
         }
     } else {
@@ -2065,6 +2076,15 @@ function showControlView() {
     }
     
     showView('control-view');
+    
+    // --- FIX 1: Ensure Control View names are immediately updated ---
+    if (state.game) {
+        $('teamAName').textContent = state.game.teamA.name;
+        $('teamBName').textContent = state.game.teamB.name;
+        $('possessionTeamA').textContent = state.game.teamA.name;
+        $('possessionTeamB').textContent = state.game.teamB.name;
+    }
+    // --- END FIX 1 ---
     
     // Update button text for shot clock
     $('resetShotClockFull').textContent = `${state.game.settings.shotClockDuration}s`;
@@ -2831,6 +2851,11 @@ async function init(utils, user, urlParams) {
                 state.gameCode = resumeCode;
                 state.gameType = existingGame.gameType;
                 showToast(`Resuming game: ${state.gameCode}`, 'success');
+                
+                // --- FIX 2: Ensure URL has code even if coming from sports.html resume link ---
+                const newUrl = `${window.location.origin}${window.location.pathname}?host=true&sport=basketball&code=${resumeCode}`;
+                window.history.replaceState({ path: newUrl }, '', newUrl);
+                // --- END FIX 2 ---
                 
                 if (state.game.status === 'final') {
                     // If finalized, view stats
