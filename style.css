@@ -1794,12 +1794,13 @@ select.form-control {
 
 /* ================== ENHANCED SPECTATOR VIEW (CLASSIC/DEFAULT) ================== */
 .viewer-scoreboard.standard-layout { /* Applied to classic view's container */
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-24);
+  /* FIX: Enforce rigid horizontal layout for spectator view */
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important; 
+  gap: var(--space-32);
   align-items: center;
   padding: var(--space-32);
-  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg-1) 100%);
+  background: var(--color-surface); /* Use surface color for card background */
   border-radius: var(--radius-lg);
   margin-bottom: var(--space-32);
   border: 3px solid var(--color-primary);
@@ -1815,18 +1816,22 @@ select.form-control {
 
 .viewer-team {
   text-align: center;
-  /* Add padding to the top of the team panels in classic view */
   padding-top: var(--space-16); 
   padding-bottom: var(--space-16); 
+  /* FIX: Ensure visibility and background contrast in dark mode */
+  background: var(--color-background); 
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .viewer-team h2 {
   margin-bottom: var(--space-16);
   font-size: var(--font-size-3xl);
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-teal-400) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  /* FIX: Use solid text color for readability in dark mode */
+  color: var(--color-text); 
+  -webkit-text-fill-color: var(--color-text);
+  background: none; 
 }
 
 .viewer-score {
@@ -1834,12 +1839,12 @@ select.form-control {
   font-size: 7rem; 
   font-weight: 800;
   font-family: var(--font-family-mono);
-  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  /* FIX: High contrast color for scores */
+  color: var(--color-primary);
+  -webkit-text-fill-color: var(--color-primary);
+  background: none;
   line-height: 1;
-  text-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  text-shadow: 0 0 8px rgba(33, 128, 141, 0.5); /* Subtle glow for score visibility */
 }
 
 @media (max-width: 768px) {
@@ -1852,12 +1857,14 @@ select.form-control {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-around; /* FIX: Spacing for elements */
   gap: var(--space-16);
-  background: linear-gradient(135deg, var(--color-bg-6) 0%, var(--color-bg-7) 100%);
+  background: var(--color-surface); /* Consistent surface color */
   padding: var(--space-32);
   border-radius: var(--radius-lg);
   border: 2px solid var(--color-primary);
   order: -1;
+  box-shadow: 0 8px 32px rgba(33, 128, 141, 0.2);
 }
 
 @media (min-width: 768px) {
@@ -1870,14 +1877,13 @@ select.form-control {
   font-size: 4rem;
   font-family: var(--font-family-mono);
   font-weight: var(--font-weight-bold);
-  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-primary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  border: 3px solid var(--color-primary);
+  color: var(--color-warning); /* Use warning/amber color for game clock */
+  -webkit-text-fill-color: var(--color-warning);
+  background: var(--color-background);
+  border: 3px solid var(--color-warning);
   border-radius: var(--radius-lg);
   padding: var(--space-24) var(--space-32);
-  background-color: rgba(var(--color-teal-500-rgb), 0.05);
+  text-shadow: 0 0 8px rgba(230, 129, 97, 0.5);
 }
 
 @media (max-width: 768px) {
@@ -1897,12 +1903,12 @@ select.form-control {
   font-size: 2rem;
   font-family: var(--font-family-mono);
   font-weight: var(--font-weight-bold);
-  background: rgba(230, 129, 97, 0.1);
-  border: 2px solid var(--color-warning);
+  background: rgba(var(--color-success-rgb), 0.1); /* Use subtle green for contrast */
+  border: 2px solid var(--color-success);
   border-radius: var(--radius-base);
   padding: var(--space-12) var(--space-16);
-  color: var(--color-warning);
-  box-shadow: 0 4px 16px rgba(230, 129, 97, 0.2);
+  color: var(--color-success);
+  box-shadow: 0 4px 16px rgba(var(--color-success-rgb), 0.2);
 }
 
 .viewer-info {
@@ -1910,7 +1916,7 @@ select.form-control {
   justify-content: space-between;
   align-items: center;
   padding: var(--space-20);
-  background: linear-gradient(135deg, var(--color-bg-1) 0%, var(--color-bg-2) 100%);
+  background: var(--color-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border);
   flex-wrap: wrap;
@@ -3279,5 +3285,4 @@ html[data-color-scheme="dark"],
     /* We intentionally leave this without a fixed display property (like 'flex' or 'block') 
        to allow the browser's default to take over for the element type, 
        matching how the inline styles were removed originally. */
-}
 }
