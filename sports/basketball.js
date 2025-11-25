@@ -2259,7 +2259,9 @@ function addPlayerScore(team, playerNumber, statType, points) {
     
     playerStats[statType]++;
     playerStats.totalPoints += points;
-    state.game[team].score += points;
+    
+    // CRITICAL LINE: Update team score in state
+    state.game[team].score = Math.max(0, state.game[team].score + points); 
     
     showScoreAnimation(points, team);
     setupPlayerScoringGrid();
@@ -2456,7 +2458,9 @@ function updateScore(team, points) {
     const teamName = state.game[team].name;
     snapshotState(`Score ${points > 0 ? '+' : ''}${points} for ${teamName}`); // Log for undo
 
+    // CRITICAL LINE: Updates the game state score property
     state.game[team].score = Math.max(0, state.game[team].score + points);
+    
     showScoreAnimation(points, team);
     updateControlDisplay();
     updateTopScorerDisplay();
@@ -2483,8 +2487,10 @@ function updateControlDisplay() {
     if (!state.game) return;
     
     // Update main controls
+    // CRITICAL LINES: Updates the UI elements based on state.game object
     $('teamAScore').textContent = state.game.teamA.score;
-    $('teamBScore').textContent = state.game.teamB.score;
+    $('teamBScore').textContent = state.game.teamB.score; 
+    
     $('teamAName').textContent = state.game.teamA.name;
     $('teamBName').textContent = state.game.teamB.name;
     $('gameClockDisplay').textContent = formatTime(state.game.gameState.gameTime.minutes, state.game.gameState.gameTime.seconds);
