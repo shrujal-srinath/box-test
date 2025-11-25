@@ -3047,9 +3047,10 @@ html[data-color-scheme="dark"],
 /* Main Scoreboard Area */
 .viewer-theme-pro-mode .viewer-main-scoreboard {
     flex-grow: 1; /* Take up all remaining height */
-    display: grid;
-    grid-template-columns: 1fr 300px 1fr; /* Team | Center | Team */
-    gap: 0;
+    display: grid !important; /* FIX: Force grid layout */
+    grid-template-columns: 1fr 300px 1fr !important; /* FIX: Force horizontal split */
+    grid-template-rows: 1fr !important; /* FIX: Force single row */
+    gap: 0 !important;
     background: #000 !important;
     padding: 20px 20px 0 20px;
 }
@@ -3064,7 +3065,7 @@ html[data-color-scheme="dark"],
     .viewer-theme-pro-mode .viewer-center-panel {
         grid-column: 1 / 3;
         grid-row: 1 / 2;
-        order: -1;
+        order: -1 !important; /* FIX: Ensure center is at the top in mobile */
     }
 }
 
@@ -3267,7 +3268,6 @@ html[data-color-scheme="dark"],
     display: flex; 
     align-items: center;
 }
-/* This is controlled primarily by JS setting the CSS variable --viewer-top-scorer-display */
 /* END PROFESSIONAL SCOREBOARD (FINAL, DETAILED) */
 
 /* NEW: General Host Control Visibility Class */
@@ -3279,4 +3279,5 @@ html[data-color-scheme="dark"],
     /* We intentionally leave this without a fixed display property (like 'flex' or 'block') 
        to allow the browser's default to take over for the element type, 
        matching how the inline styles were removed originally. */
+}
 }
