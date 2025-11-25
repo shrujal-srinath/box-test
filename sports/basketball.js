@@ -29,11 +29,12 @@ const state = {
     firestoreListener: null,
     // --- NEW: Theme state for viewer ---
     viewerTheme: localStorage.getItem('viewerTheme') || 'professional', // 'system', 'light', 'dark', 'professional'
-    viewerSettings: { // UPDATED: Added topScorer setting
+    viewerSettings: { // UPDATED: Added gameClock setting
         shotClock: localStorage.getItem('viewerShotClock') !== 'false',
         fouls: localStorage.getItem('viewerFouls') !== 'false',
         timeouts: localStorage.getItem('viewerTimeouts') !== 'false',
-        topScorer: localStorage.getItem('viewerTopScorer') !== 'false' // <--- ADDED
+        topScorer: localStorage.getItem('viewerTopScorer') !== 'false', 
+        gameClock: localStorage.getItem('viewerGameClock') !== 'false' // <--- NEW: Game Clock Visibility Setting
     }
 };
 
@@ -773,6 +774,12 @@ function buildHtml() {
             <h4 style="margin-top: 24px; margin-bottom: 12px; font-size: 1.1rem;">Element Visibility</h4>
             <div class="form-group" style="margin-bottom: 0;">
                 <div class="form-check theme-toggle-item">
+                    <label for="toggleGameClock" style="flex: 1;">Show Game Clock</label>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="toggleGameClock" data-setting="gameClock">
+                        <span class="theme-slider"></span>
+                    </label>
+                </div> <div class="form-check theme-toggle-item">
                     <label for="toggleShotClock" style="flex: 1;">Show Shot Clock</label>
                     <label class="theme-switch">
                         <input type="checkbox" id="toggleShotClock" data-setting="shotClock">
@@ -1287,10 +1294,12 @@ function showViewerSettingsModal() {
     });
 
     // Set initial state for visibility toggles
+    // <--- FIX 1: Set initial state for Game Clock toggle --->
+    $('toggleGameClock').checked = state.viewerSettings.gameClock;
     $('toggleShotClock').checked = state.viewerSettings.shotClock;
     $('toggleFouls').checked = state.viewerSettings.fouls;
     $('toggleTimeouts').checked = state.viewerSettings.timeouts;
-    $('toggleTopScorer').checked = state.viewerSettings.topScorer; // <--- INIT NEW TOGGLE
+    $('toggleTopScorer').checked = state.viewerSettings.topScorer; 
 
     // Save state on change for visibility toggles
     $$('#viewerSettingsModal input[data-setting]').forEach(input => {
@@ -1300,7 +1309,7 @@ function showViewerSettingsModal() {
             
             // 1. Update state and localStorage
             state.viewerSettings[setting] = isChecked;
-            // The localStorage key logic is: viewer + setting (ShotClock, Fouls, Timeouts, TopScorer)
+            // The localStorage key logic is: viewer + setting (GameClock, ShotClock, Fouls, Timeouts, TopScorer)
             localStorage.setItem(`viewer${setting.charAt(0).toUpperCase() + setting.slice(1)}`, isChecked); 
             
             // 2. Immediately apply changes to the live scoreboard view
@@ -1708,10 +1717,12 @@ async function joinSpectatorMode(code) {
     
     // Also load visibility settings from localStorage
     state.viewerSettings = {
+        // <--- FIX 1: LOAD NEW SETTING HERE --->
+        gameClock: localStorage.getItem('viewerGameClock') !== 'false',
         shotClock: localStorage.getItem('viewerShotClock') !== 'false',
         fouls: localStorage.getItem('viewerFouls') !== 'false',
         timeouts: localStorage.getItem('viewerTimeouts') !== 'false',
-        topScorer: localStorage.getItem('viewerTopScorer') !== 'false' // <--- LOAD NEW SETTING
+        topScorer: localStorage.getItem('viewerTopScorer') !== 'false' 
     };
 
     setViewerTheme(state.viewerTheme);
@@ -2580,7 +2591,7 @@ function createComprehensiveBoxScoreData(g) {
     const colWidths = [ { wch: 5 }, { wch: 25 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 }, { wch: 5 } ];
     ws['A1'] = { v: g.settings.gameName, s: STYLES.title };
     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: statHeaders.length - 1 } }]; 
-    ws['A2'] = { v: `${g.teamA.name}: ${g.teamA.score}  |  ${g.teamB.name}: ${g.teamB.score}`, s: STYLES.subtitle };
+    ws['A2'] = { v: `${g.teamA.name} vs ${g.teamB.name}`, s: STYLES.subtitle };
     ws['!merges'].push({ s: { r: 1, c: 0 }, e: { r: 1, c: statHeaders.length - 1 } });
     let R = 3; 
     ws[`A${R}`] = { v: g.teamA.name, s: STYLES.teamHeader };
@@ -2614,6 +2625,15 @@ function updateSpectatorView() {
     const shotClockOn = state.game.settings.shotClockDuration > 0;
     const shotClockWarning = shotClockOn && shotClockVal <= 5;
     
+    // --- FIX 2: Ensure Team B Name is updated correctly and first ---
+    // Pro View
+    if ($('viewerTeamAName')) $('viewerTeamAName').textContent = state.game.teamA.name.toUpperCase();
+    if ($('viewerTeamBName')) $('viewerTeamBName').textContent = state.game.teamB.name.toUpperCase();
+    // Classic View
+    if ($('classicViewerTeamAName')) $('classicViewerTeamAName').textContent = state.game.teamA.name;
+    if ($('classicViewerTeamBName')) $('classicViewerTeamBName').textContent = state.game.teamB.name;
+    // --- END FIX 2 ---
+    
     // --- BEGIN Professional Theme Color Handling (for viewer-pro only) ---
     const rootContainer = $('root-container');
     if (rootContainer && rootContainer.classList.contains('viewer-theme-pro-mode')) {
@@ -2637,6 +2657,23 @@ function updateSpectatorView() {
     const teamBFoulsBox = $('viewerTeamBFoulsBox');
     const teamBTimeoutsBox = $('viewerTeamBTimeoutsBox');
     
+    // --- FIX 1: Game Clock Visibility Logic ---
+    const gameClockEnabled = state.viewerSettings.gameClock;
+    
+    // Pro View Elements
+    const proGameClockEl = $('viewerGameClock');
+    const proQtrBoxEl = document.querySelector('#viewer-view-pro .viewer-qtr-box');
+    if (proGameClockEl) proGameClockEl.style.display = gameClockEnabled ? 'block' : 'none';
+    if (proQtrBoxEl) proQtrBoxEl.style.display = gameClockEnabled ? 'block' : 'none';
+
+    // Classic View Elements
+    const classicGameClockEl = $('classicViewerGameClock');
+    const classicPeriodEl = document.querySelector('#classicViewerPeriod')?.parentElement; // The div with class 'viewer-period'
+    if (classicGameClockEl) classicGameClockEl.style.display = gameClockEnabled ? 'block' : 'none';
+    if (classicPeriodEl) classicPeriodEl.style.display = gameClockEnabled ? 'block' : 'none';
+    // --- END FIX 1 ---
+    
+    
     // SHOT CLOCK (Must be checked against settings AND if game settings enable it)
     if (shotClockBox) {
         shotClockBox.style.display = (shotClockOn && state.viewerSettings.shotClock) ? 'block' : 'none';
@@ -2657,9 +2694,8 @@ function updateSpectatorView() {
     }
 
 
-    // Pro View (New Fouls/Timeouts/Possession placement)
+    // Pro View 
     $('viewerGameName').textContent = state.game.settings.gameName;
-    $('viewerTeamAName').textContent = state.game.teamA.name.toUpperCase();
     
     // Only set inline color if NOT in professional mode
     if (!rootContainer || !rootContainer.classList.contains('viewer-theme-pro-mode')) {
@@ -2670,7 +2706,6 @@ function updateSpectatorView() {
         $('viewerTeamBName').style.color = '';
     }
     $('viewerTeamAScore').textContent = state.game.teamA.score;
-    $('viewerTeamBScore').textContent = state.game.teamB.score;
     
     $('viewerGameClock').textContent = gameTime;
     $('viewerQuarterHalfLabel').textContent = periodLabel;
@@ -2686,14 +2721,12 @@ function updateSpectatorView() {
     
     // Classic View
     $('classicViewerGameName').textContent = state.game.settings.gameName;
-    $('classicViewerTeamAName').textContent = state.game.teamA.name;
     $('classicViewerTeamAScore').textContent = state.game.teamA.score;
-    $('classicViewerTeamBName').textContent = state.game.teamB.name;
     $('classicViewerTeamBScore').textContent = state.game.teamB.score;
     $('classicViewerGameClock').textContent = gameTime;
     $('classicQuarterHalfLabel').textContent = periodLabel;
     $('classicViewerPeriod').textContent = periodNum;
-    $('classicViewerShotClock').style.display = shotClockOn ? 'block' : 'none';
+    $('classicViewerShotClock').style.display = (shotClockOn && state.viewerSettings.shotClock) ? 'block' : 'none';
     $('classicViewerShotClock').textContent = shotClockVal;
     $('classicViewerShotClock').classList.toggle('warning', shotClockWarning);
 
