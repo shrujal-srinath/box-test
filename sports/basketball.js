@@ -2731,7 +2731,9 @@ function updateSpectatorView() {
         $('viewerTeamAName').style.color = '';
         $('viewerTeamBName').style.color = '';
     }
+    // CRITICAL SCORE UPDATE
     $('viewerTeamAScore').textContent = state.game.teamA.score;
+    $('viewerTeamBScore').textContent = state.game.teamB.score;
     
     $('viewerGameClock').textContent = gameTime;
     $('viewerQuarterHalfLabel').textContent = periodLabel;
@@ -2747,8 +2749,10 @@ function updateSpectatorView() {
     
     // Classic View
     $('classicViewerGameName').textContent = state.game.settings.gameName;
+    // CRITICAL SCORE UPDATE
     $('classicViewerTeamAScore').textContent = state.game.teamA.score;
     $('classicViewerTeamBScore').textContent = state.game.teamB.score;
+    
     $('classicViewerGameClock').textContent = gameTime;
     $('classicQuarterHalfLabel').textContent = periodLabel;
     $('classicViewerPeriod').textContent = periodNum;
