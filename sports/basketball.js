@@ -41,6 +41,9 @@ const state = {
 // ================== HTML BUILDER ==================
 function buildHtml() {
     return `
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <section id="landing-view" class="view">
         <div class="container" style="max-width: 840px; padding-top: 50px;">
             <header class="landing-header" style="margin-bottom: 24px;">
@@ -589,30 +592,69 @@ function buildHtml() {
     </section>
 
     <section id="viewer-view-classic" class="view hidden">
-        <div class="container-fluid" style="padding-top: 20px;">
-            <div class="viewer-info" style="margin-bottom: 20px; position: relative;">
-                <div id="classicViewerGameName" class="game-name">Basketball Game</div>
-                <button id="toggleViewClassic" class="btn btn--outline" style="font-size: 24px; padding: 4px 10px; position: absolute; right: 20px; top: 50%; transform: translateY(-50%);">⚙️</button>
-                <div class="possession-indicator">
-                    <span>Possession:</span>
-                    <span id="classicViewerPossession">Team A</span>
+        <button id="toggleViewClassic" class="settings-btn" style="position: absolute; top: 15px; left: 15px; z-index: 1000;" title="Settings">⚙️</button>
+        
+        <div class="scoreboard chassis">
+            <div class="team-panel">
+                <div class="team-name" id="classicViewerTeamAName">HOME</div>
+                <div class="score-box">
+                    <div class="digit score" id="classicViewerTeamAScore">0</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item stat-fouls">
+                        <span class="label">FOULS</span>
+                        <span class="digit stat-digit" id="classicViewerTeamAFouls">0</span>
+                    </div>
+                    <div class="stat-item stat-tol">
+                        <span class="label">T.O.L.</span>
+                        <span class="digit stat-digit" id="classicViewerTeamATimeouts">7</span>
+                    </div>
                 </div>
             </div>
-            <div class="viewer-scoreboard standard-layout">
-                <div class="viewer-team" id="classicViewerTeamA">
-                    <h2 id="classicViewerTeamAName">Team A</h2>
-                    <div id="classicViewerTeamAScore" class="viewer-score">0</div>
-                    <div id="classicViewerTeamATopScorer" class="viewer-top-scorer">No scorer yet</div>
+
+            <div class="center-panel">
+                <div class="game-clock-container" id="classicViewerGameClockContainer">
+                    <span class="label">GAME TIME</span>
+                    <div class="digit game-clock" id="classicViewerGameClock">12:00</div>
                 </div>
-                <div class="viewer-center standard-layout">
-                    <div id="classicViewerGameClock" class="viewer-clock standard-layout">12:00</div>
-                    <div class="viewer-period"><span id="classicQuarterHalfLabel">Quarter</span> <span id="classicViewerPeriod">1</span></div>
-                    <div id="classicViewerShotClock" class="viewer-shot-clock standard-layout" style="display: none;">24</div>
+
+                <div class="shot-clock-container" id="classicViewerShotClockContainer">
+                    <span class="label">SHOT CLOCK</span>
+                    <div class="digit shot-clock" id="classicViewerShotClock">24</div>
                 </div>
-                <div class="viewer-team" id="classicViewerTeamB">
-                    <h2 id="classicViewerTeamBName">Team B</h2>
-                    <div id="classicViewerTeamBScore" class="viewer-score">0</div>
-                    <div id="classicViewerTeamBTopScorer" class="viewer-top-scorer">No scorer yet</div>
+
+                <div class="bottom-indicators">
+                    <div class="possession-container">
+                        <div class="poss-arrow" id="classicViewerPossessionA">&#9664;</div>
+                        <div class="poss-arrow" id="classicViewerPossessionB">&#9654;</div>
+                    </div>
+
+                    <div class="period-container">
+                        <span class="label" id="classicQuarterHalfLabel">PERIOD</span>
+                        <div class="digit period-digit" id="classicViewerPeriod">1</div>
+                    </div>
+                </div>
+                
+                 <div style="margin-top: auto; width: 100%; text-align: center;">
+                    <div id="classicViewerTeamATopScorer" style="font-size: 0.8rem; color: #888; margin-bottom: 2px;"></div>
+                    <div id="classicViewerTeamBTopScorer" style="font-size: 0.8rem; color: #888;"></div>
+                 </div>
+            </div>
+
+            <div class="team-panel">
+                <div class="team-name" id="classicViewerTeamBName">GUEST</div>
+                <div class="score-box">
+                    <div class="digit score" id="classicViewerTeamBScore">0</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item stat-tol">
+                        <span class="label">T.O.L.</span>
+                        <span class="digit stat-digit" id="classicViewerTeamBTimeouts">7</span>
+                    </div>
+                    <div class="stat-item stat-fouls">
+                        <span class="label">FOULS</span>
+                        <span class="digit stat-digit" id="classicViewerTeamBFouls">0</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1549,7 +1591,7 @@ function updateTopScorerDisplay() {
             : '';
     }
 
-    // Classic Viewer
+    // Classic Viewer (Also used for Dark Theme)
     const classicTeamADisplay = $('classicViewerTeamATopScorer');
     if (classicTeamADisplay) {
         classicTeamADisplay.textContent = (teamATopScorer && teamATopScorer.points > 0)
@@ -2571,10 +2613,13 @@ function updatePossessionDisplay() {
         }
     }
     
-    // Classic Viewer
-    const classicPoss = $('classicViewerPossession');
-    if (classicPoss && state.game) {
-        classicPoss.textContent = state.game.gameState.possession === 'teamA' ? state.game.teamA.name : state.game.teamB.name;
+    // Classic Viewer (Dark Theme Update)
+    const possA = $('classicViewerPossessionA');
+    const possB = $('classicViewerPossessionB');
+    if (possA && possB && state.game) {
+        const isTeamA = state.game.gameState.possession === 'teamA';
+        possA.classList.toggle('poss-active', isTeamA);
+        possB.classList.toggle('poss-active', !isTeamA);
     }
 }
 
@@ -2655,7 +2700,7 @@ function updateSpectatorView() {
     // Pro View
     if ($('viewerTeamAName')) $('viewerTeamAName').textContent = state.game.teamA.name.toUpperCase();
     if ($('viewerTeamBName')) $('viewerTeamBName').textContent = state.game.teamB.name.toUpperCase();
-    // Classic View
+    // Classic View (Now serves the new Dark Theme structure too)
     if ($('classicViewerTeamAName')) $('classicViewerTeamAName').textContent = state.game.teamA.name;
     if ($('classicViewerTeamBName')) $('classicViewerTeamBName').textContent = state.game.teamB.name;
     // --- END FIX 2 ---
@@ -2678,10 +2723,6 @@ function updateSpectatorView() {
     }
 
     const shotClockBox = $('viewerShotClockBox');
-    const teamAFoulsBox = $('viewerTeamAFoulsBox');
-    const teamATimeoutsBox = $('viewerTeamATimeoutsBox');
-    const teamBFoulsBox = $('viewerTeamBFoulsBox');
-    const teamBTimeoutsBox = $('viewerTeamBTimeoutsBox');
     
     // --- FIX 1: Game Clock Visibility Logic ---
     const gameClockEnabled = state.viewerSettings.gameClock;
@@ -2692,31 +2733,19 @@ function updateSpectatorView() {
     if (proGameClockEl) proGameClockEl.style.display = gameClockEnabled ? 'block' : 'none';
     if (proQtrBoxEl) proQtrBoxEl.style.display = gameClockEnabled ? 'block' : 'none';
 
-    // Classic View Elements
-    const classicGameClockEl = $('classicViewerGameClock');
-    const classicPeriodEl = document.querySelector('#classicViewerPeriod')?.parentElement; // The div with class 'viewer-period'
-    if (classicGameClockEl) classicGameClockEl.style.display = gameClockEnabled ? 'block' : 'none';
-    if (classicPeriodEl) classicPeriodEl.style.display = gameClockEnabled ? 'block' : 'none';
-    // --- END FIX 1 ---
+    // Classic View Elements (Updated IDs)
+    const classicGameClockEl = $('classicViewerGameClockContainer');
+    if (classicGameClockEl) classicGameClockEl.style.visibility = gameClockEnabled ? 'visible' : 'hidden'; // Changed to visibility to keep layout
     
     
     // SHOT CLOCK (Must be checked against settings AND if game settings enable it)
+    const classicShotClockContainer = $('classicViewerShotClockContainer');
+    
     if (shotClockBox) {
         shotClockBox.style.display = (shotClockOn && state.viewerSettings.shotClock) ? 'block' : 'none';
     }
-    
-    // FOULS
-    if (teamAFoulsBox && teamBFoulsBox) {
-        const displayFouls = state.viewerSettings.fouls ? 'block' : 'none';
-        teamAFoulsBox.style.display = displayFouls;
-        teamBFoulsBox.style.display = displayFouls;
-    }
-    
-    // TIMEOUTS
-    if (teamATimeoutsBox && teamBTimeoutsBox) {
-        const displayTimeouts = state.viewerSettings.timeouts ? 'block' : 'none';
-        teamATimeoutsBox.style.display = displayTimeouts;
-        teamBTimeoutsBox.style.display = displayTimeouts;
+    if (classicShotClockContainer) {
+        classicShotClockContainer.style.visibility = (shotClockOn && state.viewerSettings.shotClock) ? 'visible' : 'hidden';
     }
 
 
@@ -2747,18 +2776,31 @@ function updateSpectatorView() {
     $('viewerTeamBFouls').textContent = state.game.teamB.fouls;
     $('viewerTeamBTimeouts').textContent = state.game.teamB.timeouts;
     
-    // Classic View
-    $('classicViewerGameName').textContent = state.game.settings.gameName;
-    // CRITICAL SCORE UPDATE
+    // Classic View (Dark Theme) Updates
     $('classicViewerTeamAScore').textContent = state.game.teamA.score;
     $('classicViewerTeamBScore').textContent = state.game.teamB.score;
     
     $('classicViewerGameClock').textContent = gameTime;
     $('classicQuarterHalfLabel').textContent = periodLabel;
     $('classicViewerPeriod').textContent = periodNum;
-    $('classicViewerShotClock').style.display = (shotClockOn && state.viewerSettings.shotClock) ? 'block' : 'none';
+    
     $('classicViewerShotClock').textContent = shotClockVal;
-    $('classicViewerShotClock').classList.toggle('warning', shotClockWarning);
+    $('classicViewerShotClock').style.color = shotClockWarning ? 'var(--led-red)' : 'var(--led-red)'; // Ensure red always
+    
+    // Update Stats for Dark Theme
+    if($('classicViewerTeamAFouls')) $('classicViewerTeamAFouls').textContent = state.game.teamA.fouls;
+    if($('classicViewerTeamATimeouts')) $('classicViewerTeamATimeouts').textContent = state.game.teamA.timeouts;
+    if($('classicViewerTeamBFouls')) $('classicViewerTeamBFouls').textContent = state.game.teamB.fouls;
+    if($('classicViewerTeamBTimeouts')) $('classicViewerTeamBTimeouts').textContent = state.game.teamB.timeouts;
+
+    // Update Possession Arrows for Dark Theme
+    const possA = $('classicViewerPossessionA');
+    const possB = $('classicViewerPossessionB');
+    if (possA && possB) {
+        const isTeamA = state.game.gameState.possession === 'teamA';
+        possA.classList.toggle('poss-active', isTeamA);
+        possB.classList.toggle('poss-active', !isTeamA);
+    }
 
     // Update shared data
     updatePossessionDisplay();
