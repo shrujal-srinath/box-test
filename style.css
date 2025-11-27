@@ -2084,7 +2084,7 @@ select.form-control {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2500;
 }
 
 .modal.hidden {
@@ -3287,10 +3287,9 @@ html[data-color-scheme="dark"],
        matching how the inline styles were removed originally. */
 }
 
-/* ================== DARK THEME SPECTATOR OVERRIDE (FIXED) ================== */
-/* This uses the global data-color-scheme attribute so it ALWAYS works in Dark Mode */
+/* ================== DARK THEME SPECTATOR OVERRIDE (FINAL Z-INDEX FIX) ================== */
 
-/* 1. Main Container - Force Full Screen Flex Center */
+/* 1. Main Container - Lowered Z-Index so Modal (1000+) can appear on top */
 [data-color-scheme="dark"] #viewer-view-classic {
     --bg-color: #000000;
     --board-bg: #080808;
@@ -3312,12 +3311,12 @@ html[data-color-scheme="dark"],
     align-items: center;
     padding: 0 !important;
     margin: 0 !important;
-    z-index: 9999;
+    z-index: 500 !important; /* FIXED: Lower than modal (1000) but higher than header (100) */
     font-family: 'Orbitron', sans-serif !important;
     overflow: hidden !important;
 }
 
-/* 2. The Scoreboard Chassis - Force Grid Layout */
+/* 2. The Scoreboard Chassis */
 [data-color-scheme="dark"] #viewer-view-classic .scoreboard.chassis {
     background-color: var(--board-bg);
     width: 96vw;
@@ -3325,7 +3324,7 @@ html[data-color-scheme="dark"],
     border: 6px solid var(--border-color);
     border-radius: 15px;
     box-shadow: 0 0 40px rgba(0,0,0,0.9);
-    display: grid !important; /* Forces grid over any other display type */
+    display: grid !important;
     grid-template-columns: 1fr 1.3fr 1fr !important;
     padding: 1vh 1vw;
     box-sizing: border-box;
@@ -3464,7 +3463,7 @@ html[data-color-scheme="dark"],
     box-shadow: none !important;
 }
 
-/* 7. Bottom Indicators (Possession & Period) */
+/* 7. Bottom Indicators */
 [data-color-scheme="dark"] #viewer-view-classic .bottom-indicators {
     width: 100%;
     display: flex;
@@ -3502,13 +3501,17 @@ html[data-color-scheme="dark"],
     color: var(--led-green); 
 }
 
-/* 8. Settings Button Override */
+/* 8. Settings Button Visibility Fix */
 [data-color-scheme="dark"] #viewer-view-classic #toggleViewClassic {
-    color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6); /* Brighter so it's visible */
     background: transparent;
     border: none;
-    font-size: 24px;
+    font-size: 32px; /* Slightly larger */
+    cursor: pointer;
+    pointer-events: auto; /* Ensure clickability */
+    z-index: 1001; /* Above the scoreboard chassis */
 }
 [data-color-scheme="dark"] #viewer-view-classic #toggleViewClassic:hover {
     color: white;
+    transform: scale(1.1);
 }
