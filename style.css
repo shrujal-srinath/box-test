@@ -3287,11 +3287,11 @@ html[data-color-scheme="dark"],
        matching how the inline styles were removed originally. */
 }
 
-/* ================== DARK THEME SPECTATOR OVERRIDE (FINAL FIX) ================== */
-/* This targets the class added by JS to ensure styles apply 100% of the time */
+/* ================== DARK THEME SPECTATOR OVERRIDE (FIXED) ================== */
+/* This uses the global data-color-scheme attribute so it ALWAYS works in Dark Mode */
 
 /* 1. Main Container - Force Full Screen Flex Center */
-#viewer-view-classic.theme-dark-active {
+[data-color-scheme="dark"] #viewer-view-classic {
     --bg-color: #000000;
     --board-bg: #080808;
     --border-color: #333333;
@@ -3318,7 +3318,7 @@ html[data-color-scheme="dark"],
 }
 
 /* 2. The Scoreboard Chassis - Force Grid Layout */
-#viewer-view-classic.theme-dark-active .scoreboard.chassis {
+[data-color-scheme="dark"] #viewer-view-classic .scoreboard.chassis {
     background-color: var(--board-bg);
     width: 96vw;
     height: 92vh;
@@ -3334,7 +3334,7 @@ html[data-color-scheme="dark"],
 }
 
 /* 3. Typography Overrides */
-#viewer-view-classic.theme-dark-active .label {
+[data-color-scheme="dark"] #viewer-view-classic .label {
     color: var(--label-color);
     font-size: 1.8vh;
     text-transform: uppercase;
@@ -3346,7 +3346,7 @@ html[data-color-scheme="dark"],
     font-family: 'Orbitron', sans-serif !important;
 }
 
-#viewer-view-classic.theme-dark-active .digit {
+[data-color-scheme="dark"] #viewer-view-classic .digit {
     font-weight: 900;
     line-height: 1;
     text-align: center;
@@ -3356,7 +3356,7 @@ html[data-color-scheme="dark"],
 }
 
 /* 4. Team Panels */
-#viewer-view-classic.theme-dark-active .team-panel {
+[data-color-scheme="dark"] #viewer-view-classic .team-panel {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -3367,7 +3367,7 @@ html[data-color-scheme="dark"],
     box-shadow: none !important;
 }
 
-#viewer-view-classic.theme-dark-active .team-name {
+[data-color-scheme="dark"] #viewer-view-classic .team-name {
     color: var(--led-white) !important;
     font-size: 6vh !important;
     font-weight: 900;
@@ -3379,7 +3379,7 @@ html[data-color-scheme="dark"],
     -webkit-text-fill-color: initial !important;
 }
 
-#viewer-view-classic.theme-dark-active .score-box {
+[data-color-scheme="dark"] #viewer-view-classic .score-box {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -3387,7 +3387,7 @@ html[data-color-scheme="dark"],
     align-items: center;
 }
 
-#viewer-view-classic.theme-dark-active .score {
+[data-color-scheme="dark"] #viewer-view-classic .score {
     font-size: 28vh !important;
     color: var(--led-red) !important;
     margin: 0;
@@ -3399,7 +3399,7 @@ html[data-color-scheme="dark"],
 }
 
 /* 5. Stats Grid */
-#viewer-view-classic.theme-dark-active .stats-grid {
+[data-color-scheme="dark"] #viewer-view-classic .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1vw;
@@ -3408,19 +3408,19 @@ html[data-color-scheme="dark"],
     padding-top: 1.5vh;
 }
 
-#viewer-view-classic.theme-dark-active .stat-item {
+[data-color-scheme="dark"] #viewer-view-classic .stat-item {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-#viewer-view-classic.theme-dark-active .stat-digit {
+[data-color-scheme="dark"] #viewer-view-classic .stat-digit {
     font-size: 5vh;
     color: var(--led-amber);
 }
 
 /* 6. Center Panel */
-#viewer-view-classic.theme-dark-active .center-panel {
+[data-color-scheme="dark"] #viewer-view-classic .center-panel {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
@@ -3432,17 +3432,17 @@ html[data-color-scheme="dark"],
     box-shadow: none !important;
 }
 
-#viewer-view-classic.theme-dark-active .game-clock-container {
+[data-color-scheme="dark"] #viewer-view-classic .game-clock-container {
     text-align: center;
     background: #111;
     width: 100%;
     padding: 2vh 0;
     border-radius: 10px;
     border: 1px solid #333;
-    visibility: visible; /* Ensure visibility is managed by JS but defaults to visible here */
+    visibility: visible;
 }
 
-#viewer-view-classic.theme-dark-active .game-clock {
+[data-color-scheme="dark"] #viewer-view-classic .game-clock {
     font-size: 14vh !important;
     color: var(--led-amber) !important;
     letter-spacing: 0.05em;
@@ -3451,12 +3451,12 @@ html[data-color-scheme="dark"],
     -webkit-text-fill-color: var(--led-amber) !important;
 }
 
-#viewer-view-classic.theme-dark-active .shot-clock-container { 
+[data-color-scheme="dark"] #viewer-view-classic .shot-clock-container { 
     text-align: center; 
     margin: 1vh 0; 
     visibility: visible;
 }
-#viewer-view-classic.theme-dark-active .shot-clock { 
+[data-color-scheme="dark"] #viewer-view-classic .shot-clock { 
     font-size: 16vh !important; 
     color: var(--led-red) !important;
     background: none !important;
@@ -3465,14 +3465,14 @@ html[data-color-scheme="dark"],
 }
 
 /* 7. Bottom Indicators (Possession & Period) */
-#viewer-view-classic.theme-dark-active .bottom-indicators {
+[data-color-scheme="dark"] #viewer-view-classic .bottom-indicators {
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 1.5vh;
 }
 
-#viewer-view-classic.theme-dark-active .possession-container {
+[data-color-scheme="dark"] #viewer-view-classic .possession-container {
     display: flex;
     justify-content: center;
     gap: 8vw; 
@@ -3480,35 +3480,35 @@ html[data-color-scheme="dark"],
     align-items: center;
 }
 
-#viewer-view-classic.theme-dark-active .poss-arrow {
+[data-color-scheme="dark"] #viewer-view-classic .poss-arrow {
     font-size: 6vh;
     color: #222;
     transition: color 0.2s, text-shadow 0.2s;
     line-height: 1;
 }
-#viewer-view-classic.theme-dark-active .poss-active { 
+[data-color-scheme="dark"] #viewer-view-classic .poss-active { 
     color: var(--led-red);
     text-shadow: 0 0 15px var(--led-red);
 }
 
-#viewer-view-classic.theme-dark-active .period-container {
+[data-color-scheme="dark"] #viewer-view-classic .period-container {
     text-align: center;
     border-top: 2px solid #333;
     width: 100%;
     padding-top: 1.5vh;
 }
-#viewer-view-classic.theme-dark-active .period-digit { 
+[data-color-scheme="dark"] #viewer-view-classic .period-digit { 
     font-size: 8vh; 
     color: var(--led-green); 
 }
 
 /* 8. Settings Button Override */
-#viewer-view-classic.theme-dark-active #toggleViewClassic {
+[data-color-scheme="dark"] #viewer-view-classic #toggleViewClassic {
     color: rgba(255, 255, 255, 0.2);
     background: transparent;
     border: none;
     font-size: 24px;
 }
-#viewer-view-classic.theme-dark-active #toggleViewClassic:hover {
+[data-color-scheme="dark"] #viewer-view-classic #toggleViewClassic:hover {
     color: white;
 }
