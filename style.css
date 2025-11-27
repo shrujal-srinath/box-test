@@ -3286,3 +3286,229 @@ html[data-color-scheme="dark"],
        to allow the browser's default to take over for the element type, 
        matching how the inline styles were removed originally. */
 }
+
+/* ================== DARK THEME SPECTATOR OVERRIDE (FINAL FIX) ================== */
+/* This targets the class added by JS to ensure styles apply 100% of the time */
+
+/* 1. Main Container - Force Full Screen Flex Center */
+#viewer-view-classic.theme-dark-active {
+    --bg-color: #000000;
+    --board-bg: #080808;
+    --border-color: #333333;
+    --led-red: #ff0000;
+    --led-amber: #ffaa00;
+    --led-green: #00ff00;
+    --led-white: #ffffff;
+    --label-color: #aaaaaa;
+
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: var(--bg-color) !important;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    padding: 0 !important;
+    margin: 0 !important;
+    z-index: 9999;
+    font-family: 'Orbitron', sans-serif !important;
+    overflow: hidden !important;
+}
+
+/* 2. The Scoreboard Chassis - Force Grid Layout */
+#viewer-view-classic.theme-dark-active .scoreboard.chassis {
+    background-color: var(--board-bg);
+    width: 96vw;
+    height: 92vh;
+    border: 6px solid var(--border-color);
+    border-radius: 15px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.9);
+    display: grid !important; /* Forces grid over any other display type */
+    grid-template-columns: 1fr 1.3fr 1fr !important;
+    padding: 1vh 1vw;
+    box-sizing: border-box;
+    gap: 1.5vw;
+    margin: 0 !important;
+}
+
+/* 3. Typography Overrides */
+#viewer-view-classic.theme-dark-active .label {
+    color: var(--label-color);
+    font-size: 1.8vh;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    margin-bottom: 0.5vh;
+    display: block;
+    text-align: center;
+    font-family: 'Orbitron', sans-serif !important;
+}
+
+#viewer-view-classic.theme-dark-active .digit {
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
+    color: white;
+}
+
+/* 4. Team Panels */
+#viewer-view-classic.theme-dark-active .team-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 2px solid #222;
+    padding: 1.5vh 1vw;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #151515 0%, #050505 100%);
+    box-shadow: none !important;
+}
+
+#viewer-view-classic.theme-dark-active .team-name {
+    color: var(--led-white) !important;
+    font-size: 6vh !important;
+    font-weight: 900;
+    text-align: center;
+    margin-top: 1vh;
+    line-height: 1;
+    white-space: nowrap;
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
+}
+
+#viewer-view-classic.theme-dark-active .score-box {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#viewer-view-classic.theme-dark-active .score {
+    font-size: 28vh !important;
+    color: var(--led-red) !important;
+    margin: 0;
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+    text-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+    background: none !important;
+    -webkit-text-fill-color: var(--led-red) !important;
+}
+
+/* 5. Stats Grid */
+#viewer-view-classic.theme-dark-active .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1vw;
+    margin-bottom: 0.5vh;
+    border-top: 1px solid #333;
+    padding-top: 1.5vh;
+}
+
+#viewer-view-classic.theme-dark-active .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#viewer-view-classic.theme-dark-active .stat-digit {
+    font-size: 5vh;
+    color: var(--led-amber);
+}
+
+/* 6. Center Panel */
+#viewer-view-classic.theme-dark-active .center-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    border: 2px solid #222;
+    padding: 1.5vh 1vw;
+    border-radius: 12px;
+    background: #050505;
+    box-shadow: none !important;
+}
+
+#viewer-view-classic.theme-dark-active .game-clock-container {
+    text-align: center;
+    background: #111;
+    width: 100%;
+    padding: 2vh 0;
+    border-radius: 10px;
+    border: 1px solid #333;
+    visibility: visible; /* Ensure visibility is managed by JS but defaults to visible here */
+}
+
+#viewer-view-classic.theme-dark-active .game-clock {
+    font-size: 14vh !important;
+    color: var(--led-amber) !important;
+    letter-spacing: 0.05em;
+    border: none !important;
+    padding: 0 !important;
+    -webkit-text-fill-color: var(--led-amber) !important;
+}
+
+#viewer-view-classic.theme-dark-active .shot-clock-container { 
+    text-align: center; 
+    margin: 1vh 0; 
+    visibility: visible;
+}
+#viewer-view-classic.theme-dark-active .shot-clock { 
+    font-size: 16vh !important; 
+    color: var(--led-red) !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* 7. Bottom Indicators (Possession & Period) */
+#viewer-view-classic.theme-dark-active .bottom-indicators {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
+}
+
+#viewer-view-classic.theme-dark-active .possession-container {
+    display: flex;
+    justify-content: center;
+    gap: 8vw; 
+    width: 100%;
+    align-items: center;
+}
+
+#viewer-view-classic.theme-dark-active .poss-arrow {
+    font-size: 6vh;
+    color: #222;
+    transition: color 0.2s, text-shadow 0.2s;
+    line-height: 1;
+}
+#viewer-view-classic.theme-dark-active .poss-active { 
+    color: var(--led-red);
+    text-shadow: 0 0 15px var(--led-red);
+}
+
+#viewer-view-classic.theme-dark-active .period-container {
+    text-align: center;
+    border-top: 2px solid #333;
+    width: 100%;
+    padding-top: 1.5vh;
+}
+#viewer-view-classic.theme-dark-active .period-digit { 
+    font-size: 8vh; 
+    color: var(--led-green); 
+}
+
+/* 8. Settings Button Override */
+#viewer-view-classic.theme-dark-active #toggleViewClassic {
+    color: rgba(255, 255, 255, 0.2);
+    background: transparent;
+    border: none;
+    font-size: 24px;
+}
+#viewer-view-classic.theme-dark-active #toggleViewClassic:hover {
+    color: white;
+}
